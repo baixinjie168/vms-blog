@@ -2,7 +2,7 @@
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"compatibility_date": "2026-09-25",
 	"compatibility_flags": ["global_fetch_strictly_public"],
-	"name": "vms-blog",
+	"name": "vms",
 	"workers_dev": true,
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
