@@ -1,8 +1,11 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
-	"compatibility_date": "2026-09-25",
-	"compatibility_flags": ["global_fetch_strictly_public"],
 	"name": "vms",
+	"compatibility_date": "2026-09-25",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
 	"workers_dev": true,
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
@@ -11,5 +14,29 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+
+	// 1. 结构化数据库 (Cloudflare D1)
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "vms-db",
+			"database_id": "5b4ed5a8-7a32-498b-b8e9-44a24364e893"
+		}
+	],
+
+	// 2. 媒体与图床对象存储 (Cloudflare R2)
+	"r2_buckets": [
+		{
+			"binding": "ASSETS_BUCKET",
+			"bucket_name": "vms-assets"
+		}
+	],
+
+	// 3. 原生邮件发送服务 (Workers Email Sending) - 绑定发信域名 250258.xyz
+	"send_email": [
+		{
+			"name": "EMAIL_SERVICE"
+		}
+	]
 }
