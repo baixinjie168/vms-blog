@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { env as cfEnv } from "cloudflare:workers";
 import { renderOtpEmail } from "../../../utils/emailTemplate";
 import { buildEmailMessage } from "../../../utils/emailMessage";
 
@@ -13,7 +14,8 @@ const SENDER_EMAIL = "auth@250258.xyz";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const env = locals.runtime.env;
+    // 适配 Astro 5+ / 6+ 与 Cloudflare Workers 原生 env 绑定
+    const env = cfEnv || (locals as any)?.runtime?.env;
     const body = await request.json().catch(() => ({}));
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 
