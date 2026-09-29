@@ -14,8 +14,8 @@ const SENDER_EMAIL = "auth@250258.xyz";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // 适配 Astro 5+ / 6+ 与 Cloudflare Workers 原生 env 绑定
-    const env = cfEnv || (locals as any)?.runtime?.env;
+    // 使用 Cloudflare Workers 规范 env 绑定
+    const env = cfEnv;
     const body = await request.json().catch(() => ({}));
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 
