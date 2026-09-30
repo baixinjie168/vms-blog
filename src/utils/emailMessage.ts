@@ -28,7 +28,11 @@ export function buildEmailMessage(options: SendMailOptions): EmailMessage {
   const encodedFromName = `=?UTF-8?B?${encodeUtf8Base64(fromName)}?=`;
   const encodedSubject = `=?UTF-8?B?${encodeUtf8Base64(options.subject)}?=`;
 
+  const domain = options.from.split('@')[1] || '250258.xyz';
+  const messageId = `<${crypto.randomUUID()}@${domain}>`;
+
   const rawHeaders = [
+    `Message-ID: ${messageId}`,
     `From: ${encodedFromName} <${options.from}>`,
     `To: <${options.to}>`,
     `Subject: ${encodedSubject}`,
