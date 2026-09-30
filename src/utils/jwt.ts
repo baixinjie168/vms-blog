@@ -8,6 +8,7 @@ export interface JwtPayload {
   email: string;      // 用户真实邮箱
   nickname: string;   // 读者或博主昵称
   role: 'admin' | 'reader';
+  avatar_bg?: string;
   iat?: number;
   exp?: number;
 }
