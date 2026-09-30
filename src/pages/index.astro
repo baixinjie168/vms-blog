@@ -1,29 +1,22 @@
 ---
-import '../styles/global.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<html lang="zh-CN">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>VMS (vms-blog)</title>
-	</head>
-	<body class="bg-[#F5F5F7] min-h-screen flex items-center justify-center font-sans antialiased text-[#222222]">
-		<div class="max-w-md w-full mx-4 p-8 bg-white rounded-3xl shadow-sm border border-stone-200 text-center">
-			<div class="w-12 h-12 rounded-2xl bg-[#70C000] text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-sm">V</div>
+<BaseLayout title="VMS · 数字花园 (基座就绪)">
+	<main class="h-full flex items-center justify-center p-4">
+		<div class="max-w-md w-full p-8 bg-paperCard rounded-3xl shadow-sm border border-stone-200 text-center">
+			<div class="w-12 h-12 rounded-2xl bg-limeBrand text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-sm">V</div>
 			<h1 class="text-xl font-bold text-stone-900 mb-2">VMS · 数字花园</h1>
-			<p class="text-xs text-stone-500 mb-4">Astro 5 + Cloudflare Pages + Tailwind CSS 成功就绪！</p>
+			<p class="text-xs text-stone-500 mb-4">纸墨设计系统 + 100vh 零长视窗基座已就绪</p>
 			
 			<div class="flex flex-col gap-2 items-center">
-				<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#70C000]/15 text-[#559400] text-xs font-mono font-medium border border-[#70C000]/25">
-					<span>● 边缘全栈运行环境正常</span>
+				<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-limeLight text-limeDark text-xs font-mono font-medium border border-limeBrand/25">
+					<span>● 100vh 零长视窗基座 (BaseLayout) 挂载正常</span>
 				</div>
-				<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px] font-mono border border-stone-200">
-					<span>⚡ GitHub 自动部署测试就绪</span>
+				<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paperIvory text-stone-700 text-[11px] font-mono border border-stone-200">
+					<span>🎨 纸墨主题变量 (青柠/牙白/竹青/墨黑) 生效</span>
 				</div>
 			</div>
 		</div>
-	</body>
-</html>
+	</main>
+</BaseLayout>

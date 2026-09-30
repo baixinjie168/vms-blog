@@ -1,1 +1,49 @@
 @import "tailwindcss";
+
+@theme {
+  /* 品牌核心青柠色系 */
+  --color-lime-brand: #70C000;
+  --color-limeBrand: #70C000;
+  --color-lime-dark: #559400;
+  --color-limeDark: #559400;
+  --color-lime-light: rgba(112, 192, 0, 0.12);
+  --color-limeLight: rgba(112, 192, 0, 0.12);
+
+  /* 朱砂强调色 */
+  --color-vermilion: #C04838;
+
+  /* 纸张温润色系与背景 */
+  --color-paper-bg: #F5F5F7;
+  --color-paperBg: #F5F5F7;
+  --color-paper-card: #FFFFFF;
+  --color-cardBg: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+
+  /* 三大阅读色温材质 */
+  --color-paper-ivory: #FAF7EE;      /* 典藏牙白 */
+  --color-paperIvory: #FAF7EE;
+  --color-paper-bamboo: #EBF1E8;     /* 竹青护眼 */
+  --color-paperBamboo: #EBF1E8;
+  --color-paper-ink: #202226;        /* 墨黑沉浸 */
+  --color-paperInk: #202226;
+
+  /* 代码块深色底色 */
+  --color-code-bg: #1E2024;
+  --color-codeBg: #1E2024;
+}
+
+/* 隐藏滚动条但保留功能 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* 细轨悬停微显滚动条 */
+.hover-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+.hover-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 9999px; }
+.hover-scrollbar:hover::-webkit-scrollbar-thumb { background: #70C000; }
+
+/* 纸墨微纹与排版实用类 */
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
