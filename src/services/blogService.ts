@@ -15,6 +15,7 @@ export interface AuthorProfile {
   articleCount: number;
   totalWords: string;
   daysCount: number;
+  isGuest?: boolean;
 }
 
 export interface DimensionMeta {
@@ -171,6 +172,7 @@ export interface ArticleItem {
 }
 
 export interface ArticleQueryOptions {
+  authorId?: string;       // 指定作者 ID
   category?: string;       // 分类: 'dao' | '道' | 'all'
   albumSlug?: string;      // 专栏别名: 'qlib-quant'
   date?: string;           // 日期: '2026-09-26'
@@ -768,115 +770,201 @@ export const DEFAULT_ARTICLES: ArticleItem[] = [
 
 export class BlogService {
   /**
-   * 获取博主个人独白名片与全局指标
+   * 获取用户个人独白名片与专属指标
+   * 当指定 userId 时获取该用户的独白与文章统计；未登录 (userId 为空) 时返回马赛克化访客模型
    */
-  static async getAuthorProfile(db: D1Database): Promise<AuthorProfile> {
-    const user = await db.prepare(
-      "SELECT id, nickname, email, bio, avatar_url, avatar_bg, role, github_url, created_at FROM users WHERE role = 'admin' ORDER BY created_at ASC LIMIT 1"
-    ).first<{
-      id: string;
-      nickname: string;
-      email: string;
-      bio: string;
-      avatar_url: string | null;
-      avatar_bg: string;
-      role: string;
-      github_url: string | null;
-      created_at: number;
-    }>();
-
-    // 统计总文章数与估算总字数
-    const stats = await db.prepare(
-      "SELECT count(*) as count, coalesce(sum(length(content)), 0) as total_chars FROM articles WHERE is_published = 1"
-    ).first<{ count: number; total_chars: number }>();
-
-    const articleCount = stats?.count || 168;
-    const totalChars = stats?.total_chars || 342000;
-    const totalWords = totalChars > 10000 
-      ? (totalChars / 10000).toFixed(1) + "w" 
-      : `${totalChars}`;
-
-    // 耕耘天数：从博主注册时间算起，基线为 430 天
-    const now = Math.floor(Date.now() / 1000);
-    const startTimestamp = user?.created_at || (now - 430 * 86400);
-    const daysCount = Math.max(1, Math.floor((now - startTimestamp) / 86400));
-
-    return {
-      id: user?.id || "usr_author_bai",
-      nickname: user?.nickname || "白心解",
-      email: user?.email || "admin@250258.xyz",
-      bio: user?.bio || "以道明向，以心修己，以法立律，以术精工，以器致远，以事立业，以势乘风。",
-      avatar_url: user?.avatar_url || null,
-      avatar_bg: user?.avatar_bg || "bg-stone-900",
-      role: user?.role || "admin",
-      github_url: user?.github_url || "https://github.com/baixinjie168",
-      articleCount,
-      totalWords,
-      daysCount: Math.max(430, daysCount)
-    };
-  }
-
-  /**
-   * 获取七大认知层级各维度的文章篇数统计
-   */
-  static async getCategoryStats(db: D1Database): Promise<{
-    dimensions: DimensionMeta[];
-    totalArticles: number;
-  }> {
-    const rows = await db.prepare(
-      "SELECT dimension, count(*) as count FROM articles WHERE is_published = 1 GROUP BY dimension"
-    ).all<{ dimension: string; count: number }>();
-
-    const countsMap: Record<string, number> = {};
-    let total = 0;
-    for (const r of rows.results || []) {
-      const norm = normalizeDimension(r.dimension) || r.dimension;
-      countsMap[norm] = (countsMap[norm] || 0) + (r.count || 0);
-      total += (r.count || 0);
+  static async getAuthorProfile(db?: D1Database | null, userId?: string): Promise<AuthorProfile> {
+    if (!db || !userId) {
+      return {
+        id: "guest",
+        nickname: "墨客 · 隐者",
+        email: "",
+        bio: "浮生研墨，漫步林泉。登入后可沉淀个人专属研读箴言与七维自洽认知...",
+        avatar_url: null,
+        avatar_bg: "bg-stone-800",
+        role: "未登入",
+        github_url: null,
+        articleCount: 0,
+        totalWords: "--",
+        daysCount: 0,
+        isGuest: true
+      };
     }
 
-    const dimensions = Object.keys(DIMENSIONS).map((k) => {
-      const meta = DIMENSIONS[k];
-      return {
-        ...meta,
-        count: countsMap[k] || 0
-      };
-    });
+    try {
+      const user = await db.prepare(
+        "SELECT id, nickname, email, bio, avatar_url, avatar_bg, role, github_url, created_at FROM users WHERE id = ? LIMIT 1"
+      ).bind(userId).first<{
+        id: string;
+        nickname: string;
+        email: string;
+        bio: string;
+        avatar_url: string | null;
+        avatar_bg: string;
+        role: string;
+        github_url: string | null;
+        created_at: number;
+      }>();
 
-    return {
-      dimensions,
-      totalArticles: total
-    };
+      if (!user) {
+        return {
+          id: "guest",
+          nickname: "墨客 · 隐者",
+          email: "",
+          bio: "浮生研墨，漫步林泉。",
+          avatar_url: null,
+          avatar_bg: "bg-stone-800",
+          role: "未登入",
+          github_url: null,
+          articleCount: 0,
+          totalWords: "--",
+          daysCount: 0,
+          isGuest: true
+        };
+      }
+
+      // 统计该登录作者的总文章数与估算总字数
+      const stats = await db.prepare(
+        "SELECT count(*) as count, coalesce(sum(length(content)), 0) as total_chars FROM articles WHERE author_id = ? AND is_published = 1"
+      ).bind(userId).first<{ count: number; total_chars: number }>();
+
+      const articleCount = stats?.count || 0;
+      const totalChars = stats?.total_chars || 0;
+      const totalWords = totalChars > 10000 
+        ? (totalChars / 10000).toFixed(1) + "w" 
+        : `${totalChars}`;
+
+      // 耕耘天数：从该用户注册时间算起
+      const now = Math.floor(Date.now() / 1000);
+      const startTimestamp = user.created_at || now;
+      const daysCount = Math.max(1, Math.floor((now - startTimestamp) / 86400));
+
+      return {
+        id: user.id,
+        nickname: user.nickname,
+        email: user.email,
+        bio: user.bio || "浮生研墨，漫步林泉。",
+        avatar_url: user.avatar_url,
+        avatar_bg: user.avatar_bg || "bg-stone-900",
+        role: user.role === "admin" ? "博主管理员" : "研读墨客",
+        github_url: user.github_url,
+        articleCount,
+        totalWords,
+        daysCount,
+        isGuest: false
+      };
+    } catch (e) {
+      console.error("Failed to query author profile:", e);
+      return {
+        id: "guest",
+        nickname: "墨客 · 隐者",
+        email: "",
+        bio: "浮生研墨，漫步林泉。",
+        avatar_url: null,
+        avatar_bg: "bg-stone-800",
+        role: "未登入",
+        github_url: null,
+        articleCount: 0,
+        totalWords: "--",
+        daysCount: 0,
+        isGuest: true
+      };
+    }
   }
 
   /**
-   * 获取所有已发布的专栏专辑列表
+   * 获取七大认知层级各维度的文章篇数统计 (按当前用户或访客)
    */
-  static async getAlbums(db?: D1Database | null): Promise<AlbumItem[]> {
+  static async getCategoryStats(db?: D1Database | null, authorId?: string): Promise<{
+    dimensions: DimensionMeta[];
+    totalArticles: number;
+    isGuest?: boolean;
+  }> {
+    if (!db || !authorId) {
+      const dimensions = Object.keys(DIMENSIONS).map((k) => ({
+        ...DIMENSIONS[k],
+        count: 0
+      }));
+      return {
+        dimensions,
+        totalArticles: 0,
+        isGuest: true
+      };
+    }
+
+    try {
+      const rows = await db.prepare(
+        "SELECT dimension, count(*) as count FROM articles WHERE author_id = ? AND is_published = 1 GROUP BY dimension"
+      ).bind(authorId).all<{ dimension: string; count: number }>();
+
+      const countsMap: Record<string, number> = {};
+      let total = 0;
+      for (const r of rows.results || []) {
+        const norm = normalizeDimension(r.dimension) || r.dimension;
+        countsMap[norm] = (countsMap[norm] || 0) + (r.count || 0);
+        total += (r.count || 0);
+      }
+
+      const dimensions = Object.keys(DIMENSIONS).map((k) => {
+        const meta = DIMENSIONS[k];
+        return {
+          ...meta,
+          count: countsMap[k] || 0
+        };
+      });
+
+      return {
+        dimensions,
+        totalArticles: total,
+        isGuest: false
+      };
+    } catch (e) {
+      console.error("Failed to query category stats:", e);
+      const dimensions = Object.keys(DIMENSIONS).map((k) => ({
+        ...DIMENSIONS[k],
+        count: 0
+      }));
+      return {
+        dimensions,
+        totalArticles: 0,
+        isGuest: true
+      };
+    }
+  }
+
+  /**
+   * 获取专栏专辑列表 (带当前登录用户的文章数量统计)
+   */
+  static async getAlbums(db?: D1Database | null, authorId?: string): Promise<AlbumItem[]> {
     if (!db) return DEFAULT_ALBUMS;
 
     try {
-      const rows = await db.prepare(`
-        SELECT 
-          a.id, a.slug, a.title, a.description, a.cover_image, a.sort_order, a.created_at,
-          count(art.id) as article_count,
-          coalesce(sum(length(art.content)), 0) as total_chars
-        FROM albums a
-        LEFT JOIN articles art ON a.id = art.album_id AND art.is_published = 1
-        WHERE a.is_published = 1
-        GROUP BY a.id
-        ORDER BY a.sort_order ASC, a.created_at DESC
-      `).all<{
-        id: string;
-        slug: string;
-        title: string;
-        description: string | null;
-        cover_image: string | null;
-        sort_order: number;
-        created_at: number;
-        article_count: number;
-        total_chars: number;
-      }>();
+      let rows: any;
+      if (authorId) {
+        // 当前登录用户的专辑统计
+        rows = await db.prepare(`
+          SELECT 
+            a.id, a.slug, a.title, a.description, a.cover_image, a.sort_order, a.created_at,
+            count(art.id) as article_count,
+            coalesce(sum(length(art.content)), 0) as total_chars
+          FROM albums a
+          LEFT JOIN articles art ON a.id = art.album_id AND art.author_id = ? AND art.is_published = 1
+          WHERE a.is_published = 1
+          GROUP BY a.id
+          ORDER BY a.sort_order ASC, a.created_at DESC
+        `).bind(authorId).all();
+      } else {
+        // 未登录访客场景：显示专辑列表，但文章数归零/马赛克化
+        rows = await db.prepare(`
+          SELECT 
+            a.id, a.slug, a.title, a.description, a.cover_image, a.sort_order, a.created_at,
+            0 as article_count,
+            0 as total_chars
+          FROM albums a
+          WHERE a.is_published = 1
+          ORDER BY a.sort_order ASC, a.created_at DESC
+        `).all();
+      }
 
       if (!rows?.results || rows.results.length === 0) {
         return DEFAULT_ALBUMS;
@@ -975,6 +1063,12 @@ export class BlogService {
       const conditions: string[] = ["a.is_published = 1"];
       const params: any[] = [];
 
+      // 0. 作者限定 (当前登录作者专属文章流)
+      if (options.authorId) {
+        conditions.push("a.author_id = ?");
+        params.push(options.authorId);
+      }
+
       // 1. 分类维度过滤 (道心法术器事势)
       if (normDim) {
         conditions.push("(a.dimension = ? OR a.dimension = ?)");
@@ -1012,9 +1106,14 @@ export class BlogService {
       const countRow = await db.prepare(countSql).bind(...params).first<{ total: number }>();
       const total = countRow?.total || 0;
 
-      // 如果数据表中没有任何文章，回退到内置的 18 篇经典体系
-      if (total === 0 && !options.search && !options.albumSlug && !options.date) {
-        return filterFallback();
+      // 如果当前登录作者尚未发表文章，直接返回空结果；访客且全局无文章时回退到内置体系
+      if (total === 0) {
+        if (options.authorId) {
+          return { data: [], total: 0, page: 1, pageSize, totalPages: 1 };
+        }
+        if (!options.search && !options.albumSlug && !options.date) {
+          return filterFallback();
+        }
       }
 
       const totalPages = Math.ceil(total / pageSize) || 1;
@@ -1141,31 +1240,39 @@ export class BlogService {
    * 获取指定年月的每天文章成文打点分布（用于文渊日历月视图）
    */
   static async getCalendarDots(
-    db: D1Database,
-    year: number,
-    month: number // 1-12
+    db?: D1Database | null,
+    year: number = new Date().getFullYear(),
+    month: number = new Date().getMonth() + 1, // 1-12
+    authorId?: string
   ): Promise<Record<string, number>> {
+    if (!db || !authorId) return {};
+
     // 构造月份起止时间戳
     const start = Math.floor(new Date(year, month - 1, 1).getTime() / 1000);
     const end = Math.floor(new Date(year, month, 1).getTime() / 1000) - 1;
 
-    const rows = await db.prepare(`
-      SELECT 
-        strftime('%Y-%m-%d', datetime(created_at, 'unixepoch', 'localtime')) as day_str,
-        count(*) as count
-      FROM articles
-      WHERE is_published = 1 AND created_at >= ? AND created_at <= ?
-      GROUP BY day_str
-    `).bind(start, end).all<{ day_str: string; count: number }>();
+    try {
+      const rows = await db.prepare(`
+        SELECT 
+          strftime('%Y-%m-%d', datetime(created_at, 'unixepoch', 'localtime')) as day_str,
+          count(*) as count
+        FROM articles
+        WHERE author_id = ? AND is_published = 1 AND created_at >= ? AND created_at <= ?
+        GROUP BY day_str
+      `).bind(authorId, start, end).all<{ day_str: string; count: number }>();
 
-    const dots: Record<string, number> = {};
-    for (const r of rows.results || []) {
-      if (r.day_str) {
-        dots[r.day_str] = r.count;
+      const dots: Record<string, number> = {};
+      for (const r of rows.results || []) {
+        if (r.day_str) {
+          dots[r.day_str] = r.count;
+        }
       }
-    }
 
-    return dots;
+      return dots;
+    } catch (e) {
+      console.error('Failed to query calendar dots:', e);
+      return {};
+    }
   }
 
   /**

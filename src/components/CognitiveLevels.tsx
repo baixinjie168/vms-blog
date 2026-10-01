@@ -1,15 +1,17 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-import { Compass } from 'lucide-react';
+import { Compass, Lock } from 'lucide-react';
 import { $filter, filterByCategory } from '../stores/filterStore';
+import { openAuthModal } from '../stores/authStore';
 import type { DimensionMeta } from '../services/blogService';
 
 interface CognitiveLevelsProps {
   dimensions: DimensionMeta[];
   totalArticles: number;
+  isGuest?: boolean;
 }
 
-export default function CognitiveLevels({ dimensions, totalArticles }: CognitiveLevelsProps) {
+export default function CognitiveLevels({ dimensions, totalArticles, isGuest = false }: CognitiveLevelsProps) {
   const filter = useStore($filter);
   const isCategoryMode = filter.mode === 'category' || filter.mode === 'all';
 
@@ -140,7 +142,11 @@ export default function CognitiveLevels({ dimensions, totalArticles }: Cognitive
               isAllActive ? 'opacity-80 text-white' : 'text-stone-400'
             }`}
           >
-            {totalArticles}篇全景
+            {isGuest ? (
+              <span className="blur-[1.5px] select-none opacity-60">-- 篇全景</span>
+            ) : (
+              `${totalArticles}篇全景`
+            )}
           </span>
         </button>
 
@@ -193,12 +199,37 @@ export default function CognitiveLevels({ dimensions, totalArticles }: Cognitive
                   isActive ? visual.activeText : 'text-stone-400'
                 }`}
               >
-                {dim.count || 0}篇
+                {isGuest ? (
+                  <span className="blur-[1.5px] select-none opacity-60">-- 篇</span>
+                ) : (
+                  `${dim.count || 0}篇`
+                )}
               </span>
             </button>
           );
         })}
       </div>
+
+      {/* 底部访客虚化指引 / 哲学导引 */}
+      {isGuest ? (
+        <div className="pt-1.5 border-t border-stone-100 flex items-center justify-between text-[9px] font-serif text-stone-400 flex-shrink-0">
+          <span className="flex items-center gap-1">
+            <Lock className="w-2.5 h-2.5 text-stone-400" />
+            <span>个人体系已虚化</span>
+          </span>
+          <button
+            type="button"
+            onClick={openAuthModal}
+            className="text-limeDark font-bold hover:underline cursor-pointer"
+          >
+            登入查阅专属图谱 →
+          </button>
+        </div>
+      ) : (
+        <div className="pt-1 border-t border-stone-100 text-[9px] font-serif text-stone-400 text-center flex-shrink-0">
+          “道心法术器事势 · 认知闭环”
+        </div>
+      )}
     </div>
   );
 }

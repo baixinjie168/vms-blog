@@ -1,7 +1,9 @@
 import React from 'react';
-import { BookOpen, ArrowRight } from 'lucide-react';
-import { filterByCategory } from '../stores/filterStore';
+import { useStore } from '@nanostores/react';
+import { BookOpen, ArrowRight, PenSquare } from 'lucide-react';
+import { $filter, filterByCategory } from '../stores/filterStore';
 import { openBookReader } from '../stores/readerStore';
+import { openEditor } from '../stores/editorStore';
 import type { ArticleItem } from '../services/blogService';
 
 interface ArticleGridProps {
@@ -15,6 +17,8 @@ export default function ArticleGrid({
   loading = false,
   onOpenArticle,
 }: ArticleGridProps) {
+  const filter = useStore($filter);
+
   const handleCardClick = (article: ArticleItem) => {
     if (onOpenArticle) {
       onOpenArticle(article);
@@ -60,24 +64,43 @@ export default function ArticleGrid({
   }
 
   if (articles.length === 0) {
+    const isFiltered = filter.mode !== 'all' && (filter.category || filter.albumSlug || filter.searchKeyword || filter.date);
+
     return (
       <div
         id="nine-cards-container"
         className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-h-0 content-stretch"
       >
         <div className="col-span-full h-full flex flex-col items-center justify-center text-center p-8 bg-white rounded-2xl border border-stone-200/90 text-stone-400 select-none">
-          <BookOpen className="w-8 h-8 text-stone-300 mb-2" />
-          <p className="font-serif text-sm text-stone-600">此维度下暂无匹配卷帙</p>
-          <p className="font-serif text-xs text-stone-400 mt-1">
-            可尝试清除搜索词或切换到其他认知维度
+          <BookOpen className="w-10 h-10 text-stone-300 mb-3" />
+          <p className="font-serif text-sm font-bold text-stone-800">
+            {isFiltered ? '此维度下暂无匹配卷帙' : '研读长卷虚席以待 · 您的专属空间尚无文章'}
           </p>
-          <button
-            type="button"
-            onClick={() => filterByCategory('all')}
-            className="mt-4 px-4 py-1.5 rounded-xl bg-stone-900 text-white text-xs font-serif hover:bg-stone-800 transition cursor-pointer shadow-xs"
-          >
-            查看全部卷帙
-          </button>
+          <p className="font-serif text-xs text-stone-400 mt-1 max-w-sm">
+            {isFiltered
+              ? '可尝试清除搜索词或切换到其他七维认知层级'
+              : '以道明向，以心修己，以法立律。立即撰写发表属于您的第一篇认知卷帙，装帧成册。'}
+          </p>
+          <div className="flex items-center gap-2 mt-4">
+            {isFiltered ? (
+              <button
+                type="button"
+                onClick={() => filterByCategory('all')}
+                className="px-4 py-1.5 rounded-xl bg-stone-900 text-white text-xs font-serif hover:bg-stone-800 transition cursor-pointer shadow-xs"
+              >
+                查看全部卷帙
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openEditor()}
+                className="px-4 py-1.5 rounded-xl bg-limeBrand hover:bg-limeDark text-white text-xs font-serif font-bold transition cursor-pointer shadow-md shadow-limeBrand/20 flex items-center gap-1.5 active:scale-95"
+              >
+                <PenSquare className="w-3.5 h-3.5" />
+                <span>✍️ 立即开始第一篇创作</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );

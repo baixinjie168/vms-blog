@@ -69,6 +69,14 @@ export default function EditorIsland() {
         isPublished ? '🎉 文章已成功装帧发布！' : '草稿已安全暂存至数据库',
         'success'
       );
+
+      if (isPublished) {
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
+        }, 1200);
+      }
     } catch (err: any) {
       console.warn('Article save fallback:', err);
       showToast(

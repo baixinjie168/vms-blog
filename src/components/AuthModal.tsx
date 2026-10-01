@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useStore } from '@nanostores/react';
+import { $isAuthModalOpen, openAuthModal, closeAuthModal, setCurrentUser } from '../stores/authStore';
 import {
   LogIn,
   UserPlus,
@@ -30,8 +32,23 @@ export default function AuthModal() {
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<UserSession | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const storeIsOpen = useStore($isAuthModalOpen);
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // 同步外部调用 openAuthModal()
+  useEffect(() => {
+    if (storeIsOpen) {
+      setIsOpen(true);
+    }
+  }, [storeIsOpen]);
+
+  const updateModalOpen = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      closeAuthModal();
+    }
+  };
 
   // 弹窗状态：'login' (密码登入) | 'register' (邮箱注册) | 'activation-sent' (激活邮件已发送提示)
   const [activeTab, setActiveTab] = useState<'login' | 'register' | 'activation-sent'>('login');
@@ -127,9 +144,12 @@ export default function AuthModal() {
 
       if (res.ok && data.success) {
         setUser(data.user);
-        setIsOpen(false);
+        setCurrentUser(data.user);
+        updateModalOpen(false);
         setLoginEmail('');
         setLoginPassword('');
+        // 登入成功后刷新页面，由服务端动态渲染该登录用户的专属独白与统计
+        window.location.reload();
       } else if (data.needActivation) {
         setLastSentEmail(data.email || loginEmail);
         setErrorMsg(data.error || '账号尚未完成邮箱激活');
@@ -237,7 +257,9 @@ export default function AuthModal() {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
+      setCurrentUser(null);
       setIsDropdownOpen(false);
+      window.location.reload();
     } catch (e) {
       console.error('Logout error:', e);
     }

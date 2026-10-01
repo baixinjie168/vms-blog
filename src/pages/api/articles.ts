@@ -15,7 +15,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     const pageSize = parseInt(url.searchParams.get('pageSize') || '9', 10);
 
+    const sessionUser = (locals as any)?.user;
+    const authorId = url.searchParams.get('authorId') || (sessionUser ? (sessionUser.id || sessionUser.sub) : undefined);
+
     const result = await BlogService.getArticles(db, {
+      authorId,
       category,
       albumSlug,
       date,
@@ -27,7 +31,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ success: true, ...result }), {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400',
+        'Cache-Control': authorId ? 'private, no-cache' : 'public, max-age=30, s-maxage=60',
       },
     });
   } catch (err: any) {
@@ -61,7 +65,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const summary = plainText.slice(0, 140) + (plainText.length > 140 ? '...' : '');
 
     const now = Math.floor(Date.now() / 1000);
-    const authorId = (locals as any)?.user?.id || 'usr_author_bai';
+    const authorId = (locals as any)?.user?.id || (locals as any)?.user?.sub || 'usr_author_bai';
     const published = is_published ? 1 : 0;
 
     if (db) {

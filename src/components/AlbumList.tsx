@@ -1,14 +1,16 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-import { Layers } from 'lucide-react';
+import { Layers, Lock } from 'lucide-react';
 import { $filter, filterByAlbum } from '../stores/filterStore';
+import { openAuthModal } from '../stores/authStore';
 import type { AlbumItem } from '../services/blogService';
 
 interface AlbumListProps {
   albums: AlbumItem[];
+  isGuest?: boolean;
 }
 
-export default function AlbumList({ albums = [] }: AlbumListProps) {
+export default function AlbumList({ albums = [], isGuest = false }: AlbumListProps) {
   const filter = useStore($filter);
   const isAlbumMode = filter.mode === 'album';
 
@@ -59,7 +61,7 @@ export default function AlbumList({ albums = [] }: AlbumListProps) {
               : 'bg-stone-100 text-stone-600 border border-stone-200/70'
           }`}
         >
-          {isAlbumMode ? '● 专栏筛选中' : `${albums.length} 个深度专题`}
+          {isGuest ? '● 专栏体系' : (isAlbumMode ? '● 专栏筛选中' : `${albums.length} 个深度专题`)}
         </span>
       </div>
 
@@ -110,6 +112,13 @@ export default function AlbumList({ albums = [] }: AlbumListProps) {
                     >
                       {album.status}
                     </span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded border font-medium bg-stone-100/80 text-stone-500 border-stone-200/50">
+                      {isGuest ? (
+                        <span className="blur-[1.5px] select-none text-stone-400">-- 讲</span>
+                      ) : (
+                        `${album.article_count ?? 0} 讲`
+                      )}
+                    </span>
                     {isActive && (
                       <span className="w-1.5 h-1.5 rounded-full bg-limeBrand animate-pulse" />
                     )}
@@ -135,10 +144,26 @@ export default function AlbumList({ albums = [] }: AlbumListProps) {
         })}
       </div>
 
-      {/* 底部伴读说明 */}
-      <div className="pt-1.5 border-t border-stone-100 text-[9px] font-serif text-stone-400 text-center flex-shrink-0">
-        “成册装帧 · 跨卷连读 · 深入系统”
-      </div>
+      {/* 底部伴读说明 / 访客虚化提示 */}
+      {isGuest ? (
+        <div className="pt-1.5 border-t border-stone-100 flex items-center justify-between text-[9px] font-serif text-stone-400 flex-shrink-0">
+          <span className="flex items-center gap-1">
+            <Lock className="w-2.5 h-2.5 text-stone-400" />
+            <span>专栏篇目已虚拟化</span>
+          </span>
+          <button
+            type="button"
+            onClick={openAuthModal}
+            className="text-limeDark font-bold hover:underline cursor-pointer"
+          >
+            登入探索专属专栏 →
+          </button>
+        </div>
+      ) : (
+        <div className="pt-1.5 border-t border-stone-100 text-[9px] font-serif text-stone-400 text-center flex-shrink-0">
+          “成册装帧 · 跨卷连读 · 深入系统”
+        </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ interface TopSlotCardProps {
   authorProfile?: Partial<AuthorProfile>;
   calendarDots?: Record<string, number>;
   daysCount?: number;
+  isGuest?: boolean;
 }
 
 export default function TopSlotCard({
@@ -17,6 +18,7 @@ export default function TopSlotCard({
   authorProfile = {},
   calendarDots = {},
   daysCount = 430,
+  isGuest = false,
 }: TopSlotCardProps) {
   const isSwapped = useStore($isSwapped);
 
@@ -32,5 +34,5 @@ export default function TopSlotCard({
     );
   }
 
-  return <MonologueCard profile={authorProfile} />;
+  return <MonologueCard profile={authorProfile} isGuest={isGuest || authorProfile.isGuest} />;
 }

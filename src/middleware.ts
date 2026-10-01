@@ -14,7 +14,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (token) {
     const payload = await verifyJwt(token, (cfEnv as any)?.JWT_SECRET || undefined);
-    context.locals.user = payload;
+    context.locals.user = payload ? { ...payload, id: payload.sub } : null;
   } else {
     context.locals.user = null;
   }
