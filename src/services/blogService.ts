@@ -187,6 +187,114 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
+export const DEFAULT_ALBUMS: AlbumItem[] = [
+  {
+    id: "alb_qlib",
+    slug: "qlib-quant",
+    title: "Qlib 量化投研全栈实战",
+    description: "从零搭建微软 Qlib 框架本地高频投研环境，系统拆解 Alpha158/360 因子工程挖掘、时序机器学习选股模型与真实回测滑点交易闭环。",
+    cover_image: null,
+    sort_order: 1,
+    articleCount: 8,
+    totalWords: "4.2w 字",
+    sealChar: "量",
+    status: "连载中 · 8讲",
+    created_at: 1750100000,
+    category: "术",
+    catLabel: "术 · 量化"
+  },
+  {
+    id: "alb_life",
+    slug: "late-pregnancy-notes",
+    title: "孕晚期全攻略与注意事项",
+    description: "生命孕育与家庭重大里程碑实录。系统总结 32 周至临产全流程注意事项，涵盖关键产检指标速查、科学数胎动心法、三甲医院待产包极简清单与入出院全动线备忘。",
+    cover_image: null,
+    sort_order: 2,
+    articleCount: 6,
+    totalWords: "2.8w 字",
+    sealChar: "生",
+    status: "已完结 · 6卷",
+    created_at: 1750300000,
+    category: "事",
+    catLabel: "事 · 生命"
+  },
+  {
+    id: "alb_agent",
+    slug: "llm-agent-system",
+    title: "大模型 Agent 架构与系统实践",
+    description: "解构自主 Agent 的核心工作流。探讨从单次 Prompt 到 ReAct 循环、精准工具调用（Tool Use）、动态向量记忆库以及面向复杂任务的多智能体协作实践。",
+    cover_image: null,
+    sort_order: 3,
+    articleCount: 5,
+    totalWords: "3.1w 字",
+    sealChar: "智",
+    status: "连载中 · 5讲",
+    created_at: 1750400000,
+    category: "器",
+    catLabel: "器 · 智能"
+  },
+  {
+    id: "alb_model",
+    slug: "mental-model-systems",
+    title: "第一性原理与抗风险决策系统",
+    description: "融合查理·芒格多元思维模型与塔勒布反脆弱，剥离经验主义幻觉，用物理学第一性原理回归事物本源，构筑个人抗风险决策网络。",
+    cover_image: null,
+    sort_order: 4,
+    articleCount: 7,
+    totalWords: "3.6w 字",
+    sealChar: "律",
+    status: "已完结 · 7卷",
+    created_at: 1750500000,
+    category: "心",
+    catLabel: "心 · 认知"
+  },
+  {
+    id: "alb_arch",
+    slug: "architectural-thinking",
+    title: "架构思辨录：高可用与权衡艺术",
+    description: "大厂复杂系统解耦、高可用演进与核心权衡的真实工程手记。探究分布式事务、领域驱动与系统韧性设计。",
+    cover_image: null,
+    sort_order: 5,
+    articleCount: 6,
+    totalWords: "3.4w 字",
+    sealChar: "构",
+    status: "连载中 · 6讲",
+    created_at: 1750200000,
+    category: "法",
+    catLabel: "法 · 架构"
+  },
+  {
+    id: "alb_fe",
+    slug: "paper-ink-rendering",
+    title: "现代前端与纸墨装帧渲染",
+    description: "消灭无限垂直滚动条！探索基于 CSS Multi-column、DOM 微任务计算的分页渲染算法与 100vh 零长视窗排版。",
+    cover_image: null,
+    sort_order: 6,
+    articleCount: 4,
+    totalWords: "2.1w 字",
+    sealChar: "墨",
+    status: "连载中 · 4讲",
+    created_at: 1750600000,
+    category: "术",
+    catLabel: "术 · 前端"
+  },
+  {
+    id: "alb_growth",
+    slug: "long-term-mindset",
+    title: "长期主义心智跃迁记",
+    description: "向内审视，聚焦习惯回路的生物学重塑与深度心流时间箱。在纷繁复杂的外部噪声中把握底层不变的规律。",
+    cover_image: null,
+    sort_order: 7,
+    articleCount: 5,
+    totalWords: "2.9w 字",
+    sealChar: "跃",
+    status: "已完结 · 5卷",
+    created_at: 1750700000,
+    category: "道",
+    catLabel: "道 · 心智"
+  }
+];
+
 export class BlogService {
   /**
    * 获取博主个人独白名片与全局指标
@@ -273,58 +381,83 @@ export class BlogService {
   /**
    * 获取所有已发布的专栏专辑列表
    */
-  static async getAlbums(db: D1Database): Promise<AlbumItem[]> {
-    const rows = await db.prepare(`
-      SELECT 
-        a.id, a.slug, a.title, a.description, a.cover_image, a.sort_order, a.created_at,
-        count(art.id) as article_count,
-        coalesce(sum(length(art.content)), 0) as total_chars
-      FROM albums a
-      LEFT JOIN articles art ON a.id = art.album_id AND art.is_published = 1
-      WHERE a.is_published = 1
-      GROUP BY a.id
-      ORDER BY a.sort_order ASC, a.created_at DESC
-    `).all<{
-      id: string;
-      slug: string;
-      title: string;
-      description: string | null;
-      cover_image: string | null;
-      sort_order: number;
-      created_at: number;
-      article_count: number;
-      total_chars: number;
-    }>();
+  static async getAlbums(db?: D1Database | null): Promise<AlbumItem[]> {
+    if (!db) return DEFAULT_ALBUMS;
 
-    const sealChars: Record<string, string> = {
-      alb_qlib: "量",
-      alb_arch: "构",
-      alb_life: "生",
-      alb_agent: "智",
-      alb_model: "律",
-      alb_fe: "墨",
-      alb_growth: "跃"
-    };
+    try {
+      const rows = await db.prepare(`
+        SELECT 
+          a.id, a.slug, a.title, a.description, a.cover_image, a.sort_order, a.created_at,
+          count(art.id) as article_count,
+          coalesce(sum(length(art.content)), 0) as total_chars
+        FROM albums a
+        LEFT JOIN articles art ON a.id = art.album_id AND art.is_published = 1
+        WHERE a.is_published = 1
+        GROUP BY a.id
+        ORDER BY a.sort_order ASC, a.created_at DESC
+      `).all<{
+        id: string;
+        slug: string;
+        title: string;
+        description: string | null;
+        cover_image: string | null;
+        sort_order: number;
+        created_at: number;
+        article_count: number;
+        total_chars: number;
+      }>();
 
-    return (rows.results || []).map((r) => {
-      const totalWords = r.total_chars > 10000 
-        ? (r.total_chars / 10000).toFixed(1) + "w 字"
-        : `${Math.round(r.total_chars / 2)} 字`;
+      if (!rows?.results || rows.results.length === 0) {
+        return DEFAULT_ALBUMS;
+      }
 
-      return {
-        id: r.id,
-        slug: r.slug,
-        title: r.title,
-        description: r.description,
-        cover_image: r.cover_image,
-        sort_order: r.sort_order,
-        articleCount: r.article_count || 0,
-        totalWords,
-        sealChar: sealChars[r.id] || r.title.slice(0, 1),
-        status: (r.article_count && r.article_count >= 5) ? `连载中 · ${r.article_count}讲` : "精选专辑",
-        created_at: r.created_at
+      const sealChars: Record<string, string> = {
+        alb_qlib: "量",
+        alb_arch: "构",
+        alb_life: "生",
+        alb_agent: "智",
+        alb_model: "律",
+        alb_fe: "墨",
+        alb_growth: "跃"
       };
-    });
+
+      const catMapping: Record<string, { cat: string; label: string }> = {
+        alb_qlib: { cat: "术", label: "术 · 量化" },
+        alb_arch: { cat: "法", label: "法 · 架构" },
+        alb_life: { cat: "事", label: "事 · 生命" },
+        alb_agent: { cat: "器", label: "器 · 智能" },
+        alb_model: { cat: "心", label: "心 · 认知" },
+        alb_fe: { cat: "术", label: "术 · 前端" },
+        alb_growth: { cat: "道", label: "道 · 心智" },
+      };
+
+      return rows.results.map((r) => {
+        const totalWords = r.total_chars > 10000 
+          ? (r.total_chars / 10000).toFixed(1) + "w 字"
+          : `${Math.round(r.total_chars / 2)} 字`;
+
+        const meta = catMapping[r.id] || { cat: "术", label: "术 · 卷册" };
+
+        return {
+          id: r.id,
+          slug: r.slug,
+          title: r.title,
+          description: r.description,
+          cover_image: r.cover_image,
+          sort_order: r.sort_order,
+          articleCount: r.article_count || 0,
+          totalWords,
+          sealChar: sealChars[r.id] || r.title.slice(0, 1),
+          status: (r.article_count && r.article_count >= 5) ? `连载中 · ${r.article_count}讲` : "精选专辑",
+          created_at: r.created_at,
+          category: meta.cat,
+          catLabel: meta.label,
+        };
+      });
+    } catch (e) {
+      console.error('Failed to query albums, returning fallback:', e);
+      return DEFAULT_ALBUMS;
+    }
   }
 
   /**
