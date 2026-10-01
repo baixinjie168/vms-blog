@@ -29,7 +29,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const annotations = await BlogService.getAnnotations(db, articleId);
 
     return new Response(JSON.stringify({ success: true, data: annotations }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=30, s-maxage=300, stale-while-revalidate=86400',
+      },
     });
   } catch (err: any) {
     return new Response(

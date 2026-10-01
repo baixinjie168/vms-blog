@@ -25,7 +25,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
     });
 
     return new Response(JSON.stringify({ success: true, ...result }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400',
+      },
     });
   } catch (err: any) {
     return new Response(

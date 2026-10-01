@@ -72,13 +72,26 @@ if (db) {
   <Header />
 
   <!-- 页面主体：三栏黄金结构，撑满整屏 (max-w-[1680px], 100vh 零长视窗) -->
-  <main id="view-home" class="max-w-[1680px] mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 w-full flex-1 min-h-0 flex flex-col">
+  <main id="view-home" class="max-w-[1680px] mx-auto px-2.5 sm:px-6 lg:px-8 py-2 sm:py-2.5 w-full flex-1 min-h-0 flex flex-col">
+    <!-- 移动端视图切换胶囊栏 (仅在 lg 以下移动设备与平板显示) -->
+    <div class="flex lg:hidden items-center justify-around bg-white p-1 rounded-xl border border-stone-200/90 shadow-2xs mb-2 flex-shrink-0 text-xs font-serif select-none">
+      <button id="tab-btn-articles" type="button" class="mobile-tab-btn flex-1 py-1.5 px-2 rounded-lg font-bold transition text-center bg-limeLight text-limeDark cursor-pointer">
+        📜 卷帙文章
+      </button>
+      <button id="tab-btn-cognitive" type="button" class="mobile-tab-btn flex-1 py-1.5 px-2 rounded-lg text-stone-600 transition text-center hover:bg-stone-50 cursor-pointer">
+        🧭 七维体系
+      </button>
+      <button id="tab-btn-albums" type="button" class="mobile-tab-btn flex-1 py-1.5 px-2 rounded-lg text-stone-600 transition text-center hover:bg-stone-50 cursor-pointer">
+        📚 专栏专辑
+      </button>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr_305px] xl:grid-cols-[295px_1fr_325px] gap-3 items-stretch h-full min-h-0 flex-1">
       
       <!-- ======================================================== -->
       <!-- 左侧边栏：文渊日历/个人独白(支持对调) + 七大认知层级体系 -->
       <!-- ======================================================== -->
-      <aside class="flex flex-col h-full min-h-0 justify-between gap-2.5 flex-shrink-0">
+      <aside id="col-left" class="hidden lg:flex flex-col h-full min-h-0 justify-between gap-2.5 flex-shrink-0">
         <TopSlotCard
           client:load
           slotPosition="left"
@@ -96,16 +109,18 @@ if (db) {
       <!-- ======================================================== -->
       <!-- 中间主内容区：46px状态条 + 9张装帧卡片 + 38px分页条 (模块五落地) -->
       <!-- ======================================================== -->
-      <CenterColumn
-        client:load
-        initialArticles={initialArticlesResult.data}
-        initialTotal={initialArticlesResult.total}
-      />
+      <div id="col-center" class="flex flex-col min-w-0 h-full min-h-0 justify-between gap-2 flex-1">
+        <CenterColumn
+          client:load
+          initialArticles={initialArticlesResult.data}
+          initialTotal={initialArticlesResult.total}
+        />
+      </div>
 
       <!-- ======================================================== -->
       <!-- 右侧边栏：个人独白/文渊日历(支持对调) + 专栏专辑流 (模块四落地) -->
       <!-- ======================================================== -->
-      <aside class="flex flex-col h-full min-h-0 justify-between gap-2.5 flex-shrink-0">
+      <aside id="col-right" class="hidden lg:flex flex-col h-full min-h-0 justify-between gap-2.5 flex-shrink-0">
         <TopSlotCard
           client:load
           slotPosition="right"
@@ -127,4 +142,39 @@ if (db) {
 
   <!-- 阶段六：富文本创作与双屏实时排版预览客户端岛屿 -->
   <Editor client:load />
+
+  <script>
+    const tabArticles = document.getElementById('tab-btn-articles');
+    const tabCognitive = document.getElementById('tab-btn-cognitive');
+    const tabAlbums = document.getElementById('tab-btn-albums');
+    const colLeft = document.getElementById('col-left');
+    const colCenter = document.getElementById('col-center');
+    const colRight = document.getElementById('col-right');
+
+    function switchMobileTab(activeBtn: HTMLElement | null) {
+      const tabs = [
+        { btn: tabArticles, col: colCenter },
+        { btn: tabCognitive, col: colLeft },
+        { btn: tabAlbums, col: colRight },
+      ];
+
+      tabs.forEach(({ btn, col }) => {
+        if (btn === activeBtn) {
+          btn?.classList.add('bg-limeLight', 'text-limeDark', 'font-bold');
+          btn?.classList.remove('text-stone-600');
+          col?.classList.remove('hidden');
+          col?.classList.add('flex');
+        } else {
+          btn?.classList.remove('bg-limeLight', 'text-limeDark', 'font-bold');
+          btn?.classList.add('text-stone-600');
+          col?.classList.add('hidden');
+          col?.classList.remove('flex');
+        }
+      });
+    }
+
+    tabArticles?.addEventListener('click', () => switchMobileTab(tabArticles));
+    tabCognitive?.addEventListener('click', () => switchMobileTab(tabCognitive));
+    tabAlbums?.addEventListener('click', () => switchMobileTab(tabAlbums));
+  </script>
 </BaseLayout>

@@ -14,7 +14,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     const dots = await BlogService.getCalendarDots(db, year, month);
     return new Response(JSON.stringify({ success: true, year, month, dots }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=300, s-maxage=86400, stale-while-revalidate=604800',
+      },
     });
   } catch (err: any) {
     return new Response(JSON.stringify({ success: false, error: err?.message || 'Failed to fetch calendar dots' }), {

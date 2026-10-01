@@ -27,6 +27,12 @@ export default function BookCanvas({
   const isLastSpread = currentSpreadIndex === totalSpreads - 1;
   const rightPageRef = useRef<HTMLDivElement>(null);
   const bookContainerRef = useRef<HTMLDivElement>(null);
+  const [mobileActiveHalf, setMobileActiveHalf] = useState<'left' | 'right'>('left');
+
+  // 跨度切换时移动端默认显示左半页
+  useEffect(() => {
+    setMobileActiveHalf('left');
+  }, [currentSpreadIndex]);
 
   // 纸张色温材质主题样式
   const themeStyles = {
@@ -166,10 +172,35 @@ export default function BookCanvas({
           </button>
         </div>
 
-        {/* 左半页 (桌面端双页对开) */}
+        {/* 移动端对开单页分段指示器 (仅在 md 以下小屏幕呈现) */}
+        <div className="flex md:hidden items-center justify-center gap-1.5 py-1 px-2 border-b border-stone-200/50 bg-stone-100/40 text-[10px] font-mono select-none w-full flex-shrink-0 z-20">
+          <button
+            type="button"
+            onClick={() => setMobileActiveHalf('left')}
+            className={`px-2.5 py-0.5 rounded cursor-pointer transition ${
+              mobileActiveHalf === 'left' ? 'bg-limeBrand text-white font-bold shadow-2xs' : 'text-stone-500'
+            }`}
+          >
+            左面对开 · P.{spread.leftPageNum}
+          </button>
+          <span className="text-stone-300">|</span>
+          <button
+            type="button"
+            onClick={() => setMobileActiveHalf('right')}
+            className={`px-2.5 py-0.5 rounded cursor-pointer transition ${
+              mobileActiveHalf === 'right' ? 'bg-limeBrand text-white font-bold shadow-2xs' : 'text-stone-500'
+            }`}
+          >
+            右面对开 · P.{spread.rightPageNum}
+          </button>
+        </div>
+
+        {/* 左半页 (桌面端双页对开，移动端根据切换展示) */}
         <div
           id="page-left"
-          className={`hidden md:flex flex-col flex-1 pl-12 pr-6 lg:pl-14 lg:pr-8 pt-6 pb-3 border-r ${themeStyles.pageSpineBorder} left-page-spine relative overflow-hidden select-none`}
+          className={`${
+            mobileActiveHalf === 'left' ? 'flex' : 'hidden'
+          } md:flex flex-col flex-1 pl-12 pr-6 lg:pl-14 lg:pr-8 pt-6 pb-3 border-r ${themeStyles.pageSpineBorder} left-page-spine relative overflow-hidden select-none`}
         >
           <div
             id="content-left"
@@ -193,11 +224,13 @@ export default function BookCanvas({
         {/* 中央书脊仿真折痕 */}
         <div className="hidden md:block w-px bg-stone-300/60 shadow-[0_0_12px_rgba(0,0,0,0.2)] z-10" />
 
-        {/* 右半页 (自适应全宽 / 右对页) */}
+        {/* 右半页 (桌面端双页对开，移动端根据切换展示) */}
         <div
           ref={rightPageRef}
           id="page-right"
-          className="flex flex-col flex-1 pr-12 pl-6 lg:pr-14 lg:pl-8 pt-6 pb-3 right-page-spine relative overflow-hidden select-none"
+          className={`${
+            mobileActiveHalf === 'right' ? 'flex' : 'hidden'
+          } md:flex flex-col flex-1 pr-12 pl-6 lg:pr-14 lg:pl-8 pt-6 pb-3 right-page-spine relative overflow-hidden select-none`}
         >
           <div
             id="content-right"
