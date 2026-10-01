@@ -54,6 +54,17 @@
 .hover-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 9999px; }
 .hover-scrollbar:hover::-webkit-scrollbar-thumb { background: #70C000; }
 
+/* 书籍中央书脊阴影与折痕 */
+.book-spine-shadow {
+  box-shadow: inset 20px 0 25px -12px rgba(0, 0, 0, 0.14), inset -20px 0 25px -12px rgba(0, 0, 0, 0.14);
+}
+.left-page-spine {
+  box-shadow: inset -15px 0 20px -10px rgba(0, 0, 0, 0.12);
+}
+.right-page-spine {
+  box-shadow: inset 15px 0 20px -10px rgba(0, 0, 0, 0.12);
+}
+
 /* 纸墨微纹与排版实用类 */
 body {
   text-rendering: optimizeLegibility;

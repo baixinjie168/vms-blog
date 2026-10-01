@@ -6,6 +6,7 @@ import TopSlotCard from '../components/TopSlotCard';
 import CognitiveLevels from '../components/CognitiveLevels';
 import CenterColumn from '../components/CenterColumn';
 import AlbumList from '../components/AlbumList';
+import BookReader from '../components/BookReader';
 import { BlogService, DIMENSIONS, DEFAULT_ALBUMS, DEFAULT_ARTICLES } from '../services/blogService';
 
 export const prerender = false;
@@ -119,4 +120,7 @@ if (db) {
 
     </div>
   </main>
+
+  <!-- 模块六：实体双页对开翻书阅读器客户端岛屿 (沉浸慢读) -->
+  <BookReader client:load />
 </BaseLayout>

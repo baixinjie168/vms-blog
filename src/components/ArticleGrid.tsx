@@ -1,6 +1,7 @@
 import React from 'react';
 import { BookOpen, ArrowRight } from 'lucide-react';
 import { filterByCategory } from '../stores/filterStore';
+import { openBookReader } from '../stores/readerStore';
 import type { ArticleItem } from '../services/blogService';
 
 interface ArticleGridProps {
@@ -18,11 +19,11 @@ export default function ArticleGrid({
     if (onOpenArticle) {
       onOpenArticle(article);
     } else {
-      // 触发全局阅读事件（供模块六对开阅读器接管）
+      openBookReader(article);
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('vms:open-reader', {
-            detail: { slug: article.slug, id: article.id, title: article.title },
+            detail: { slug: article.slug, id: article.id, title: article.title, article },
           })
         );
       }
