@@ -1,0 +1,204 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { env as cfEnv } from 'cloudflare:workers';
+import { signJwt } from '../../utils/jwt';
+
+export const prerender = false;
+
+const token = Astro.url.searchParams.get('token')?.trim();
+let status: 'success' | 'expired' | 'invalid' = 'invalid';
+let message = '';
+let userProfile: { nickname: string; email: string } | null = null;
+
+if (!token) {
+  status = 'invalid';
+  message = '未检测到有效的激活令牌，请确认链接完整性。';
+} else {
+  try {
+    const env = cfEnv;
+    const now = Math.floor(Date.now() / 1000);
+
+    // 1. 查询激活令牌
+    const record = await env.DB.prepare(
+      'SELECT token, user_id, email, expires_at FROM activation_tokens WHERE token = ? LIMIT 1'
+    ).bind(token).first<{
+      token: string;
+      user_id: string;
+      email: string;
+      expires_at: number;
+    }>();
+
+    if (!record) {
+      // 检查该用户是否之前已经成功激活
+      const alreadyActiveUser = await env.DB.prepare(
+        'SELECT id, email, nickname, is_active FROM users WHERE email = ? LIMIT 1'
+      ).bind(Astro.url.searchParams.get('email') || '').first<{
+        id: string;
+        email: string;
+        nickname: string;
+        is_active: number;
+      }>();
+
+      if (alreadyActiveUser && alreadyActiveUser.is_active === 1) {
+        status = 'success';
+        userProfile = { nickname: alreadyActiveUser.nickname, email: alreadyActiveUser.email };
+        message = '您的账号此前已经完成激活，可直接使用账号密码登入。';
+      } else {
+        status = 'invalid';
+        message = '该激活链接不存在或已被使用。若您尚未激活，请尝试重新发送激活邮件。';
+      }
+    } else if (record.expires_at < now) {
+      status = 'expired';
+      message = '该激活链接已超过 24 小时有效期失效。请返回登录窗口点击重新发送激活邮件。';
+    } else {
+      // 2. 令牌有效：将用户标记为激活状态
+      await env.DB.prepare(
+        'UPDATE users SET is_active = 1, updated_at = ? WHERE id = ?'
+      ).bind(now, record.user_id).run();
+
+      // 3. 阅后即焚清理激活令牌
+      await env.DB.prepare('DELETE FROM activation_tokens WHERE token = ?').bind(token).run();
+
+      // 4. 查询激活后的用户信息
+      const activeUser = await env.DB.prepare(
+        'SELECT id, email, nickname, role, avatar_bg FROM users WHERE id = ? LIMIT 1'
+      ).bind(record.user_id).first<{
+        id: string;
+        email: string;
+        nickname: string;
+        role: 'admin' | 'reader';
+        avatar_bg: string;
+      }>();
+
+      if (activeUser) {
+        userProfile = { nickname: activeUser.nickname, email: activeUser.email };
+        status = 'success';
+        message = '账号激活成功！研读之门已开启，您已自动登入数字花园。';
+
+        // 5. 签发 30 天会话令牌并写入 Cookie，实现激活后无需二次输入直接登入
+        const sessionToken = await signJwt({
+          sub: activeUser.id,
+          email: activeUser.email,
+          nickname: activeUser.nickname,
+          role: activeUser.role,
+          avatar_bg: activeUser.avatar_bg
+        }, (env as any).JWT_SECRET || undefined, 30 * 24 * 3600);
+
+        const isProd = process.env.NODE_ENV === 'production';
+        Astro.cookies.set('vms_session', sessionToken, {
+          path: '/',
+          httpOnly: true,
+          secure: isProd,
+          sameSite: 'lax',
+          maxAge: 30 * 24 * 3600
+        });
+      }
+    }
+  } catch (err: any) {
+    console.error('Activation route error:', err);
+    status = 'invalid';
+    message = '激活服务响应异常，请稍后重试或联系博主管理员。';
+  }
+}
+---
+
+<BaseLayout title={status === 'success' ? '账号激活成功 · VMS' : '账号激活 · VMS'}>
+  <div class="min-h-screen w-full flex items-center justify-center p-4 bg-[#FAF7EE] select-none">
+    <div class="relative max-w-md w-full bg-white border border-[#E5E0D0] rounded-3xl shadow-xl p-8 sm:p-10 text-center animate-in zoom-in-95 duration-200">
+      
+      <!-- 品牌 Logo -->
+      <div class="w-12 h-12 rounded-2xl bg-[#70C000] text-white flex items-center justify-center font-bold text-xl shadow-md border-2 border-white mx-auto mb-4">
+        V
+      </div>
+
+      <div class="text-xs font-mono text-stone-400 mb-2">250258.xyz · 纸墨研读</div>
+
+      {status === 'success' ? (
+        <>
+          <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-2xs">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+
+          <h2 class="text-xl font-serif font-black text-stone-900 mb-2">
+            研读之门已开启
+          </h2>
+
+          <p class="text-xs font-serif text-stone-600 leading-relaxed mb-4">
+            {message}
+          </p>
+
+          {userProfile && (
+            <div class="p-3 bg-[#FAF7EE] border border-[#EBE6D8] rounded-xl text-xs text-stone-700 font-serif mb-6 text-left">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-stone-400">读者昵称：</span>
+                <span class="font-bold text-stone-900">{userProfile.nickname}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-stone-400">注册邮箱：</span>
+                <span class="font-mono text-stone-600">{userProfile.email}</span>
+              </div>
+            </div>
+          )}
+
+          <div class="space-y-3">
+            <a
+              id="btn-go-home"
+              href="/"
+              class="w-full py-2.5 px-4 rounded-xl bg-[#70C000] hover:bg-[#559400] text-white font-serif font-bold text-xs shadow-md transition inline-flex items-center justify-center gap-1.5"
+            >
+              <span>立即漫步数字花园</span>
+              <span id="countdown" class="font-mono text-[11px] opacity-80">(3s)</span>
+            </a>
+          </div>
+
+          <script>
+            let count = 3;
+            const cdEl = document.getElementById('countdown');
+            const timer = setInterval(() => {
+              count--;
+              if (cdEl) cdEl.textContent = `(${count}s)`;
+              if (count <= 0) {
+                clearInterval(timer);
+                window.location.href = '/';
+              }
+            }, 1000);
+          </script>
+        </>
+      ) : (
+        <>
+          <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-4 shadow-2xs">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+
+          <h2 class="text-xl font-serif font-black text-stone-900 mb-2">
+            激活验证未通过
+          </h2>
+
+          <p class="text-xs font-serif text-stone-600 leading-relaxed mb-6">
+            {message}
+          </p>
+
+          <a
+            href="/"
+            class="w-full py-2.5 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-serif font-bold text-xs shadow-md transition inline-flex items-center justify-center"
+          >
+            返回数字花园主页
+          </a>
+        </>
+      )}
+
+      <!-- 底部装帧注脚 -->
+      <div class="mt-8 pt-4 border-t border-[#EBE6D8] text-[11px] text-stone-400 font-serif flex items-center justify-center gap-2">
+        <span>纸墨装帧</span>
+        <span>·</span>
+        <span>静心漫步</span>
+        <span>·</span>
+        <span>无界研读</span>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
