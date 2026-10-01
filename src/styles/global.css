@@ -9,8 +9,21 @@
   --color-lime-light: rgba(112, 192, 0, 0.12);
   --color-limeLight: rgba(112, 192, 0, 0.12);
 
-  /* 朱砂强调色 */
-  --color-vermilion: #C04838;
+  /* 朱砂与青柠主题强调色 (映射自 maorx.cn 青柠系统与朱砂印鉴) */
+  --color-vermilion: #70C000;
+  --color-vermilion-text: #559400;
+  --color-vermilion-dark: #589800;
+  --color-vermilion-light: #88D814;
+  --color-cinnabar: #C04838;
+
+  /* 七大认知层级专属色彩体系 */
+  --color-orient-dao: #3B82F6;
+  --color-orient-xin: #E11D48;
+  --color-orient-fa: #0284C7;
+  --color-orient-shu: #70C000;
+  --color-orient-qi: #7C3AED;
+  --color-orient-matter: #D97706;
+  --color-orient-trend: #059669;
 
   /* 纸张温润色系与背景 */
   --color-paper-bg: #F5F5F7;

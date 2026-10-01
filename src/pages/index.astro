@@ -1,27 +1,103 @@
 ---
+import { env as cfEnv } from 'cloudflare:workers';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
+import CalendarCard from '../components/CalendarCard';
+import CognitiveLevels from '../components/CognitiveLevels';
+import { BlogService, DIMENSIONS } from '../services/blogService';
+
+export const prerender = false;
+
+// 1. 获取 Cloudflare D1 边缘数据库连接
+const db = cfEnv?.DB || (Astro.locals as any)?.runtime?.env?.DB;
+
+// 2. 初始化回退数据（确保构建阶段与无 DB 场景零报错）
+let authorProfile = {
+  id: 'usr_author_bai',
+  nickname: '白心解',
+  email: 'admin@250258.xyz',
+  bio: '以道明向，以心修己，以法立律，以术精工，以器致远，以事立业，以势乘风。',
+  avatar_url: null,
+  avatar_bg: 'bg-stone-900',
+  role: 'admin',
+  github_url: 'https://github.com/baixinjie168',
+  articleCount: 18,
+  totalWords: '34.2w',
+  daysCount: 430,
+};
+
+let categoryStats = {
+  dimensions: Object.values(DIMENSIONS).map((d) => ({ ...d, count: 0 })),
+  totalArticles: 18,
+};
+
+let calendarDots: Record<string, number> = {};
+
+// 3. 服务端动态拉取真实数据
+if (db) {
+  try {
+    const now = new Date();
+    const [profile, catStats, dots] = await Promise.all([
+      BlogService.getAuthorProfile(db),
+      BlogService.getCategoryStats(db),
+      BlogService.getCalendarDots(db, now.getFullYear(), now.getMonth() + 1),
+    ]);
+    authorProfile = profile;
+    categoryStats = catStats;
+    calendarDots = dots;
+  } catch (err) {
+    console.error('Failed to fetch blog data in SSR:', err);
+  }
+}
 ---
 
 <BaseLayout title="VMS · 未鸣时 · 数字花园">
   <!-- 模块二：全站顶栏 (带免密登录与搜索) -->
   <Header />
 
-  <!-- 页面主体工作区 (随着模块三至六逐步替换为完整三栏) -->
-  <main class="flex-1 min-h-0 flex items-center justify-center p-4">
-    <div class="max-w-lg w-full p-8 bg-paperCard rounded-3xl shadow-sm border border-stone-200 text-center select-none">
-      <div class="w-12 h-12 rounded-2xl bg-limeBrand text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-sm border border-white/40">V</div>
-      <h1 class="text-xl font-bold text-stone-900 mb-2 font-serif">VMS · 数字花园</h1>
-      <p class="text-xs text-stone-500 mb-5 font-serif">顶部 Header 已就绪 · 点击右上角「免密登入」即可测试邮箱验证</p>
+  <!-- 页面主体：三栏黄金结构，撑满整屏 (max-w-[1680px], 100vh 零长视窗) -->
+  <main id="view-home" class="max-w-[1680px] mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 w-full flex-1 min-h-0 flex flex-col">
+    <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] xl:grid-cols-[295px_1fr] gap-3 items-stretch h-full min-h-0 flex-1">
       
-      <div class="flex flex-col gap-2 items-center text-xs">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-limeLight text-limeDark font-mono font-medium border border-limeBrand/25">
-          <span>● 模块二：顶栏 & 免密认证弹窗岛屿已挂载</span>
+      <!-- ======================================================== -->
+      <!-- 左侧边栏：文渊日历 + 七大认知层级体系 (模块三落地) -->
+      <!-- ======================================================== -->
+      <aside class="flex flex-col h-full min-h-0 justify-between gap-2.5 flex-shrink-0">
+        <CalendarCard
+          client:load
+          initialDots={calendarDots}
+          daysCount={authorProfile.daysCount}
+        />
+        <CognitiveLevels
+          client:load
+          dimensions={categoryStats.dimensions}
+          totalArticles={categoryStats.totalArticles}
+        />
+      </aside>
+
+      <!-- 中右工作区占位 (将在模块四、五接入右栏专栏与中栏 9 卡片矩阵) -->
+      <section class="h-full min-h-0 bg-white/60 backdrop-blur-xs rounded-2xl border border-stone-200/90 shadow-sm p-6 sm:p-8 flex flex-col items-center justify-center text-center select-none">
+        <div class="max-w-md w-full space-y-4">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-limeLight text-limeDark text-xs font-mono font-medium border border-limeBrand/25">
+            <span>● 模块三已就绪：左侧文渊日历 & 七大认知体系就位</span>
+          </div>
+
+          <h2 class="text-xl font-serif font-bold text-stone-900">
+            七维认知矩阵与时光成文记录
+          </h2>
+          <p class="text-xs text-stone-500 font-serif leading-relaxed">
+            试着点击左侧日历的打点日期或「道、心、法、术、器、事、势」分类，响应式 Store 已全面激活。<br />
+            接下来推进模块四（右栏：独白名片与专栏专辑流）。
+          </p>
+
+          <div class="pt-2 flex items-center justify-center gap-2 text-[11px] font-mono text-stone-400">
+            <span class="px-2 py-0.5 rounded bg-stone-100">左栏已接入 D1 实时聚合</span>
+            <span>➔</span>
+            <span class="px-2 py-0.5 rounded bg-stone-100">待装配：右栏专栏流 (模块四)</span>
+          </div>
         </div>
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paperIvory text-stone-700 text-[11px] font-mono border border-stone-200">
-          <span>⏳ 下一步：装配左栏日历、七维体系与 9 卡片三栏工作台</span>
-        </div>
-      </div>
+      </section>
+
     </div>
   </main>
 </BaseLayout>
