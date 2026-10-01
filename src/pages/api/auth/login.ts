@@ -2,12 +2,15 @@ import type { APIRoute } from "astro";
 import { env as cfEnv } from "cloudflare:workers";
 import { verifyPassword } from "../../../utils/crypto";
 import { signJwt } from "../../../utils/jwt";
+import { ensureAuthSchema } from "../../../utils/dbInit";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     const env = cfEnv;
+    await ensureAuthSchema(env.DB);
+
     const body = await request.json().catch(() => ({}));
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";

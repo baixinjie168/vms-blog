@@ -3,6 +3,7 @@ import { env as cfEnv } from "cloudflare:workers";
 import { generateSecureToken } from "../../../utils/crypto";
 import { renderActivationEmail } from "../../../utils/emailTemplate";
 import { buildEmailMessage } from "../../../utils/emailMessage";
+import { ensureAuthSchema } from "../../../utils/dbInit";
 
 export const prerender = false;
 
@@ -11,6 +12,8 @@ const SENDER_EMAIL = "auth@250258.xyz";
 export const POST: APIRoute = async ({ request }) => {
   try {
     const env = cfEnv;
+    await ensureAuthSchema(env.DB);
+
     const body = await request.json().catch(() => ({}));
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 

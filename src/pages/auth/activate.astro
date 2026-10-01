@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { env as cfEnv } from 'cloudflare:workers';
 import { signJwt } from '../../utils/jwt';
+import { ensureAuthSchema } from '../../utils/dbInit';
 
 export const prerender = false;
 
@@ -16,6 +17,7 @@ if (!token) {
 } else {
   try {
     const env = cfEnv;
+    await ensureAuthSchema(env.DB);
     const now = Math.floor(Date.now() / 1000);
 
     // 1. 查询激活令牌

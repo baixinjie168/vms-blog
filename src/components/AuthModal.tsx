@@ -50,6 +50,7 @@ export default function AuthModal() {
 
   // 通用状态
   const [lastSentEmail, setLastSentEmail] = useState('');
+  const [directActivationUrl, setDirectActivationUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -175,12 +176,16 @@ export default function AuthModal() {
 
       if (res.ok && data.success) {
         setLastSentEmail(regEmail);
+        setDirectActivationUrl(data.activationUrl || null);
         setActiveTab('activation-sent');
         setResendCooldown(60);
         setRegPassword('');
         setRegConfirmPassword('');
       } else {
         setErrorMsg(data.error || '注册失败，请稍后重试');
+        if (data.details) {
+          console.error('Registration details:', data.details);
+        }
       }
     } catch (e) {
       setErrorMsg('注册服务请求异常，请稍后重试');
@@ -209,6 +214,9 @@ export default function AuthModal() {
 
       if (res.ok && data.success) {
         setSuccessMsg('激活邮件已重新投递，请查收');
+        if (data.activationUrl) {
+          setDirectActivationUrl(data.activationUrl);
+        }
         setResendCooldown(60);
         setActiveTab('activation-sent');
       } else {
@@ -562,6 +570,23 @@ export default function AuthModal() {
                   3. 链接有效期为 24 小时。
                 </p>
               </div>
+
+              {directActivationUrl && (
+                <div className="p-3.5 bg-emerald-50/90 border border-emerald-200/80 rounded-xl text-center space-y-2 font-serif animate-in fade-in">
+                  <div className="text-xs font-bold text-emerald-800">
+                    专属研读激活通道已就绪
+                  </div>
+                  <p className="text-[11px] text-stone-600 leading-relaxed">
+                    若您的邮件接收有延迟，可直接点击下方专属按钮一键完成验证：
+                  </p>
+                  <a
+                    href={directActivationUrl}
+                    className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 rounded-lg bg-[#70C000] hover:bg-[#559400] text-white text-xs font-bold shadow-xs transition"
+                  >
+                    <span>立即激活并登入数字花园 &rarr;</span>
+                  </a>
+                </div>
+              )}
 
               <div className="pt-2 flex flex-col gap-2">
                 <button

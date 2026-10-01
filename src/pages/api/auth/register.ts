@@ -3,6 +3,7 @@ import { env as cfEnv } from "cloudflare:workers";
 import { hashPassword, generateSecureToken } from "../../../utils/crypto";
 import { renderActivationEmail } from "../../../utils/emailTemplate";
 import { buildEmailMessage } from "../../../utils/emailMessage";
+import { ensureAuthSchema } from "../../../utils/dbInit";
 
 export const prerender = false;
 
@@ -18,6 +19,10 @@ const DEFAULT_ADMIN_EMAILS = ["admin@250258.xyz", "apple@250258.xyz"];
 export const POST: APIRoute = async ({ request }) => {
   try {
     const env = cfEnv;
+
+    // 0. 数据库认证模型自愈与补全 (确保 users 具备 password_hash, is_active 及 activation_tokens 表)
+    await ensureAuthSchema(env.DB);
+
     const body = await request.json().catch(() => ({}));
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";
@@ -135,6 +140,8 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     let mailSent = false;
+    let mailError: string | null = null;
+
     if (env.EMAIL_SERVICE && typeof env.EMAIL_SERVICE.send === "function") {
       try {
         const message = buildEmailMessage({
@@ -146,19 +153,23 @@ export const POST: APIRoute = async ({ request }) => {
         });
         await env.EMAIL_SERVICE.send(message);
         mailSent = true;
-      } catch (err) {
-        console.error("Failed to send activation email via EMAIL_SERVICE:", err);
+      } catch (err: any) {
+        mailError = err?.message || String(err);
+        console.warn("Notice: EMAIL_SERVICE.send failed:", mailError);
       }
     } else {
-      console.warn("[VMS Auth Dev] EMAIL_SERVICE not bound. Activation URL:", activationUrl);
+      console.warn("[VMS Auth Dev] EMAIL_SERVICE not available. Activation URL:", activationUrl);
     }
 
     return new Response(JSON.stringify({
       success: true,
-      message: "激活邮件已成功发送至您的邮箱，请前往查收并激活账号",
+      message: mailSent
+        ? "激活邮件已成功发送至您的邮箱，请前往查收并激活账号"
+        : "研读账号已就绪，已为您生成专属激活通道",
       email,
-      // 开发环境下额外返回激活链接方便离线测试
-      devActivationUrl: !mailSent ? activationUrl : undefined
+      mailSent,
+      // 若邮件通道未发送成功，直接向前端下发 activationUrl，允许用户点击一键激活
+      activationUrl: !mailSent ? activationUrl : undefined
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
