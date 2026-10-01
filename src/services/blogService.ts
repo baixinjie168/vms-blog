@@ -1167,4 +1167,151 @@ export class BlogService {
 
     return dots;
   }
+
+  /**
+   * 获取指定文章的读者研读批注流
+   */
+  static async getAnnotations(
+    db?: D1Database | null,
+    articleId?: number
+  ): Promise<any[]> {
+    if (!db) {
+      return [
+        {
+          id: 'ann_1',
+          user: '行者三千',
+          avatarBg: 'bg-blue-600',
+          avatarChar: '行',
+          page: '第 1 页',
+          time: '10分钟前',
+          quote: '“道者，令民与上同意也...”',
+          content: '在技术博客里引入孙子兵法的道，将世界观作为第一层级，确实抓住了很多工程师在技术瓶颈期的精神迷茫点，立意深远！',
+          likes: 18,
+          liked: false,
+        },
+        {
+          id: 'ann_2',
+          user: '林深见鹿',
+          avatarBg: 'bg-rose-600',
+          avatarChar: '鹿',
+          page: '第 3 页',
+          time: '1小时前',
+          quote: '“为什么坚决拒绝无尽垂直滚动条？”',
+          content: '太有同感了！现代社交媒体的无限瀑布流让注意力极度支离破碎，实体双对页装帧带来了久违的专注慢读心流。',
+          likes: 24,
+          liked: false,
+        },
+        {
+          id: 'ann_3',
+          user: '白心解',
+          isAuthor: true,
+          avatarBg: 'bg-stone-900',
+          avatarChar: '白',
+          page: '第 3 页',
+          time: '2小时前',
+          quote: '“双页翻书的心流心智模型：边界清晰、呼吸节奏、位置记忆”',
+          content: '这里重点参考了加藤周一的阅读心理学研究，空间位置物理记忆对长期知识沉淀是不可替代的，这也是我坚持做双开本的原因。',
+          likes: 36,
+          liked: true,
+        },
+        {
+          id: 'ann_4',
+          user: '墨客小友',
+          avatarBg: 'bg-[#70C000]',
+          avatarChar: '墨',
+          page: '第 5 页',
+          time: '昨天',
+          quote: '',
+          content: '青柠绿的配色非常舒服干净，翻页动效利落优雅，支持博主长期耕耘！',
+          likes: 9,
+          liked: false,
+        },
+      ];
+    }
+
+    try {
+      const query = articleId
+        ? `SELECT a.*, u.nickname as user_nickname, u.avatar_bg as user_avatar_bg, u.role as user_role
+           FROM annotations a
+           LEFT JOIN users u ON a.user_id = u.id
+           WHERE a.article_id = ?
+           ORDER BY a.is_pinned DESC, a.created_at DESC LIMIT 50`
+        : `SELECT a.*, u.nickname as user_nickname, u.avatar_bg as user_avatar_bg, u.role as user_role
+           FROM annotations a
+           LEFT JOIN users u ON a.user_id = u.id
+           ORDER BY a.is_pinned DESC, a.created_at DESC LIMIT 50`;
+
+      const stmt = articleId ? db.prepare(query).bind(articleId) : db.prepare(query);
+      const rows = await stmt.all<any>();
+
+      return (rows.results || []).map((r) => ({
+        id: r.id,
+        user: r.user_nickname || '墨客读者',
+        avatarBg: r.user_avatar_bg || 'bg-stone-800',
+        avatarChar: (r.user_nickname || '墨').slice(0, 1),
+        isAuthor: r.user_role === 'admin',
+        page: `第 ${r.page_index || 1} 页`,
+        time: new Date(r.created_at * 1000).toLocaleString('zh-CN', {
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+        }),
+        quote: r.quote_text || '',
+        content: r.content,
+        likes: r.likes || 0,
+        liked: false,
+      }));
+    } catch (e) {
+      console.error('Failed to get annotations from D1:', e);
+      return [];
+    }
+  }
+
+  /**
+   * 提交新批注
+   */
+  static async createAnnotation(
+    db: D1Database,
+    data: {
+      articleId: number;
+      userId: string;
+      pageIndex?: number;
+      quoteText?: string;
+      content: string;
+    }
+  ): Promise<any> {
+    const id = `ann_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const now = Math.floor(Date.now() / 1000);
+
+    await db.prepare(`
+      INSERT INTO annotations (id, article_id, user_id, page_index, quote_text, content, likes, is_pinned, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)
+    `).bind(
+      id,
+      data.articleId,
+      data.userId,
+      data.pageIndex || 1,
+      data.quoteText || null,
+      data.content,
+      now
+    ).run();
+
+    return { id, created_at: now };
+  }
+
+  /**
+   * 点赞批注
+   */
+  static async likeAnnotation(db: D1Database, annotationId: string): Promise<number> {
+    await db.prepare(`
+      UPDATE annotations SET likes = likes + 1 WHERE id = ?
+    `).bind(annotationId).run();
+
+    const row = await db.prepare(`
+      SELECT likes FROM annotations WHERE id = ?
+    `).bind(annotationId).first<{ likes: number }>();
+
+    return row?.likes ?? 1;
+  }
 }

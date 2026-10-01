@@ -556,7 +556,7 @@ export function setPaperTheme(theme: PaperTheme) {
 }
 
 // 点赞评论
-export function likeComment(commentId: number) {
+export function likeComment(commentId: number | string) {
   const comments = [...$reader.get().comments];
   const idx = comments.findIndex((c) => c.id === commentId);
   if (idx !== -1) {
@@ -568,6 +568,14 @@ export function likeComment(commentId: number) {
       likes: item.likes + (liked ? 1 : -1),
     };
     $reader.setKey('comments', comments);
+
+    if (typeof window !== 'undefined' && liked) {
+      fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'like', annotationId: String(commentId) }),
+      }).catch(() => {});
+    }
   }
 }
 
@@ -580,7 +588,7 @@ export function addComment(commentData: {
   avatarChar?: string;
   isAuthor?: boolean;
 }) {
-  const { currentSpreadIndex, spreads, comments } = $reader.get();
+  const { article, currentSpreadIndex, spreads, comments } = $reader.get();
   const spread = spreads[currentSpreadIndex] || spreads[0];
 
   const newComment: ReaderComment = {
@@ -598,4 +606,17 @@ export function addComment(commentData: {
   };
 
   $reader.setKey('comments', [newComment, ...comments]);
+
+  if (typeof window !== 'undefined') {
+    fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        articleId: article?.id || 1,
+        pageIndex: currentSpreadIndex + 1,
+        quoteText: commentData.quote,
+        content: commentData.content,
+      }),
+    }).catch(() => {});
+  }
 }
