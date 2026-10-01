@@ -4,8 +4,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import TopSlotCard from '../components/TopSlotCard';
 import CognitiveLevels from '../components/CognitiveLevels';
+import CenterColumn from '../components/CenterColumn';
 import AlbumList from '../components/AlbumList';
-import { BlogService, DIMENSIONS, DEFAULT_ALBUMS } from '../services/blogService';
+import { BlogService, DIMENSIONS, DEFAULT_ALBUMS, DEFAULT_ARTICLES } from '../services/blogService';
 
 export const prerender = false;
 
@@ -34,21 +35,30 @@ let categoryStats = {
 
 let calendarDots: Record<string, number> = {};
 let albums = DEFAULT_ALBUMS;
+let initialArticlesResult = {
+  data: DEFAULT_ARTICLES.slice(0, 9),
+  total: DEFAULT_ARTICLES.length,
+  page: 1,
+  pageSize: 9,
+  totalPages: Math.ceil(DEFAULT_ARTICLES.length / 9),
+};
 
 // 3. 服务端动态拉取真实数据
 if (db) {
   try {
     const now = new Date();
-    const [profile, catStats, dots, albumList] = await Promise.all([
+    const [profile, catStats, dots, albumList, articlesRes] = await Promise.all([
       BlogService.getAuthorProfile(db),
       BlogService.getCategoryStats(db),
       BlogService.getCalendarDots(db, now.getFullYear(), now.getMonth() + 1),
       BlogService.getAlbums(db),
+      BlogService.getArticles(db, { page: 1, pageSize: 9 }),
     ]);
     authorProfile = profile;
     categoryStats = catStats;
     calendarDots = dots;
     albums = albumList;
+    initialArticlesResult = articlesRes;
   } catch (err) {
     console.error('Failed to fetch blog data in SSR:', err);
   }
@@ -82,32 +92,13 @@ if (db) {
       </aside>
 
       <!-- ======================================================== -->
-      <!-- 中间主内容区 (等待模块五：46px状态条 + 9卡片矩阵 + 38px分页条) -->
+      <!-- 中间主内容区：46px状态条 + 9张装帧卡片 + 38px分页条 (模块五落地) -->
       <!-- ======================================================== -->
-      <section class="h-full min-h-0 bg-white/60 backdrop-blur-xs rounded-2xl border border-stone-200/90 shadow-sm p-6 sm:p-8 flex flex-col items-center justify-center text-center select-none">
-        <div class="max-w-md w-full space-y-4">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-limeLight text-limeDark text-xs font-mono font-medium border border-limeBrand/25">
-            <span>● 模块四已就绪：右栏独白名片 & 专栏专辑流就位</span>
-          </div>
-
-          <h2 class="text-xl font-serif font-bold text-stone-900">
-            七维认知矩阵 × 7大专栏专辑已联动
-          </h2>
-          <p class="text-xs text-stone-500 font-serif leading-relaxed">
-            左栏与右栏已完整组装！左右卡片支持一键位置互换并持久记忆。<br />
-            点击左侧七维分类或右侧专栏专辑，两大筛选大项与响应式 Store 完美互斥联动。<br />
-            接下来推进模块五（中栏 46px 状态条、9 张装帧卡片与分页控制条）。
-          </p>
-
-          <div class="pt-2 flex items-center justify-center gap-2 text-[11px] font-mono text-stone-400">
-            <span class="px-2 py-0.5 rounded bg-stone-100 text-stone-600">左栏 (日历+七维)</span>
-            <span>+</span>
-            <span class="px-2 py-0.5 rounded bg-limeLight text-limeDark border border-limeBrand/20">右栏 (独白+专辑)</span>
-            <span>➔</span>
-            <span class="px-2 py-0.5 rounded bg-stone-100">待装配：中栏 9 卡片 (模块五)</span>
-          </div>
-        </div>
-      </section>
+      <CenterColumn
+        client:load
+        initialArticles={initialArticlesResult.data}
+        initialTotal={initialArticlesResult.total}
+      />
 
       <!-- ======================================================== -->
       <!-- 右侧边栏：个人独白/文渊日历(支持对调) + 专栏专辑流 (模块四落地) -->

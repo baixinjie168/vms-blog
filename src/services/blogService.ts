@@ -295,6 +295,477 @@ export const DEFAULT_ALBUMS: AlbumItem[] = [
   }
 ];
 
+export const DEFAULT_ARTICLES: ArticleItem[] = [
+  {
+    id: 1,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "building-long-term-digital-garden",
+    title: "构建长期主义数字花园：从信息投喂到终极意义探索",
+    summary: "世界观、价值观与人生终局探寻。在算法投喂的汪洋中，锚定自己存在的根本意义，抵御精神熵增...",
+    cover_image: null,
+    dimension: "dao",
+    dimensionChar: "道",
+    dimensionName: "道 · 我为什么活？",
+    dimensionQuestion: "我为什么活？",
+    dimensionScope: "世界观 · 价值观 · 意义",
+    dimensionColor: "#8C5A2B",
+    dimensionBg: "bg-[#8C5A2B]/15",
+    dimensionBorder: "border-[#8C5A2B]/30",
+    album_id: "alb_growth",
+    album_slug: "long-term-mindset",
+    album_title: "长期主义心智跃迁记",
+    read_time: 8,
+    word_count: "2,840字",
+    views: 342,
+    published_at: 1790380800,
+    created_at: 1790380800,
+    date_str: "2026-09-26"
+  },
+  {
+    id: 2,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "flow-and-emotional-discipline",
+    title: "心流与情绪自律：在信息躁动时代重塑内在秩序",
+    summary: "认知觉察、情绪掌控与自律意志磨砺。向内审视，清楚自己的边界与脾性，在浮华中保持澄澈心性...",
+    cover_image: null,
+    dimension: "xin",
+    dimensionChar: "心",
+    dimensionName: "心 · 我是什么样的人？",
+    dimensionQuestion: "我是什么样的人？",
+    dimensionScope: "认知 · 情绪 · 人格自律",
+    dimensionColor: "#A03C32",
+    dimensionBg: "bg-[#A03C32]/15",
+    dimensionBorder: "border-[#A03C32]/30",
+    album_id: "alb_growth",
+    album_slug: "long-term-mindset",
+    album_title: "长期主义心智跃迁记",
+    read_time: 9,
+    word_count: "3,210字",
+    views: 289,
+    published_at: 1789948800,
+    created_at: 1789948800,
+    date_str: "2026-09-21"
+  },
+  {
+    id: 3,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "zero-scroll-paper-ink-design-system",
+    title: "基于有限视窗的无滚动翻页设计系统：解构纸墨心流",
+    summary: "方法论、底层原则与决策模型。借鉴实体书印张与双对页系统，在数字交互中构建从容阅读规则范式...",
+    cover_image: null,
+    dimension: "fa",
+    dimensionChar: "法",
+    dimensionName: "法 · 我如何做事？",
+    dimensionQuestion: "我如何做事？",
+    dimensionScope: "方法论 · 原则 · 决策系统",
+    dimensionColor: "#3B6E8C",
+    dimensionBg: "bg-[#3B6E8C]/15",
+    dimensionBorder: "border-[#3B6E8C]/30",
+    album_id: "alb_fe",
+    album_slug: "paper-ink-rendering",
+    album_title: "现代前端与纸墨装帧渲染",
+    read_time: 12,
+    word_count: "3,500字",
+    views: 512,
+    published_at: 1789689600,
+    created_at: 1789689600,
+    date_str: "2026-09-18"
+  },
+  {
+    id: 4,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "css-multi-column-and-page-break",
+    title: "CSS Multi-column 与 Page Break 翻书调优实战工法",
+    summary: "专业编程技能与排版工法实践。深入剖析纯 CSS 与 DOM 计算的分页算法细节，消灭无限长滚动条...",
+    cover_image: null,
+    dimension: "shu",
+    dimensionChar: "术",
+    dimensionName: "术 · 我具体怎么做？",
+    dimensionQuestion: "我具体怎么做？",
+    dimensionScope: "专业技能 · 架构 · 编程管理",
+    dimensionColor: "#4A7C59",
+    dimensionBg: "bg-[#4A7C59]/15",
+    dimensionBorder: "border-[#4A7C59]/30",
+    album_id: "alb_fe",
+    album_slug: "paper-ink-rendering",
+    album_title: "现代前端与纸墨装帧渲染",
+    read_time: 10,
+    word_count: "3,100字",
+    views: 420,
+    published_at: 1788998400,
+    created_at: 1788998400,
+    date_str: "2026-09-15"
+  },
+  {
+    id: 5,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "quiet-digital-arsenal-2026",
+    title: "打造极致安静的数字武器库：我的软硬件与 AI 装备 2026",
+    summary: "利器工具、AI技术协同与生产力装备。精简配置清单，去除噪音干扰，构建本地优先的数字武器库...",
+    cover_image: null,
+    dimension: "qi",
+    dimensionChar: "器",
+    dimensionName: "器 · 我用什么做？",
+    dimensionQuestion: "我用什么做？",
+    dimensionScope: "工具 · 技术 · AI · 软件资源",
+    dimensionColor: "#6B5B95",
+    dimensionBg: "bg-[#6B5B95]/15",
+    dimensionBorder: "border-[#6B5B95]/30",
+    album_id: "alb_agent",
+    album_slug: "llm-agent-system",
+    album_title: "大模型 Agent 架构与系统实践",
+    read_time: 7,
+    word_count: "2,600字",
+    views: 310,
+    published_at: 1788566400,
+    created_at: 1788566400,
+    date_str: "2026-09-10"
+  },
+  {
+    id: 6,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "from-input-to-output-tangible-works",
+    title: "从输入到产出：将零散思绪装帧成可传承的真实作品",
+    summary: "工作事业、数字作品构建与社会价值沉淀。拒绝空谈理论，通过持续的书写与交付，创造切实的成果与财富...",
+    cover_image: null,
+    dimension: "shi_matter",
+    dimensionChar: "事",
+    dimensionName: "事 · 我实际创造什么？",
+    dimensionQuestion: "我实际创造什么？",
+    dimensionScope: "工作事业 · 作品财富 · 贡献",
+    dimensionColor: "#B8860B",
+    dimensionBg: "bg-[#B8860B]/15",
+    dimensionBorder: "border-[#B8860B]/30",
+    album_id: "alb_growth",
+    album_slug: "long-term-mindset",
+    album_title: "长期主义心智跃迁记",
+    read_time: 10,
+    word_count: "3,200字",
+    views: 395,
+    published_at: 1787875200,
+    created_at: 1787875200,
+    date_str: "2026-09-05"
+  },
+  {
+    id: 7,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "ai-era-knowledge-assets-and-cycles",
+    title: "以势乘风：探究 AI 时代个人知识资产与行业周期的重塑",
+    summary: "时代浪潮、技术脉搏与宏观周期顺应。在智能重塑的洪流中，因势利导，借助时代杠杆放大个体价值...",
+    cover_image: null,
+    dimension: "shi_trend",
+    dimensionChar: "势",
+    dimensionName: "势 · 我如何借势？",
+    dimensionQuestion: "我如何借势？",
+    dimensionScope: "时代浪潮 · 行业技术 · 人脉",
+    dimensionColor: "#2E8B57",
+    dimensionBg: "bg-[#2E8B57]/15",
+    dimensionBorder: "border-[#2E8B57]/30",
+    album_id: "alb_model",
+    album_slug: "mental-model-systems",
+    album_title: "第一性原理与抗风险决策系统",
+    read_time: 11,
+    word_count: "3,800字",
+    views: 460,
+    published_at: 1786752000,
+    created_at: 1786752000,
+    date_str: "2026-08-30"
+  },
+  {
+    id: 8,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "revisiting-common-sense-principles",
+    title: "重识常识：在纷繁复杂的噪声中把握底层不变的事物",
+    summary: "越是剧烈变革的时代，不变的底层常识越具威力。梳理哲学常识与终局视角，为所有决策建立稳固基底...",
+    cover_image: null,
+    dimension: "dao",
+    dimensionChar: "道",
+    dimensionName: "道 · 我为什么活？",
+    dimensionQuestion: "我为什么活？",
+    dimensionScope: "世界观 · 价值观 · 意义",
+    dimensionColor: "#8C5A2B",
+    dimensionBg: "bg-[#8C5A2B]/15",
+    dimensionBorder: "border-[#8C5A2B]/30",
+    album_id: "alb_model",
+    album_slug: "mental-model-systems",
+    album_title: "第一性原理与抗风险决策系统",
+    read_time: 7,
+    word_count: "2,500字",
+    views: 275,
+    published_at: 1785628800,
+    created_at: 1785628800,
+    date_str: "2026-08-25"
+  },
+  {
+    id: 9,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "first-principles-and-decision-trees",
+    title: "第一性原理与决策树：如何建立抗风险的思维模型",
+    summary: "从单点攻坚到抽象原则沉淀。解构马斯克第一性原理在个人知识工程与软件架构中的落地路径与闭环...",
+    cover_image: null,
+    dimension: "fa",
+    dimensionChar: "法",
+    dimensionName: "法 · 我如何做事？",
+    dimensionQuestion: "我如何做事？",
+    dimensionScope: "方法论 · 原则 · 决策系统",
+    dimensionColor: "#3B6E8C",
+    dimensionBg: "bg-[#3B6E8C]/15",
+    dimensionBorder: "border-[#3B6E8C]/30",
+    album_id: "alb_model",
+    album_slug: "mental-model-systems",
+    album_title: "第一性原理与抗风险决策系统",
+    read_time: 9,
+    word_count: "3,000字",
+    views: 380,
+    published_at: 1784505600,
+    created_at: 1784505600,
+    date_str: "2026-08-20"
+  },
+  {
+    id: 10,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "biological-remodeling-of-habit-loops",
+    title: "习惯回路的生物学重塑：微习惯如何撼动长期意志",
+    summary: "多巴胺奖励回路与微小阻力设计。在无声的微小行动中积蓄意志力复利，重构日常行为自动化系统...",
+    cover_image: null,
+    dimension: "xin",
+    dimensionChar: "心",
+    dimensionName: "心 · 我是什么样的人？",
+    dimensionQuestion: "我是什么样的人？",
+    dimensionScope: "认知 · 情绪 · 人格自律",
+    dimensionColor: "#A03C32",
+    dimensionBg: "bg-[#A03C32]/15",
+    dimensionBorder: "border-[#A03C32]/30",
+    album_id: "alb_growth",
+    album_slug: "long-term-mindset",
+    album_title: "长期主义心智跃迁记",
+    read_time: 8,
+    word_count: "2,900字",
+    views: 330,
+    published_at: 1783814400,
+    created_at: 1783814400,
+    date_str: "2026-08-15"
+  },
+  {
+    id: 11,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "modern-frontend-rendering-performance",
+    title: "现代前端性能调优精义：从 DOM 渲染树到 GPU 离屏合成",
+    summary: "重绘回流本质探究与 60FPS 顺滑体验实践。将复杂的排版计算推至微任务与 WebWorker，消除页面卡顿...",
+    cover_image: null,
+    dimension: "shu",
+    dimensionChar: "术",
+    dimensionName: "术 · 我具体怎么做？",
+    dimensionQuestion: "我具体怎么做？",
+    dimensionScope: "专业技能 · 架构 · 编程管理",
+    dimensionColor: "#4A7C59",
+    dimensionBg: "bg-[#4A7C59]/15",
+    dimensionBorder: "border-[#4A7C59]/30",
+    album_id: "alb_fe",
+    album_slug: "paper-ink-rendering",
+    album_title: "现代前端与纸墨装帧渲染",
+    read_time: 11,
+    word_count: "3,600字",
+    views: 410,
+    published_at: 1782345600,
+    created_at: 1782345600,
+    date_str: "2026-08-10"
+  },
+  {
+    id: 12,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "local-first-llm-private-knowledge-vault",
+    title: "本地优先与端侧 LLM：构建永不失联的私有知识底座",
+    summary: "用 Ollama 本地运行开源模型，结合 SQLite-vec 向量检索，搭建断网可用的个人第二大脑与知识沉淀室...",
+    cover_image: null,
+    dimension: "qi",
+    dimensionChar: "器",
+    dimensionName: "器 · 我用什么做？",
+    dimensionQuestion: "我用什么做？",
+    dimensionScope: "工具 · 技术 · AI · 软件资源",
+    dimensionColor: "#6B5B95",
+    dimensionBg: "bg-[#6B5B95]/15",
+    dimensionBorder: "border-[#6B5B95]/30",
+    album_id: "alb_agent",
+    album_slug: "llm-agent-system",
+    album_title: "大模型 Agent 架构与系统实践",
+    read_time: 7,
+    word_count: "2,700字",
+    views: 290,
+    published_at: 1781395200,
+    created_at: 1781395200,
+    date_str: "2026-08-05"
+  },
+  {
+    id: 13,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "indie-product-commercialization-learnings",
+    title: "独立产品的商业化闭环：从小切口到高复购的交付心得",
+    summary: "拒绝虚荣指标，聚焦真实买单意愿与现金流。从痛点验证、MVP开发到定价策略的独立开发全复盘...",
+    cover_image: null,
+    dimension: "shi_matter",
+    dimensionChar: "事",
+    dimensionName: "事 · 我实际创造什么？",
+    dimensionQuestion: "我实际创造什么？",
+    dimensionScope: "工作事业 · 作品财富 · 贡献",
+    dimensionColor: "#B8860B",
+    dimensionBg: "bg-[#B8860B]/15",
+    dimensionBorder: "border-[#B8860B]/30",
+    album_id: "alb_growth",
+    album_slug: "long-term-mindset",
+    album_title: "长期主义心智跃迁记",
+    read_time: 13,
+    word_count: "4,100字",
+    views: 530,
+    published_at: 1780099200,
+    created_at: 1780099200,
+    date_str: "2026-07-28"
+  },
+  {
+    id: 14,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "macro-liquidity-and-k-waves",
+    title: "宏观流动性与科技康波周期：个人资本配置的借势心法",
+    summary: "理解全球流动性潮汐与算力周期的互哺。不做逆风狂徒，因应宏观周期调整个人职业杠杆与资产组合...",
+    cover_image: null,
+    dimension: "shi_trend",
+    dimensionChar: "势",
+    dimensionName: "势 · 我如何借势？",
+    dimensionQuestion: "我如何借势？",
+    dimensionScope: "时代浪潮 · 行业技术 · 人脉",
+    dimensionColor: "#2E8B57",
+    dimensionBg: "bg-[#2E8B57]/15",
+    dimensionBorder: "border-[#2E8B57]/30",
+    album_id: "alb_model",
+    album_slug: "mental-model-systems",
+    album_title: "第一性原理与抗风险决策系统",
+    read_time: 11,
+    word_count: "3,700字",
+    views: 480,
+    published_at: 1779062400,
+    created_at: 1779062400,
+    date_str: "2026-07-20"
+  },
+  {
+    id: 15,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "being-towards-death-and-ultimate-calm",
+    title: "向死而生与终极豁达：在有限生命中寻求自洽与宁静",
+    summary: "海德格尔与斯多葛哲学的个人回响。正视肉身的有限性，将每一天视作独立的完整乐章，回归质朴从容...",
+    cover_image: null,
+    dimension: "dao",
+    dimensionChar: "道",
+    dimensionName: "道 · 我为什么活？",
+    dimensionQuestion: "我为什么活？",
+    dimensionScope: "世界观 · 价值观 · 意义",
+    dimensionColor: "#8C5A2B",
+    dimensionBg: "bg-[#8C5A2B]/15",
+    dimensionBorder: "border-[#8C5A2B]/30",
+    album_id: "alb_growth",
+    album_slug: "long-term-mindset",
+    album_title: "长期主义心智跃迁记",
+    read_time: 8,
+    word_count: "2,800字",
+    views: 305,
+    published_at: 1777680000,
+    created_at: 1777680000,
+    date_str: "2026-07-15"
+  },
+  {
+    id: 16,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "cultivating-psychological-resilience-notes",
+    title: "钝感力修炼札记：将外界评判转化为纯粹能量的心理防线",
+    summary: "戒掉情绪内耗与讨好型人格。在纷繁的外部喧嚣中建立心理防火墙，把注意力集中在自己的创作与成长中...",
+    cover_image: null,
+    dimension: "xin",
+    dimensionChar: "心",
+    dimensionName: "心 · 我是什么样的人？",
+    dimensionQuestion: "我是什么样的人？",
+    dimensionScope: "认知 · 情绪 · 人格自律",
+    dimensionColor: "#A03C32",
+    dimensionBg: "bg-[#A03C32]/15",
+    dimensionBorder: "border-[#A03C32]/30",
+    album_id: "alb_growth",
+    album_slug: "long-term-mindset",
+    album_title: "长期主义心智跃迁记",
+    read_time: 9,
+    word_count: "3,100字",
+    views: 340,
+    published_at: 1776643200,
+    created_at: 1776643200,
+    date_str: "2026-07-10"
+  },
+  {
+    id: 17,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "qlib-factor-mining-alpha158",
+    title: "Qlib 因子挖掘工程：Alpha158 在 A 股量化中的实战调优",
+    summary: "从零搭建本地量化沙盒，深度解析 Alpha158/360 因子有效性衰减检验与时序模型调优...",
+    cover_image: null,
+    dimension: "shu",
+    dimensionChar: "术",
+    dimensionName: "术 · 我具体怎么做？",
+    dimensionQuestion: "我具体怎么做？",
+    dimensionScope: "专业技能 · 架构 · 编程管理",
+    dimensionColor: "#4A7C59",
+    dimensionBg: "bg-[#4A7C59]/15",
+    dimensionBorder: "border-[#4A7C59]/30",
+    album_id: "alb_qlib",
+    album_slug: "qlib-quant",
+    album_title: "Qlib 量化投研全栈实战",
+    read_time: 14,
+    word_count: "4,500字",
+    views: 680,
+    published_at: 1775347200,
+    created_at: 1775347200,
+    date_str: "2026-07-05"
+  },
+  {
+    id: 18,
+    author_id: "usr_author_bai",
+    author_nickname: "白心解",
+    slug: "late-pregnancy-checklist-and-birth-plan",
+    title: "三甲医院极简待产包与孕晚期核心产检解读",
+    summary: "剔除 80% 智商税鸡肋单品，科学数胎动心法与临产征兆大辨析，守护家庭新生命的诞生...",
+    cover_image: null,
+    dimension: "shi_matter",
+    dimensionChar: "事",
+    dimensionName: "事 · 我实际创造什么？",
+    dimensionQuestion: "我实际创造什么？",
+    dimensionScope: "工作事业 · 作品财富 · 贡献",
+    dimensionColor: "#B8860B",
+    dimensionBg: "bg-[#B8860B]/15",
+    dimensionBorder: "border-[#B8860B]/30",
+    album_id: "alb_life",
+    album_slug: "late-pregnancy-notes",
+    album_title: "孕晚期全攻略与注意事项",
+    read_time: 12,
+    word_count: "3,800字",
+    views: 520,
+    published_at: 1774742400,
+    created_at: 1774742400,
+    date_str: "2026-06-28"
+  }
+];
+
 export class BlogService {
   /**
    * 获取博主个人独白名片与全局指标
@@ -464,114 +935,153 @@ export class BlogService {
    * 多维度复合检索文章（按分类/专辑/日期/关键字），支持固定每页 9 篇
    */
   static async getArticles(
-    db: D1Database,
+    db?: D1Database | null,
     options: ArticleQueryOptions = {}
   ): Promise<PaginatedResult<ArticleItem>> {
     const page = Math.max(1, options.page || 1);
     const pageSize = options.pageSize || 9;
     const offset = (page - 1) * pageSize;
-
-    const conditions: string[] = ["a.is_published = 1"];
-    const params: any[] = [];
-
-    // 1. 分类维度过滤 (道心法术器事势)
     const normDim = normalizeDimension(options.category);
-    if (normDim) {
-      conditions.push("(a.dimension = ? OR a.dimension = ?)");
-      params.push(normDim, DIMENSIONS[normDim]?.char || normDim);
+
+    const filterFallback = () => {
+      let filtered = [...DEFAULT_ARTICLES];
+      if (normDim) {
+        filtered = filtered.filter((a) => a.dimension === normDim || a.dimensionChar === options.category);
+      }
+      if (options.albumSlug) {
+        filtered = filtered.filter((a) => a.album_slug === options.albumSlug);
+      }
+      if (options.date) {
+        filtered = filtered.filter((a) => a.date_str === options.date);
+      }
+      if (options.search) {
+        const q = options.search.toLowerCase();
+        filtered = filtered.filter((a) =>
+          a.title.toLowerCase().includes(q) ||
+          (a.summary && a.summary.toLowerCase().includes(q))
+        );
+      }
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / pageSize) || 1;
+      const data = filtered.slice(offset, offset + pageSize);
+      return { data, total, page, pageSize, totalPages };
+    };
+
+    if (!db) {
+      return filterFallback();
     }
 
-    // 2. 专栏专辑过滤
-    if (options.albumSlug) {
-      conditions.push("alb.slug = ?");
-      params.push(options.albumSlug.trim());
-    }
+    try {
+      const conditions: string[] = ["a.is_published = 1"];
+      const params: any[] = [];
 
-    // 3. 日期过滤 (YYYY-MM-DD)
-    if (options.date) {
-      conditions.push("strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) = ?");
-      params.push(options.date.trim());
-    }
+      // 1. 分类维度过滤 (道心法术器事势)
+      if (normDim) {
+        conditions.push("(a.dimension = ? OR a.dimension = ?)");
+        params.push(normDim, DIMENSIONS[normDim]?.char || normDim);
+      }
 
-    // 4. 关键字搜索
-    if (options.search) {
-      const term = `%${options.search.trim()}%`;
-      conditions.push("(a.title LIKE ? OR a.summary LIKE ? OR a.content LIKE ?)");
-      params.push(term, term, term);
-    }
+      // 2. 专栏专辑过滤
+      if (options.albumSlug) {
+        conditions.push("alb.slug = ?");
+        params.push(options.albumSlug.trim());
+      }
 
-    const whereClause = conditions.join(" AND ");
+      // 3. 日期过滤 (YYYY-MM-DD)
+      if (options.date) {
+        conditions.push("strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) = ?");
+        params.push(options.date.trim());
+      }
 
-    // 统计总数
-    const countSql = `
-      SELECT count(*) as total 
-      FROM articles a
-      LEFT JOIN albums alb ON a.album_id = alb.id
-      WHERE ${whereClause}
-    `;
-    const countRow = await db.prepare(countSql).bind(...params).first<{ total: number }>();
-    const total = countRow?.total || 0;
-    const totalPages = Math.ceil(total / pageSize) || 1;
+      // 4. 关键字搜索
+      if (options.search) {
+        const term = `%${options.search.trim()}%`;
+        conditions.push("(a.title LIKE ? OR a.summary LIKE ? OR a.content LIKE ?)");
+        params.push(term, term, term);
+      }
 
-    // 分页查询文章列表
-    const querySql = `
-      SELECT 
-        a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary,
-        a.cover_image, a.dimension, a.album_id, a.read_time, a.views,
-        a.published_at, a.created_at, length(a.content) as content_length,
-        alb.slug as album_slug, alb.title as album_title,
-        strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
-      FROM articles a
-      LEFT JOIN users u ON a.author_id = u.id
-      LEFT JOIN albums alb ON a.album_id = alb.id
-      WHERE ${whereClause}
-      ORDER BY a.created_at DESC, a.id DESC
-      LIMIT ? OFFSET ?
-    `;
+      const whereClause = conditions.join(" AND ");
 
-    const rows = await db.prepare(querySql).bind(...params, pageSize, offset).all<any>();
+      // 统计总数
+      const countSql = `
+        SELECT count(*) as total 
+        FROM articles a
+        LEFT JOIN albums alb ON a.album_id = alb.id
+        WHERE ${whereClause}
+      `;
+      const countRow = await db.prepare(countSql).bind(...params).first<{ total: number }>();
+      const total = countRow?.total || 0;
 
-    const data: ArticleItem[] = (rows.results || []).map((r) => {
-      const norm = normalizeDimension(r.dimension) || "dao";
-      const meta = DIMENSIONS[norm] || DIMENSIONS.dao;
-      const chars = r.content_length || 3000;
-      const wordCount = `${chars.toLocaleString()}字`;
+      // 如果数据表中没有任何文章，回退到内置的 18 篇经典体系
+      if (total === 0 && !options.search && !options.albumSlug && !options.date) {
+        return filterFallback();
+      }
+
+      const totalPages = Math.ceil(total / pageSize) || 1;
+
+      // 分页查询文章列表
+      const querySql = `
+        SELECT 
+          a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary,
+          a.cover_image, a.dimension, a.album_id, a.read_time, a.views,
+          a.published_at, a.created_at, length(a.content) as content_length,
+          alb.slug as album_slug, alb.title as album_title,
+          strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
+        FROM articles a
+        LEFT JOIN users u ON a.author_id = u.id
+        LEFT JOIN albums alb ON a.album_id = alb.id
+        WHERE ${whereClause}
+        ORDER BY a.created_at DESC, a.id DESC
+        LIMIT ? OFFSET ?
+      `;
+
+      const rows = await db.prepare(querySql).bind(...params, pageSize, offset).all<any>();
+
+      const data: ArticleItem[] = (rows.results || []).map((r) => {
+        const norm = normalizeDimension(r.dimension) || "dao";
+        const meta = DIMENSIONS[norm] || DIMENSIONS.dao;
+        const chars = r.content_length || 3000;
+        const wordCount = `${chars.toLocaleString()}字`;
+
+        return {
+          id: r.id,
+          author_id: r.author_id,
+          author_nickname: r.author_nickname || "白心解",
+          slug: r.slug,
+          title: r.title,
+          summary: r.summary,
+          cover_image: r.cover_image,
+          dimension: norm,
+          dimensionChar: meta.char,
+          dimensionName: meta.name,
+          dimensionQuestion: meta.question,
+          dimensionScope: meta.scope,
+          dimensionColor: meta.color,
+          dimensionBg: meta.bg,
+          dimensionBorder: meta.border,
+          album_id: r.album_id,
+          album_slug: r.album_slug,
+          album_title: r.album_title,
+          read_time: r.read_time || Math.max(3, Math.round(chars / 400)),
+          word_count: wordCount,
+          views: r.views || 0,
+          published_at: r.published_at,
+          created_at: r.created_at,
+          date_str: r.date_str || new Date(r.created_at * 1000).toISOString().slice(0, 10)
+        };
+      });
 
       return {
-        id: r.id,
-        author_id: r.author_id,
-        author_nickname: r.author_nickname || "白心解",
-        slug: r.slug,
-        title: r.title,
-        summary: r.summary,
-        cover_image: r.cover_image,
-        dimension: norm,
-        dimensionChar: meta.char,
-        dimensionName: meta.name,
-        dimensionQuestion: meta.question,
-        dimensionScope: meta.scope,
-        dimensionColor: meta.color,
-        dimensionBg: meta.bg,
-        dimensionBorder: meta.border,
-        album_id: r.album_id,
-        album_slug: r.album_slug,
-        album_title: r.album_title,
-        read_time: r.read_time || Math.max(3, Math.round(chars / 400)),
-        word_count: wordCount,
-        views: r.views || 0,
-        published_at: r.published_at,
-        created_at: r.created_at,
-        date_str: r.date_str || new Date(r.created_at * 1000).toISOString().slice(0, 10)
+        data,
+        total,
+        page,
+        pageSize,
+        totalPages
       };
-    });
-
-    return {
-      data,
-      total,
-      page,
-      pageSize,
-      totalPages
-    };
+    } catch (e) {
+      console.error('Failed to query articles, returning fallback:', e);
+      return filterFallback();
+    }
   }
 
   /**

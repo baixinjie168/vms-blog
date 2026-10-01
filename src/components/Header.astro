@@ -73,3 +73,18 @@ import AuthModal from './AuthModal';
     <AuthModal client:load />
   </div>
 </header>
+
+<script>
+  import { filterBySearch } from '../stores/filterStore';
+
+  const searchInput = document.getElementById('global-search-input') as HTMLInputElement | null;
+  if (searchInput) {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    searchInput.addEventListener('input', (e) => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        filterBySearch((e.target as HTMLInputElement).value);
+      }, 250);
+    });
+  }
+</script>
