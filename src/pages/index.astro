@@ -1,22 +1,27 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
 ---
 
-<BaseLayout title="VMS · 数字花园 (基座就绪)">
-	<main class="h-full flex items-center justify-center p-4">
-		<div class="max-w-md w-full p-8 bg-paperCard rounded-3xl shadow-sm border border-stone-200 text-center">
-			<div class="w-12 h-12 rounded-2xl bg-limeBrand text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-sm">V</div>
-			<h1 class="text-xl font-bold text-stone-900 mb-2">VMS · 数字花园</h1>
-			<p class="text-xs text-stone-500 mb-4">纸墨设计系统 + 100vh 零长视窗基座已就绪</p>
-			
-			<div class="flex flex-col gap-2 items-center">
-				<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-limeLight text-limeDark text-xs font-mono font-medium border border-limeBrand/25">
-					<span>● 100vh 零长视窗基座 (BaseLayout) 挂载正常</span>
-				</div>
-				<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paperIvory text-stone-700 text-[11px] font-mono border border-stone-200">
-					<span>🎨 纸墨主题变量 (青柠/牙白/竹青/墨黑) 生效</span>
-				</div>
-			</div>
-		</div>
-	</main>
+<BaseLayout title="VMS · 未鸣时 · 数字花园">
+  <!-- 模块二：全站顶栏 (带免密登录与搜索) -->
+  <Header />
+
+  <!-- 页面主体工作区 (随着模块三至六逐步替换为完整三栏) -->
+  <main class="flex-1 min-h-0 flex items-center justify-center p-4">
+    <div class="max-w-lg w-full p-8 bg-paperCard rounded-3xl shadow-sm border border-stone-200 text-center select-none">
+      <div class="w-12 h-12 rounded-2xl bg-limeBrand text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-sm border border-white/40">V</div>
+      <h1 class="text-xl font-bold text-stone-900 mb-2 font-serif">VMS · 数字花园</h1>
+      <p class="text-xs text-stone-500 mb-5 font-serif">顶部 Header 已就绪 · 点击右上角「免密登入」即可测试邮箱验证</p>
+      
+      <div class="flex flex-col gap-2 items-center text-xs">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-limeLight text-limeDark font-mono font-medium border border-limeBrand/25">
+          <span>● 模块二：顶栏 & 免密认证弹窗岛屿已挂载</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paperIvory text-stone-700 text-[11px] font-mono border border-stone-200">
+          <span>⏳ 下一步：装配左栏日历、七维体系与 9 卡片三栏工作台</span>
+        </div>
+      </div>
+    </div>
+  </main>
 </BaseLayout>
