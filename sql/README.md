@@ -21,6 +21,7 @@ v<主版本>.<次版本>.<修订号>_<年月日时分秒>_<业务功能描述>.s
 | 版本与时间戳 | 文件名 | 涉及表与模型设计 | 说明 |
 | :--- | :--- | :--- | :--- |
 | **v1.0.0** (Baseline)<br>`20260928213000` | [v1.0.0_20260928213000_init_all_tables.sql](./v1.0.0_20260928213000_init_all_tables.sql) | • `users` (含 `bio` 个人独白、`avatar_url`、`role`)<br>• `verification_codes` (5分钟失效+3次防爆破)<br>• `albums` (关联 `author_id` 外键)<br>• `articles` (关联 `author_id` 外键，七维体系与日历索引)<br>• `annotations` (对开翻书批注流，含 `is_pinned`)<br>• `annotation_likes` (原子防重刷赞表)<br>• `bookmarks` (含 `last_page_index` 翻书记忆书签) | **《VMS》全栈数字花园完整数据基线**。<br>一步到位完成全系统 7 张数据表初始化，避免多文件重叠声明与依赖冲突。 |
+| **v1.1.0** (Seed Data)<br>`20261001083000` | [v1.1.0_20261001083000_seed_initial_data.sql](./v1.1.0_20261001083000_seed_initial_data.sql) | • `users` (博主白心解资料)<br>• `albums` (7大精品专栏专辑)<br>• `articles` (涵盖七维认知的18篇经典博文) | **《VMS》阶段三测试与基线种子数据**。<br>包含博主资料、7大专栏专辑与18篇七维经典博文，供首页三栏工作台与翻书慢读开箱即用。 |
 
 ---
 
