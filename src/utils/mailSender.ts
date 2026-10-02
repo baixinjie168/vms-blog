@@ -24,29 +24,55 @@ export async function sendEmailUnified(
   env: any,
   payload: MailPayload
 ): Promise<MailSendResult> {
-  const { to, subject, html, fromName = "VMS · 未鸣时", fromEmail = "noreply@250258.xyz" } = payload;
-  const resendApiKey = env?.RESEND_API_KEY || (typeof process !== "undefined" ? process.env.RESEND_API_KEY : undefined);
+  const { to, subject, html, fromName = "VMS · 未鸣时", fromEmail = "auth@250258.xyz" } = payload;
+  const resendApiKey =
+    env?.RESEND_API_KEY ||
+    env?.runtime?.env?.RESEND_API_KEY ||
+    (typeof process !== "undefined" ? process.env?.RESEND_API_KEY : undefined);
 
-  // 1. 若配置了 Resend 密钥，优先通过 Resend 发送（可直达任意外部邮箱，无 Cloudflare 免费版白名单限制）
-  if (resendApiKey) {
+  // 1. 若配置了 Resend 密钥，优先通过 Resend API 发送（可直达外部邮箱，无 Cloudflare 免费版白名单限制）
+  if (resendApiKey && typeof resendApiKey === "string" && resendApiKey.trim()) {
     try {
-      const fromAddress = env?.RESEND_FROM || `${fromName} <${fromEmail}>`;
-      const res = await fetch("https://api.resend.com/emails", {
+      const apiKey = resendApiKey.trim();
+      const customFrom = env?.RESEND_FROM || `${fromName} <${fromEmail}>`;
+
+      let res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${resendApiKey.trim()}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: fromAddress,
+          from: customFrom,
           to: [to],
           subject,
           html,
         }),
       });
 
-      const data: any = await res.json().catch(() => ({}));
+      let data: any = await res.json().catch(() => ({}));
+
+      // 如果提示自定义发信域名尚未在 Resend 控制台验证，自动降级使用 Resend 沙盒通道 onboarding@resend.dev 重试
+      if (!res.ok && data?.message && data.message.includes("domain") && data.message.includes("not verified")) {
+        console.warn(`[Resend] Custom domain '${fromEmail}' is not yet verified in Resend. Retrying with 'onboarding@resend.dev'...`);
+        res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: `${fromName} <onboarding@resend.dev>`,
+            to: [to],
+            subject,
+            html,
+          }),
+        });
+        data = await res.json().catch(() => ({}));
+      }
+
       if (res.ok && data?.id) {
+        console.log(`[Resend] Activation email sent successfully to ${to}, id: ${data.id}`);
         return { success: true, provider: "resend" };
       }
       console.warn("Resend email send error:", data);

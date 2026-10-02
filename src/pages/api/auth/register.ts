@@ -17,9 +17,9 @@ const SENDER_EMAIL = "auth@250258.xyz";
 // 预设管理员名单
 const DEFAULT_ADMIN_EMAILS = ["admin@250258.xyz", "apple@250258.xyz"];
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const env = cfEnv;
+    const env = { ...(locals as any)?.runtime?.env, ...cfEnv };
 
     // 0. 数据库认证模型自愈与补全 (确保 users 具备 password_hash, is_active 及 activation_tokens 表)
     await ensureAuthSchema(env.DB);

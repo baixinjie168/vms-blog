@@ -10,9 +10,9 @@ export const prerender = false;
 
 const SENDER_EMAIL = "auth@250258.xyz";
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const env = cfEnv;
+    const env = { ...(locals as any)?.runtime?.env, ...cfEnv };
     await ensureAuthSchema(env.DB);
 
     const body = await request.json().catch(() => ({}));
