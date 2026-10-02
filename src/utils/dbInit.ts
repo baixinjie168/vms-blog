@@ -65,3 +65,38 @@ export async function ensureAuthSchema(db: any): Promise<void> {
     console.error("Failed to ensureAuthSchema:", err);
   }
 }
+
+let blogSchemaEnsured = false;
+
+export async function ensureBlogSchema(db: any): Promise<void> {
+  if (blogSchemaEnsured || !db) return;
+
+  try {
+    const colsResult = await db.prepare("PRAGMA table_info(articles)").all();
+    const colNames: string[] = (colsResult?.results || []).map((c: any) => c.name);
+
+    if (!colNames.includes("album_order")) {
+      try {
+        await db.prepare("ALTER TABLE articles ADD COLUMN album_order INTEGER DEFAULT 1").run();
+      } catch (err: any) {
+        console.warn("Notice: ALTER album_order:", err?.message);
+      }
+    }
+
+    if (!colNames.includes("chapter_label")) {
+      try {
+        await db.prepare("ALTER TABLE articles ADD COLUMN chapter_label TEXT DEFAULT ''").run();
+      } catch (err: any) {
+        console.warn("Notice: ALTER chapter_label:", err?.message);
+      }
+    }
+
+    try {
+      await db.prepare("CREATE INDEX IF NOT EXISTS idx_articles_album_order ON articles(album_id, album_order ASC)").run();
+    } catch (_) {}
+
+    blogSchemaEnsured = true;
+  } catch (err) {
+    console.error("Failed to ensureBlogSchema:", err);
+  }
+}

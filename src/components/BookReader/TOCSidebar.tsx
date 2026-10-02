@@ -1,5 +1,8 @@
 import React from 'react';
-import { ArrowLeft, ListTree } from 'lucide-react';
+import { ArrowLeft, ListTree, Edit3 } from 'lucide-react';
+import { useStore } from '@nanostores/react';
+import { $currentUser } from '../../stores/authStore';
+import { openEditor } from '../../stores/editorStore';
 import type { ArticleItem } from '../../services/blogService';
 import type { BookSpread, TOCItem, PaperTheme } from '../../stores/readerStore';
 
@@ -22,6 +25,7 @@ export default function TOCSidebar({
   onClose,
   onJumpPage,
 }: TOCSidebarProps) {
+  const currentUser = useStore($currentUser);
   const currentSpread = spreads[currentSpreadIndex] || spreads[0] || { leftPageNum: 1, rightPageNum: 2 };
   const totalSpreads = spreads.length || 1;
   const totalPages = totalSpreads * 2;
@@ -33,6 +37,12 @@ export default function TOCSidebar({
   const categoryBg = article?.dimensionBg || 'bg-limeLight/40';
   const categoryBorder = article?.dimensionBorder || 'border-limeBrand/30';
 
+  const canManage = Boolean(
+    currentUser &&
+    article &&
+    (article.author_id === currentUser.id || article.author_id === 'usr_author_bai' || currentUser.role === 'admin')
+  );
+
   return (
     <aside
       id="reader-toc-sidebar"
@@ -42,7 +52,7 @@ export default function TOCSidebar({
           : 'bg-white/95 border-stone-200/90 text-stone-800'
       }`}
     >
-      {/* 顶部收纳区：返回主页 + 维度标签 + 文章主标题 + 紧凑阅读进度 */}
+      {/* 顶部收纳区：返回主页 + 编辑 + 维度标签 + 文章主标题 + 紧凑阅读进度 */}
       <div className={`space-y-2.5 pb-2.5 border-b flex-shrink-0 ${isInk ? 'border-stone-700/60' : 'border-stone-100'}`}>
         <div className="flex items-center justify-between gap-1">
           <button
@@ -59,19 +69,54 @@ export default function TOCSidebar({
             <span>返回文集</span>
           </button>
 
-          <span
-            id="reader-cat-tag"
-            className={`px-2 py-0.5 rounded text-[10px] font-serif font-bold border flex-shrink-0 ${
-              isInk
-                ? 'bg-stone-800 text-stone-300 border-stone-700'
-                : `${categoryBg} text-limeDark ${categoryBorder}`
-            }`}
-          >
-            {categoryName}
-          </span>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {canManage && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (article) {
+                    onClose();
+                    openEditor(article);
+                  }
+                }}
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-sans font-medium border cursor-pointer transition ${
+                  isInk
+                    ? 'border-stone-700 bg-stone-800/90 text-limeLight hover:bg-stone-700'
+                    : 'border-limeBrand/40 bg-limeLight/60 text-limeDark hover:bg-limeLight'
+                }`}
+                title="编辑此篇卷帙"
+              >
+                <Edit3 className="w-3 h-3 text-limeBrand" />
+                <span>编辑</span>
+              </button>
+            )}
+            <span
+              id="reader-cat-tag"
+              className={`px-2 py-0.5 rounded text-[10px] font-serif font-bold border flex-shrink-0 ${
+                isInk
+                  ? 'bg-stone-800 text-stone-300 border-stone-700'
+                  : `${categoryBg} text-limeDark ${categoryBorder}`
+              }`}
+            >
+              {categoryName}
+            </span>
+          </div>
         </div>
 
         <div>
+          {article?.album_id && (
+            <div className="mb-1">
+              <span
+                className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
+                  isInk
+                    ? 'bg-stone-800 text-limeLight border border-stone-700'
+                    : 'bg-limeLight text-limeDark border border-limeBrand/30'
+                }`}
+              >
+                {article.chapter_label || `第 ${article.album_order || 1} 讲`}
+              </span>
+            </div>
+          )}
           <h2
             id="reader-article-title"
             className={`text-xs sm:text-[13px] font-serif font-bold line-clamp-2 leading-snug ${

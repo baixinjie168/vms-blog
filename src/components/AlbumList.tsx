@@ -1,9 +1,10 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-import { Layers, Lock, PenSquare } from 'lucide-react';
+import { Layers, Lock, PenSquare, Plus, Edit3 } from 'lucide-react';
 import { $filter, filterByAlbum } from '../stores/filterStore';
 import { openAuthModal } from '../stores/authStore';
 import { openEditor } from '../stores/editorStore';
+import { openAlbumModal } from '../stores/albumStore';
 import type { AlbumItem } from '../services/blogService';
 
 interface AlbumListProps {
@@ -79,16 +80,32 @@ export default function AlbumList({ albums = [], isGuest = false }: AlbumListPro
               专栏专辑
             </h3>
           </div>
-          <span
-            id="album-facet-badge"
-            className={`text-[9px] px-2 py-0.5 rounded-full font-mono font-medium transition-all ${
-              isAlbumMode
-                ? 'bg-limeBrand text-white shadow-2xs font-semibold'
-                : 'bg-stone-100 text-stone-600 border border-stone-200/70'
-            }`}
-          >
-            {isAlbumMode ? '● 专栏筛选中' : `${albums.length} 个深度专题`}
-          </span>
+          <div className="flex items-center space-x-1.5">
+            {!isGuest && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openAlbumModal();
+                }}
+                className="px-2 py-0.5 rounded-lg bg-limeLight hover:bg-limeBrand text-limeDark hover:text-white border border-limeBrand/30 text-[10px] font-serif font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 shadow-2xs"
+                title="新建专栏专辑"
+              >
+                <Plus className="w-3 h-3" />
+                <span>新建</span>
+              </button>
+            )}
+            <span
+              id="album-facet-badge"
+              className={`text-[9px] px-2 py-0.5 rounded-full font-mono font-medium transition-all ${
+                isAlbumMode
+                  ? 'bg-limeBrand text-white shadow-2xs font-semibold'
+                  : 'bg-stone-100 text-stone-600 border border-stone-200/70'
+              }`}
+            >
+              {isAlbumMode ? '● 专栏筛选中' : `${albums.length} 个专题`}
+            </span>
+          </div>
         </div>
 
         {/* 专辑卡片流 或 登录后新作者暂无专栏的空态 */}
@@ -101,15 +118,15 @@ export default function AlbumList({ albums = [], isGuest = false }: AlbumListPro
               深度专题虚席以待
             </h4>
             <p className="font-serif text-[11px] text-stone-400 leading-relaxed max-w-[200px] mb-3">
-              您尚未创建任何专栏专辑。可随文沉淀系统思考，将卷帙归纳成册。
+              您尚未创建任何专栏专辑。可创立专栏，将已有卷帙按序归纳成册。
             </p>
             <button
               type="button"
-              onClick={() => openEditor()}
-              className="px-3 py-1.5 rounded-xl bg-limeBrand hover:bg-limeDark text-white text-[11px] font-serif font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+              onClick={() => openAlbumModal()}
+              className="px-3.5 py-1.5 rounded-xl bg-limeBrand hover:bg-limeDark text-white text-[11px] font-serif font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
-              <PenSquare className="w-3 h-3" />
-              <span>开始创作装帧成册</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>新建第一部专栏专辑</span>
             </button>
           </div>
         ) : (
@@ -168,14 +185,29 @@ export default function AlbumList({ albums = [], isGuest = false }: AlbumListPro
                       </div>
                     </div>
 
-                    {/* 标题 */}
-                    <h4
-                      className={`font-serif font-bold text-xs sm:text-sm transition-colors leading-snug mb-0.5 line-clamp-1 ${
-                        isActive ? 'text-limeDark font-black' : 'text-stone-900 group-hover:text-limeDark'
-                      }`}
-                    >
-                      {album.title}
-                    </h4>
+                    {/* 标题与编辑按钮 */}
+                    <div className="flex items-center justify-between gap-1 mb-0.5">
+                      <h4
+                        className={`font-serif font-bold text-xs sm:text-sm transition-colors leading-snug line-clamp-1 flex-1 ${
+                          isActive ? 'text-limeDark font-black' : 'text-stone-900 group-hover:text-limeDark'
+                        }`}
+                      >
+                        {album.title}
+                      </h4>
+                      {!isGuest && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openAlbumModal(album);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-stone-200/60 text-stone-400 hover:text-limeDark transition cursor-pointer flex-shrink-0"
+                          title="编排修改此专栏"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
 
                     {/* 简介导言 */}
                     <p className="text-[11px] text-stone-500 font-serif leading-relaxed line-clamp-2">

@@ -8,6 +8,7 @@ import CenterColumn from '../components/CenterColumn';
 import AlbumList from '../components/AlbumList';
 import BookReader from '../components/BookReader';
 import Editor from '../components/Editor';
+import AlbumModal from '../components/AlbumModal';
 import { BlogService, DIMENSIONS, DEFAULT_ALBUMS, DEFAULT_ARTICLES } from '../services/blogService';
 
 export const prerender = false;
@@ -129,6 +130,8 @@ if (db) {
           client:load
           initialArticles={initialArticlesResult.data}
           initialTotal={initialArticlesResult.total}
+          currentUserId={currentUserId}
+          isAdmin={sessionUser?.role === 'admin'}
         />
       </div>
 
@@ -159,6 +162,9 @@ if (db) {
 
   <!-- 阶段六：富文本创作与双屏实时排版预览客户端岛屿 -->
   <Editor client:load />
+
+  <!-- 专栏专辑新建与章节编排管理客户端岛屿 -->
+  <AlbumModal client:load />
 
   <script>
     const tabArticles = document.getElementById('tab-btn-articles');

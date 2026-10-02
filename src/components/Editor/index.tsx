@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '@nanostores/react';
 import {
   $editor,
@@ -9,10 +9,14 @@ import {
   setEditorTags,
   setEditorDate,
   setEditorSaving,
+  setEditorAlbumId,
+  setEditorAlbumOrder,
+  setEditorChapterLabel,
 } from '../../stores/editorStore';
+import { openAlbumModal } from '../../stores/albumStore';
 import TiptapEditor from './TiptapEditor';
 import LiveBookPreview from './LiveBookPreview';
-import { ArrowLeft, Feather, Save, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Feather, Save, Send, CheckCircle2, AlertCircle, Layers, Plus } from 'lucide-react';
 
 export default function EditorIsland() {
   const editorState = useStore($editor);
@@ -29,9 +33,27 @@ export default function EditorIsland() {
     totalSpreads,
     wordCount,
     articleId,
+    albumId,
+    albumOrder,
+    chapterLabel,
   } = editorState;
 
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [authorAlbums, setAuthorAlbums] = useState<Array<{ id: string; title: string }>>([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchAlbums = async () => {
+      try {
+        const res = await fetch('/api/albums');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setAuthorAlbums(json.data);
+        }
+      } catch (_) {}
+    };
+    fetchAlbums();
+  }, [isOpen]);
 
   const showToast = (text: string, type: 'success' | 'error') => {
     setToastMessage({ text, type });
@@ -57,6 +79,9 @@ export default function EditorIsland() {
           date,
           content,
           is_published: isPublished ? 1 : 0,
+          album_id: albumId || null,
+          album_order: albumOrder || 1,
+          chapter_label: chapterLabel || '',
         }),
       });
 
@@ -171,7 +196,7 @@ export default function EditorIsland() {
             />
           </div>
 
-          <div className="md:col-span-4">
+          <div className="md:col-span-3">
             <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
               所属七维认知层级
             </label>
@@ -180,17 +205,17 @@ export default function EditorIsland() {
               onChange={(e) => setEditorCategory(e.target.value)}
               className="w-full px-3 py-1.5 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-800 bg-white"
             >
-              <option value="道">道 · 我为什么活？（世界观 · 价值观 · 意义）</option>
-              <option value="心">心 · 我是什么样的人？（认知 · 情绪 · 自律）</option>
-              <option value="法">法 · 我如何做事？（方法论 · 原则 · 决策）</option>
-              <option value="术">术 · 我具体怎么做？（专业技能 · 写作 · 编程）</option>
-              <option value="器">器 · 我用什么做？（工具 · AI技术 · 软件设备）</option>
-              <option value="事">事 · 我实际创造什么？（工作事业 · 作品财富）</option>
-              <option value="势">势 · 我如何借势？（时代浪潮 · 行业技术 · 资本）</option>
+              <option value="道">道 · 我为什么活？</option>
+              <option value="心">心 · 我是什么样的人？</option>
+              <option value="法">法 · 我如何做事？</option>
+              <option value="术">术 · 我具体怎么做？</option>
+              <option value="器">器 · 我用什么做？</option>
+              <option value="事">事 · 我实际创造什么？</option>
+              <option value="势">势 · 我如何借势？</option>
             </select>
           </div>
 
-          <div className="md:col-span-3">
+          <div className="md:col-span-4">
             <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
               标签与发布时间
             </label>
@@ -210,6 +235,80 @@ export default function EditorIsland() {
               />
             </div>
           </div>
+        </div>
+
+        {/* 专栏专辑收录与章节顺序控制 (诉求 3 & 4) */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2.5 mt-2.5 border-t border-stone-100 items-center">
+          <div className="md:col-span-5 flex items-center gap-2">
+            <div className="flex-1">
+              <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1 flex items-center justify-between">
+                <span className="flex items-center gap-1">
+                  <Layers className="w-3.5 h-3.5 text-limeBrand" />
+                  <span>收纳到专栏专辑</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => openAlbumModal()}
+                  className="text-[10px] text-limeDark hover:underline font-bold flex items-center gap-0.5 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>新建专栏</span>
+                </button>
+              </label>
+              <select
+                value={albumId || ''}
+                onChange={(e) => setEditorAlbumId(e.target.value ? e.target.value : null)}
+                className="w-full px-3 py-1.5 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif text-stone-800 bg-white"
+              >
+                <option value="">独立篇章 · 不收纳进专栏</option>
+                {authorAlbums.map((alb) => (
+                  <option key={alb.id} value={alb.id}>
+                    📚 《{alb.title}》
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {albumId ? (
+            <>
+              <div className="md:col-span-3">
+                <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
+                  专栏内章节序号 (正向阅读流)
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-serif text-stone-500">第</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={999}
+                    value={albumOrder || 1}
+                    onChange={(e) => setEditorAlbumOrder(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                    className="w-20 px-2 py-1.5 text-xs rounded-xl border border-stone-300 font-mono text-center font-bold focus:outline-none focus:ring-1 focus:ring-limeBrand"
+                  />
+                  <span className="text-xs font-serif text-stone-500">讲 / 节</span>
+                </div>
+              </div>
+
+              <div className="md:col-span-4">
+                <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
+                  自定义小节称谓 <span className="text-stone-400 font-normal">(选填)</span>
+                </label>
+                <input
+                  type="text"
+                  value={chapterLabel || ''}
+                  onChange={(e) => setEditorChapterLabel(e.target.value)}
+                  placeholder="如：第一讲 · 破局 / 第一季"
+                  maxLength={30}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-stone-300 font-serif focus:outline-none focus:ring-1 focus:ring-limeBrand"
+                />
+              </div>
+            </>
+          ) : (
+            <div className="md:col-span-7 text-[11px] font-serif text-stone-400 pt-3">
+              当前为独立单篇，不占用专栏章节。收纳进专栏后可指定先后阅读次序。
+            </div>
+          )}
         </div>
       </div>
 

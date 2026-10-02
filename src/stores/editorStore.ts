@@ -17,6 +17,9 @@ export interface EditorState {
   totalPages: number;
   totalSpreads: number;
   wordCount: number;
+  albumId?: string | null;
+  albumOrder?: number;
+  chapterLabel?: string;
 }
 
 const DEFAULT_EDITOR_CONTENT = `<h3>一、 大势所趋：AI 不是替代，而是杠杆</h3>
@@ -71,9 +74,16 @@ export function openEditor(article?: ArticleItem) {
       totalPages: pagination.totalPages,
       totalSpreads: pagination.totalSpreads,
       wordCount: content.replace(/<[^>]+>/g, '').length,
+      albumId: article.album_id || null,
+      albumOrder: article.album_order || 1,
+      chapterLabel: article.chapter_label || '',
     });
   } else {
     $editor.setKey('isOpen', true);
+    $editor.setKey('articleId', null);
+    $editor.setKey('albumId', null);
+    $editor.setKey('albumOrder', 1);
+    $editor.setKey('chapterLabel', '');
   }
 
   if (typeof window !== 'undefined') {
@@ -134,3 +144,16 @@ export function setEditorDate(date: string) {
 export function setEditorSaving(isSaving: boolean) {
   $editor.setKey('isSaving', isSaving);
 }
+
+export function setEditorAlbumId(albumId: string | null) {
+  $editor.setKey('albumId', albumId);
+}
+
+export function setEditorAlbumOrder(order: number) {
+  $editor.setKey('albumOrder', order);
+}
+
+export function setEditorChapterLabel(label: string) {
+  $editor.setKey('chapterLabel', label);
+}
+

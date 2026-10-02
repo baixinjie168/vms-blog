@@ -163,6 +163,8 @@ export interface ArticleItem {
   album_id: string | null;
   album_slug?: string | null;
   album_title?: string | null;
+  album_order?: number;
+  chapter_label?: string;
   read_time: number;
   word_count: string;
   views: number;
@@ -1122,12 +1124,15 @@ export class BlogService {
       }
 
       const totalPages = Math.ceil(total / pageSize) || 1;
+      const orderByClause = options.albumSlug
+        ? "ORDER BY a.album_order ASC, a.created_at ASC, a.id ASC"
+        : "ORDER BY a.created_at DESC, a.id DESC";
 
       // 分页查询文章列表
       const querySql = `
         SELECT 
           a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary,
-          a.cover_image, a.dimension, a.album_id, a.read_time, a.views,
+          a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.read_time, a.views,
           a.published_at, a.created_at, length(a.content) as content_length,
           alb.slug as album_slug, alb.title as album_title,
           strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
@@ -1135,7 +1140,7 @@ export class BlogService {
         LEFT JOIN users u ON a.author_id = u.id
         LEFT JOIN albums alb ON a.album_id = alb.id
         WHERE ${whereClause}
-        ORDER BY a.created_at DESC, a.id DESC
+        ${orderByClause}
         LIMIT ? OFFSET ?
       `;
 
@@ -1166,6 +1171,8 @@ export class BlogService {
           album_id: r.album_id,
           album_slug: r.album_slug,
           album_title: r.album_title,
+          album_order: r.album_order || 1,
+          chapter_label: r.chapter_label || '',
           read_time: r.read_time || Math.max(3, Math.round(chars / 400)),
           word_count: wordCount,
           views: r.views || 0,
@@ -1195,7 +1202,7 @@ export class BlogService {
     const r = await db.prepare(`
       SELECT 
         a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary, a.content,
-        a.cover_image, a.dimension, a.album_id, a.read_time, a.views,
+        a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.read_time, a.views,
         a.published_at, a.created_at, length(a.content) as content_length,
         alb.slug as album_slug, alb.title as album_title,
         strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
@@ -1232,6 +1239,8 @@ export class BlogService {
       album_id: r.album_id,
       album_slug: r.album_slug,
       album_title: r.album_title,
+      album_order: r.album_order || 1,
+      chapter_label: r.chapter_label || '',
       read_time: r.read_time || Math.max(3, Math.round(chars / 400)),
       word_count: `${chars.toLocaleString()}字`,
       views: r.views || 0,

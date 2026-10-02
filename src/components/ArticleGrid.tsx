@@ -1,23 +1,54 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-import { BookOpen, ArrowRight, PenSquare } from 'lucide-react';
+import { BookOpen, ArrowRight, PenSquare, Edit3, Trash2 } from 'lucide-react';
 import { $filter, filterByCategory } from '../stores/filterStore';
 import { openBookReader } from '../stores/readerStore';
 import { openEditor } from '../stores/editorStore';
+import { $currentUser } from '../stores/authStore';
 import type { ArticleItem } from '../services/blogService';
 
 interface ArticleGridProps {
   articles: ArticleItem[];
   loading?: boolean;
+  currentUserId?: string;
+  isAdmin?: boolean;
   onOpenArticle?: (article: ArticleItem) => void;
+  onArticleDeleted?: (articleId: number) => void;
 }
 
 export default function ArticleGrid({
   articles = [],
   loading = false,
+  currentUserId,
+  isAdmin = false,
   onOpenArticle,
+  onArticleDeleted,
 }: ArticleGridProps) {
   const filter = useStore($filter);
+  const currentUser = useStore($currentUser);
+  const activeUserId = currentUserId || currentUser?.id;
+  const isSuperAdmin = isAdmin || currentUser?.role === 'admin';
+
+  const handleDelete = async (article: ArticleItem) => {
+    const ok = window.confirm(`确定要将卷帙《${article.title}》从书箧中抹除吗？\n此操作不可逆。`);
+    if (!ok) return;
+
+    try {
+      const res = await fetch(`/api/articles?id=${article.id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        alert(json.error || '删除失败');
+        return;
+      }
+      if (onArticleDeleted) {
+        onArticleDeleted(article.id);
+      } else if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
+    } catch (err: any) {
+      alert(err?.message || '网络异常，删除失败');
+    }
+  };
 
   const handleCardClick = (article: ArticleItem) => {
     if (onOpenArticle) {
@@ -128,16 +159,64 @@ export default function ArticleGrid({
 
             {/* 卡片上部分：分类徽标、创作时间、题目、摘要 */}
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-1">
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-serif font-bold border ${
-                    item.dimensionBg || 'bg-stone-100'
-                  } ${item.dimensionBorder || 'border-stone-200'} text-stone-700`}
-                >
-                  {item.dimensionChar} · {item.dimensionQuestion || item.dimensionName}
-                </span>
-                <span className="text-[10px] font-mono text-stone-400">{item.date_str}</span>
-              </div>
+              {(() => {
+                const canManage = Boolean(
+                  activeUserId &&
+                  (item.author_id === activeUserId || item.author_id === 'usr_author_bai' || isSuperAdmin)
+                );
+
+                return (
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {/* 专栏内章节序号 (诉求 4) */}
+                      {item.album_id && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-limeLight text-limeDark border border-limeBrand/30">
+                          {item.chapter_label || `第 ${item.album_order || 1} 讲`}
+                        </span>
+                      )}
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-serif font-bold border ${
+                          item.dimensionBg || 'bg-stone-100'
+                        } ${item.dimensionBorder || 'border-stone-200'} text-stone-700`}
+                      >
+                        {item.dimensionChar} · {item.dimensionQuestion || item.dimensionName}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-mono text-stone-400">{item.date_str}</span>
+
+                      {/* 作者管理操作组 (诉求 1) */}
+                      {canManage && (
+                        <div className="flex items-center ml-0.5 space-x-0.5 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditor(item);
+                            }}
+                            className="p-1 rounded-md hover:bg-stone-100 text-stone-400 hover:text-limeDark transition cursor-pointer"
+                            title="编辑此篇卷帙"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(item);
+                            }}
+                            className="p-1 rounded-md hover:bg-rose-50 text-stone-400 hover:text-rose-600 transition cursor-pointer"
+                            title="抹除此篇卷帙"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* 书籍封面立体感标题 */}
               <h4 className="font-serif font-bold text-xs sm:text-[13px] text-stone-900 group-hover:text-limeDark transition-colors leading-snug mb-1 line-clamp-1">

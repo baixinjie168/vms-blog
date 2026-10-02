@@ -9,17 +9,26 @@ import type { ArticleItem } from '../services/blogService';
 interface CenterColumnProps {
   initialArticles?: ArticleItem[];
   initialTotal?: number;
+  currentUserId?: string;
+  isAdmin?: boolean;
 }
 
 export default function CenterColumn({
   initialArticles = [],
   initialTotal = 18,
+  currentUserId,
+  isAdmin = false,
 }: CenterColumnProps) {
   const filter = useStore($filter);
   const [articles, setArticles] = useState<ArticleItem[]>(initialArticles);
   const [total, setTotal] = useState<number>(initialTotal);
   const [loading, setLoading] = useState<boolean>(false);
   const isFirstRender = useRef(true);
+
+  const handleArticleDeleted = (deletedId: number) => {
+    setArticles((prev) => prev.filter((a) => a.id !== deletedId));
+    setTotal((prev) => Math.max(0, prev - 1));
+  };
 
   // 监听全局响应式筛选状态，无刷新动态获取匹配卷帙
   useEffect(() => {
@@ -89,7 +98,13 @@ export default function CenterColumn({
       <FilterStatusBanner totalCount={total} />
 
       {/* 2. 核心 9 张经典装帧卡片矩阵 (3x3 自适应撑满屏幕) */}
-      <ArticleGrid articles={articles} loading={loading} />
+      <ArticleGrid
+        articles={articles}
+        loading={loading}
+        currentUserId={currentUserId}
+        isAdmin={isAdmin}
+        onArticleDeleted={handleArticleDeleted}
+      />
 
       {/* 3. 底部 38px 细长横向分页条 */}
       <PaginationBar
