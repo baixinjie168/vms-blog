@@ -25,7 +25,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     // 若用于专辑管理弹窗中展示当前作者的所有已有文章
     if (allAuthor && authorId && db) {
       const rows = await db.prepare(`
-        SELECT a.id, a.title, a.slug, a.dimension, a.album_id, a.album_order, a.chapter_label, a.created_at,
+        SELECT a.id, a.title, a.slug, a.dimension, a.album_id, a.album_order, a.chapter_label, a.tags, a.created_at,
                alb.title as album_title
         FROM articles a
         LEFT JOIN albums alb ON a.album_id = alb.id
@@ -72,7 +72,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const sessionUser = (locals as any)?.user;
     const body = await request.json().catch(() => ({}));
-    const { id, title, category, date, content, is_published, album_id, album_order, chapter_label } = body;
+    const { id, title, category, tags, content, is_published, album_id, album_order, chapter_label } = body;
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return new Response(JSON.stringify({ success: false, error: '文章标题不能为空' }), {
@@ -82,6 +82,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const dimension = normalizeDimension(category) || 'shi_trend';
+    const cleanTags = typeof tags === 'string' ? tags.trim() : '';
     const plainText = (content || '').replace(/<[^>]+>/g, '').trim();
     const charCount = plainText.length;
     const readTime = Math.max(2, Math.round(charCount / 400));
@@ -119,7 +120,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         await db.prepare(`
           UPDATE articles
-          SET title = ?, summary = ?, content = ?, dimension = ?, album_id = ?, album_order = ?, chapter_label = ?, read_time = ?, is_published = ?, updated_at = ?
+          SET title = ?, summary = ?, content = ?, dimension = ?, album_id = ?, album_order = ?, chapter_label = ?, tags = ?, read_time = ?, is_published = ?, updated_at = ?
           WHERE id = ?
         `).bind(
           title.trim(),
@@ -129,6 +130,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           validAlbumId,
           finalOrder,
           finalChapter,
+          cleanTags,
           readTime,
           published,
           now,
@@ -138,7 +140,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         return new Response(JSON.stringify({
           success: true,
           message: '文章已成功更新装帧',
-          data: { id, title: title.trim(), is_published: published, album_id: validAlbumId, album_order: finalOrder }
+          data: { id, title: title.trim(), is_published: published, album_id: validAlbumId, album_order: finalOrder, tags: cleanTags }
         }), {
           headers: { 'Content-Type': 'application/json' },
         });
@@ -160,8 +162,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       const slug = `art_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       const result = await db.prepare(`
-        INSERT INTO articles (author_id, slug, title, summary, content, dimension, album_id, album_order, chapter_label, read_time, views, is_published, published_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+        INSERT INTO articles (author_id, slug, title, summary, content, dimension, album_id, album_order, chapter_label, tags, read_time, views, is_published, published_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
       `).bind(
         authorId,
         slug,
@@ -172,6 +174,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         validAlbumId,
         assignedOrder,
         finalChapter,
+        cleanTags,
         readTime,
         published,
         published ? now : null,

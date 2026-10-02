@@ -227,6 +227,25 @@ export default function ArticleGrid({
               <p className="text-[10px] sm:text-[11px] text-stone-500 font-serif leading-relaxed line-clamp-2 mb-1">
                 {item.summary}
               </p>
+
+              {/* 卷帙标签 */}
+              {item.tags && (
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {item.tags
+                    .split(/[,，]/)
+                    .map((t) => t.trim())
+                    .filter(Boolean)
+                    .slice(0, 3)
+                    .map((tag, tidx) => (
+                      <span
+                        key={tidx}
+                        className="text-[9px] px-1.5 py-0.2 rounded bg-stone-100/90 text-stone-600 font-mono"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                </div>
+              )}
             </div>
 
             {/* 卡片下部分：装帧页码与翻书按钮 */}

@@ -91,8 +91,17 @@ export async function ensureBlogSchema(db: any): Promise<void> {
       }
     }
 
+    if (!colNames.includes("tags")) {
+      try {
+        await db.prepare("ALTER TABLE articles ADD COLUMN tags TEXT DEFAULT ''").run();
+      } catch (err: any) {
+        console.warn("Notice: ALTER tags:", err?.message);
+      }
+    }
+
     try {
       await db.prepare("CREATE INDEX IF NOT EXISTS idx_articles_album_order ON articles(album_id, album_order ASC)").run();
+      await db.prepare("CREATE INDEX IF NOT EXISTS idx_articles_tags ON articles(tags)").run();
     } catch (_) {}
 
     blogSchemaEnsured = true;

@@ -65,7 +65,7 @@ export function openEditor(article?: ArticleItem) {
       articleId: article.id,
       title: article.title,
       category: article.dimensionChar || '道',
-      tags: '博客, 思考, 原创',
+      tags: article.tags || '',
       date: article.date_str || todayStr,
       content,
       isSaving: false,
@@ -84,6 +84,7 @@ export function openEditor(article?: ArticleItem) {
     $editor.setKey('albumId', null);
     $editor.setKey('albumOrder', 1);
     $editor.setKey('chapterLabel', '');
+    $editor.setKey('tags', '');
   }
 
   if (typeof window !== 'undefined') {

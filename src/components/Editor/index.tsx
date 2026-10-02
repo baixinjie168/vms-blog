@@ -7,7 +7,6 @@ import {
   setEditorTitle,
   setEditorCategory,
   setEditorTags,
-  setEditorDate,
   setEditorSaving,
   setEditorAlbumId,
   setEditorAlbumOrder,
@@ -16,7 +15,8 @@ import {
 import { openAlbumModal } from '../../stores/albumStore';
 import TiptapEditor from './TiptapEditor';
 import LiveBookPreview from './LiveBookPreview';
-import { ArrowLeft, Feather, Save, Send, CheckCircle2, AlertCircle, Layers, Plus } from 'lucide-react';
+import PublishModal from './PublishModal';
+import { ArrowLeft, Feather, Save, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function EditorIsland() {
   const editorState = useStore($editor);
@@ -40,24 +40,36 @@ export default function EditorIsland() {
 
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [authorAlbums, setAuthorAlbums] = useState<Array<{ id: string; title: string }>>([]);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState<boolean>(false);
+
+  const fetchAlbums = async () => {
+    try {
+      const res = await fetch('/api/albums');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setAuthorAlbums(json.data);
+      }
+    } catch (_) {}
+  };
 
   useEffect(() => {
     if (!isOpen) return;
-    const fetchAlbums = async () => {
-      try {
-        const res = await fetch('/api/albums');
-        const json = await res.json();
-        if (json.success && Array.isArray(json.data)) {
-          setAuthorAlbums(json.data);
-        }
-      } catch (_) {}
-    };
     fetchAlbums();
   }, [isOpen]);
 
   const showToast = (text: string, type: 'success' | 'error') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // 拦截发布按钮：先打开装帧与专栏确认弹窗
+  const handlePrePublish = () => {
+    if (!title.trim()) {
+      showToast('文章标题不能为空', 'error');
+      return;
+    }
+    fetchAlbums();
+    setIsPublishModalOpen(true);
   };
 
   const handleSave = async (isPublished: boolean) => {
@@ -76,7 +88,6 @@ export default function EditorIsland() {
           title,
           category,
           tags,
-          date,
           content,
           is_published: isPublished ? 1 : 0,
           album_id: albumId || null,
@@ -96,6 +107,7 @@ export default function EditorIsland() {
       );
 
       if (isPublished) {
+        setIsPublishModalOpen(false);
         setTimeout(() => {
           if (typeof window !== 'undefined') {
             window.location.reload();
@@ -108,6 +120,9 @@ export default function EditorIsland() {
         isPublished ? '已在本地模拟发布装帧成册！' : '草稿已在本地暂存！',
         'success'
       );
+      if (isPublished) {
+        setIsPublishModalOpen(false);
+      }
     } finally {
       setEditorSaving(false);
     }
@@ -172,7 +187,7 @@ export default function EditorIsland() {
             <button
               type="button"
               disabled={isSaving}
-              onClick={() => handleSave(true)}
+              onClick={handlePrePublish}
               className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-limeBrand text-white hover:bg-limeDark text-xs font-bold shadow-md shadow-limeBrand/20 transition active:scale-95 cursor-pointer disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
@@ -181,7 +196,7 @@ export default function EditorIsland() {
           </div>
         </div>
 
-        {/* 元数据选择：文章题目 + 所属七维认知层级 + 标签与时间 */}
+        {/* 元数据选择：文章题目 + 所属七维认知层级 + 标签 */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-3">
           <div className="md:col-span-5">
             <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
@@ -217,98 +232,16 @@ export default function EditorIsland() {
 
           <div className="md:col-span-4">
             <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
-              标签与发布时间
+              文章标签 (Tags)
             </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={tags}
-                onChange={(e) => setEditorTags(e.target.value)}
-                placeholder="标签逗号分隔"
-                className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-stone-300 font-mono focus:outline-none focus:ring-1 focus:ring-limeBrand"
-              />
-              <input
-                type="text"
-                value={date}
-                onChange={(e) => setEditorDate(e.target.value)}
-                className="w-24 px-2 py-1.5 text-xs rounded-xl border border-stone-300 text-stone-500 font-mono text-center focus:outline-none focus:ring-1 focus:ring-limeBrand"
-              />
-            </div>
+            <input
+              type="text"
+              value={tags}
+              onChange={(e) => setEditorTags(e.target.value)}
+              placeholder="逗号分隔，如：AI, 架构, 认知"
+              className="w-full px-3 py-1.5 text-xs rounded-xl border border-stone-300 font-mono focus:outline-none focus:ring-1 focus:ring-limeBrand bg-stone-50/50 focus:bg-white transition-all"
+            />
           </div>
-        </div>
-
-        {/* 专栏专辑收录与章节顺序控制 (诉求 3 & 4) */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2.5 mt-2.5 border-t border-stone-100 items-center">
-          <div className="md:col-span-5 flex items-center gap-2">
-            <div className="flex-1">
-              <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1 flex items-center justify-between">
-                <span className="flex items-center gap-1">
-                  <Layers className="w-3.5 h-3.5 text-limeBrand" />
-                  <span>收纳到专栏专辑</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => openAlbumModal()}
-                  className="text-[10px] text-limeDark hover:underline font-bold flex items-center gap-0.5 cursor-pointer"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>新建专栏</span>
-                </button>
-              </label>
-              <select
-                value={albumId || ''}
-                onChange={(e) => setEditorAlbumId(e.target.value ? e.target.value : null)}
-                className="w-full px-3 py-1.5 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif text-stone-800 bg-white"
-              >
-                <option value="">独立篇章 · 不收纳进专栏</option>
-                {authorAlbums.map((alb) => (
-                  <option key={alb.id} value={alb.id}>
-                    📚 《{alb.title}》
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {albumId ? (
-            <>
-              <div className="md:col-span-3">
-                <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
-                  专栏内章节序号 (正向阅读流)
-                </label>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-serif text-stone-500">第</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={999}
-                    value={albumOrder || 1}
-                    onChange={(e) => setEditorAlbumOrder(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                    className="w-20 px-2 py-1.5 text-xs rounded-xl border border-stone-300 font-mono text-center font-bold focus:outline-none focus:ring-1 focus:ring-limeBrand"
-                  />
-                  <span className="text-xs font-serif text-stone-500">讲 / 节</span>
-                </div>
-              </div>
-
-              <div className="md:col-span-4">
-                <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
-                  自定义小节称谓 <span className="text-stone-400 font-normal">(选填)</span>
-                </label>
-                <input
-                  type="text"
-                  value={chapterLabel || ''}
-                  onChange={(e) => setEditorChapterLabel(e.target.value)}
-                  placeholder="如：第一讲 · 破局 / 第一季"
-                  maxLength={30}
-                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-stone-300 font-serif focus:outline-none focus:ring-1 focus:ring-limeBrand"
-                />
-              </div>
-            </>
-          ) : (
-            <div className="md:col-span-7 text-[11px] font-serif text-stone-400 pt-3">
-              当前为独立单篇，不占用专栏章节。收纳进专栏后可指定先后阅读次序。
-            </div>
-          )}
         </div>
       </div>
 
@@ -331,6 +264,27 @@ export default function EditorIsland() {
           totalSpreads={totalSpreads}
         />
       </div>
+
+      {/* 点击「发布装帧成册」时弹出的拦截确认与专栏归属配置弹窗 */}
+      <PublishModal
+        isOpen={isPublishModalOpen}
+        onClose={() => setIsPublishModalOpen(false)}
+        onConfirmPublish={() => handleSave(true)}
+        isSaving={isSaving}
+        title={title}
+        category={category}
+        tags={tags}
+        onTagsChange={setEditorTags}
+        wordCount={wordCount}
+        albumId={albumId || null}
+        onAlbumIdChange={setEditorAlbumId}
+        albumOrder={albumOrder || 1}
+        onAlbumOrderChange={setEditorAlbumOrder}
+        chapterLabel={chapterLabel || ''}
+        onChapterLabelChange={setEditorChapterLabel}
+        authorAlbums={authorAlbums}
+        onOpenNewAlbumModal={() => openAlbumModal()}
+      />
     </section>
   );
 }

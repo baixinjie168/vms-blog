@@ -165,6 +165,7 @@ export interface ArticleItem {
   album_title?: string | null;
   album_order?: number;
   chapter_label?: string;
+  tags?: string;
   read_time: number;
   word_count: string;
   views: number;
@@ -1132,7 +1133,7 @@ export class BlogService {
       const querySql = `
         SELECT 
           a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary,
-          a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.read_time, a.views,
+          a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.tags, a.read_time, a.views,
           a.published_at, a.created_at, length(a.content) as content_length,
           alb.slug as album_slug, alb.title as album_title,
           strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
@@ -1173,6 +1174,7 @@ export class BlogService {
           album_title: r.album_title,
           album_order: r.album_order || 1,
           chapter_label: r.chapter_label || '',
+          tags: r.tags || '',
           read_time: r.read_time || Math.max(3, Math.round(chars / 400)),
           word_count: wordCount,
           views: r.views || 0,
@@ -1202,7 +1204,7 @@ export class BlogService {
     const r = await db.prepare(`
       SELECT 
         a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary, a.content,
-        a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.read_time, a.views,
+        a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.tags, a.read_time, a.views,
         a.published_at, a.created_at, length(a.content) as content_length,
         alb.slug as album_slug, alb.title as album_title,
         strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
@@ -1241,6 +1243,7 @@ export class BlogService {
       album_title: r.album_title,
       album_order: r.album_order || 1,
       chapter_label: r.chapter_label || '',
+      tags: r.tags || '',
       read_time: r.read_time || Math.max(3, Math.round(chars / 400)),
       word_count: `${chars.toLocaleString()}字`,
       views: r.views || 0,
