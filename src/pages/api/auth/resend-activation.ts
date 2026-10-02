@@ -3,6 +3,7 @@ import { env as cfEnv } from "cloudflare:workers";
 import { generateSecureToken } from "../../../utils/crypto";
 import { renderActivationEmail } from "../../../utils/emailTemplate";
 import { buildEmailMessage } from "../../../utils/emailMessage";
+import { sendEmailUnified } from "../../../utils/mailSender";
 import { ensureAuthSchema } from "../../../utils/dbInit";
 
 export const prerender = false;
@@ -90,29 +91,29 @@ export const POST: APIRoute = async ({ request }) => {
       expiresInHours: 24
     });
 
-    let mailSent = false;
-    if (env.EMAIL_SERVICE && typeof env.EMAIL_SERVICE.send === "function") {
-      try {
-        const message = buildEmailMessage({
-          from: SENDER_EMAIL,
-          fromName: "VMS · 未鸣时",
-          to: user.email,
-          subject: "【VMS】重新发送：激活您的数字花园研读账号",
-          html: emailHtml
-        });
-        await env.EMAIL_SERVICE.send(message);
-        mailSent = true;
-      } catch (err) {
-        console.error("Failed to resend activation email:", err);
-      }
-    } else {
-      console.warn("[VMS Auth Dev] Resend Activation URL:", activationUrl);
-    }
+    const sendResult = await sendEmailUnified(env, {
+      to: user.email,
+      subject: "【VMS】重新发送：激活您的数字花园研读账号",
+      html: emailHtml,
+      fromName: "VMS · 未鸣时",
+      fromEmail: SENDER_EMAIL
+    });
+
+    const mailSent = sendResult.success;
+    const isUnverifiedDestination = sendResult.isUnverifiedDestination || false;
 
     return new Response(JSON.stringify({
       success: true,
-      message: "激活邮件已重新发送至您的邮箱，请注意查收",
-      devActivationUrl: !mailSent ? activationUrl : undefined
+      message: mailSent
+        ? "激活邮件已重新发送至您的邮箱，请注意查收"
+        : (isUnverifiedDestination
+          ? "目标邮箱尚未在 Cloudflare 验证白名单中，已为您生成直接激活通道"
+          : "已重新生成专属激活通道"),
+      email: user.email,
+      mailSent,
+      isUnverifiedDestination,
+      provider: sendResult.provider,
+      activationUrl
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }

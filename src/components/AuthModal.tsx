@@ -17,7 +17,8 @@ import {
   EyeOff,
   ArrowLeft,
   Send,
-  User
+  User,
+  ShieldAlert
 } from 'lucide-react';
 
 export interface UserSession {
@@ -68,6 +69,8 @@ export default function AuthModal() {
   // 通用状态
   const [lastSentEmail, setLastSentEmail] = useState('');
   const [directActivationUrl, setDirectActivationUrl] = useState<string | null>(null);
+  const [mailSentStatus, setMailSentStatus] = useState<boolean>(true);
+  const [isUnverifiedDest, setIsUnverifiedDest] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -197,6 +200,8 @@ export default function AuthModal() {
       if (res.ok && data.success) {
         setLastSentEmail(regEmail);
         setDirectActivationUrl(data.activationUrl || null);
+        setMailSentStatus(Boolean(data.mailSent));
+        setIsUnverifiedDest(Boolean(data.isUnverifiedDestination));
         setActiveTab('activation-sent');
         setResendCooldown(60);
         setRegPassword('');
@@ -233,7 +238,9 @@ export default function AuthModal() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setSuccessMsg('激活邮件已重新投递，请查收');
+        setMailSentStatus(Boolean(data.mailSent));
+        setIsUnverifiedDest(Boolean(data.isUnverifiedDestination));
+        setSuccessMsg(data.mailSent ? '激活邮件已重新投递，请查收' : '已为您就绪专属直接激活通道');
         if (data.activationUrl) {
           setDirectActivationUrl(data.activationUrl);
         }
@@ -565,50 +572,61 @@ export default function AuthModal() {
             </form>
           )}
 
-          {/* 模式三：激活邮件已发送提示卡片 */}
+          {/* 模式三：激活邮件与直接激活通道提示卡片 */}
           {activeTab === 'activation-sent' && (
             <div className="py-2 text-center space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-sm">
-                <Mail className="w-7 h-7 text-emerald-600" />
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-sm ${
+                mailSentStatus ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+              }`}>
+                {mailSentStatus ? (
+                  <Mail className="w-7 h-7 text-emerald-600" />
+                ) : (
+                  <ShieldAlert className="w-7 h-7 text-amber-600" />
+                )}
               </div>
 
               <div>
                 <h4 className="font-serif font-bold text-base text-stone-900 mb-1">
-                  激活邮件已送达
+                  {mailSentStatus ? '激活邮件已送达' : '研读账号已就绪 · 请完成激活'}
                 </h4>
                 <p className="text-xs font-serif text-stone-600 leading-relaxed max-w-xs mx-auto">
-                  我们已向 <span className="font-mono font-bold text-stone-900">{lastSentEmail}</span> 发送了专属激活链接。
+                  {mailSentStatus ? (
+                    <>我们已向 <span className="font-mono font-bold text-stone-900">{lastSentEmail}</span> 发送了专属激活链接。</>
+                  ) : (
+                    <>已为 <span className="font-mono font-bold text-stone-900">{lastSentEmail}</span> 生成研读凭据。因发信服务白名单限制，请通过下方专属直连通道完成激活。</>
+                  )}
                 </p>
               </div>
+
+              {/* 核心直连激活通道 */}
+              {directActivationUrl && (
+                <div className="p-3.5 bg-emerald-50/90 border border-emerald-200/80 rounded-xl text-center space-y-2 font-serif animate-in fade-in">
+                  <div className="text-xs font-bold text-emerald-900 flex items-center justify-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#70C000]" />
+                    <span>专属研读一键激活通道</span>
+                  </div>
+                  <p className="text-[11px] text-stone-600 leading-relaxed">
+                    无需等待邮件转发，点击下方按钮立即完成验证并登入数字花园：
+                  </p>
+                  <a
+                    href={directActivationUrl}
+                    className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 rounded-lg bg-[#70C000] hover:bg-[#559400] text-white text-xs font-bold shadow-xs transition active:scale-98"
+                  >
+                    <span>⚡ 立即激活并登入数字花园 &rarr;</span>
+                  </a>
+                </div>
+              )}
 
               <div className="p-3 bg-[#EFECE1] border border-[#E5E0D0] rounded-xl text-left text-xs text-stone-600 space-y-1 font-serif">
                 <div className="flex items-center gap-1.5 font-bold text-stone-800">
                   <Sparkles className="w-3.5 h-3.5 text-[#70C000]" />
-                  <span>后续研读指引：</span>
+                  <span>后续研读与发信指引：</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-stone-500">
-                  1. 前往邮箱查收并点击【激活账号】链接。<br />
-                  2. 链接点击后将自动完成激活并为您登入。<br />
-                  3. 链接有效期为 24 小时。
+                  1. 激活链接有效期为 24 小时，激活后自动登入。<br />
+                  2. 若需向任意邮箱免白名单自动发送真实邮件，站长可在 Cloudflare 环境变量中添加 <code>RESEND_API_KEY</code> 或在 Cloudflare Email Routing 中验证目标邮箱。
                 </p>
               </div>
-
-              {directActivationUrl && (
-                <div className="p-3.5 bg-emerald-50/90 border border-emerald-200/80 rounded-xl text-center space-y-2 font-serif animate-in fade-in">
-                  <div className="text-xs font-bold text-emerald-800">
-                    专属研读激活通道已就绪
-                  </div>
-                  <p className="text-[11px] text-stone-600 leading-relaxed">
-                    若您的邮件接收有延迟，可直接点击下方专属按钮一键完成验证：
-                  </p>
-                  <a
-                    href={directActivationUrl}
-                    className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 rounded-lg bg-[#70C000] hover:bg-[#559400] text-white text-xs font-bold shadow-xs transition"
-                  >
-                    <span>立即激活并登入数字花园 &rarr;</span>
-                  </a>
-                </div>
-              )}
 
               <div className="pt-2 flex flex-col gap-2">
                 <button

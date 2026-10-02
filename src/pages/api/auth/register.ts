@@ -3,6 +3,7 @@ import { env as cfEnv } from "cloudflare:workers";
 import { hashPassword, generateSecureToken } from "../../../utils/crypto";
 import { renderActivationEmail } from "../../../utils/emailTemplate";
 import { buildEmailMessage } from "../../../utils/emailMessage";
+import { sendEmailUnified } from "../../../utils/mailSender";
 import { ensureAuthSchema } from "../../../utils/dbInit";
 
 export const prerender = false;
@@ -131,45 +132,30 @@ export const POST: APIRoute = async ({ request }) => {
     const origin = reqUrl.origin;
     const activationUrl = `${origin}/auth/activate?token=${activationToken}`;
 
-    // 6. 发送激活邮件
-    const emailHtml = renderActivationEmail({
-      nickname: finalNickname,
-      email,
-      activationUrl,
-      expiresInHours: 24
+    // 6. 发送激活邮件 (支持 Resend 与 Cloudflare Workers Email)
+    const sendResult = await sendEmailUnified(env, {
+      to: email,
+      subject: "【VMS】激活您的数字花园研读账号",
+      html: emailHtml,
+      fromName: "VMS · 未鸣时",
+      fromEmail: SENDER_EMAIL
     });
 
-    let mailSent = false;
-    let mailError: string | null = null;
-
-    if (env.EMAIL_SERVICE && typeof env.EMAIL_SERVICE.send === "function") {
-      try {
-        const message = buildEmailMessage({
-          from: SENDER_EMAIL,
-          fromName: "VMS · 未鸣时",
-          to: email,
-          subject: "【VMS】激活您的数字花园研读账号",
-          html: emailHtml
-        });
-        await env.EMAIL_SERVICE.send(message);
-        mailSent = true;
-      } catch (err: any) {
-        mailError = err?.message || String(err);
-        console.warn("Notice: EMAIL_SERVICE.send failed:", mailError);
-      }
-    } else {
-      console.warn("[VMS Auth Dev] EMAIL_SERVICE not available. Activation URL:", activationUrl);
-    }
+    const mailSent = sendResult.success;
+    const isUnverifiedDestination = sendResult.isUnverifiedDestination || false;
 
     return new Response(JSON.stringify({
       success: true,
       message: mailSent
         ? "激活邮件已成功发送至您的邮箱，请前往查收并激活账号"
-        : "研读账号已就绪，已为您生成专属激活通道",
+        : (isUnverifiedDestination
+          ? "目标邮箱尚未在 Cloudflare 验证白名单中，已为您生成直接激活通道"
+          : "研读账号已就绪，已为您生成专属激活通道"),
       email,
       mailSent,
-      // 若邮件通道未发送成功，直接向前端下发 activationUrl，允许用户点击一键激活
-      activationUrl: !mailSent ? activationUrl : undefined
+      isUnverifiedDestination,
+      provider: sendResult.provider,
+      activationUrl
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
