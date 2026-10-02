@@ -936,12 +936,12 @@ export class BlogService {
    * 获取专栏专辑列表 (带当前登录用户的文章数量统计)
    */
   static async getAlbums(db?: D1Database | null, authorId?: string): Promise<AlbumItem[]> {
-    if (!db) return DEFAULT_ALBUMS;
+    if (!db) return authorId ? [] : DEFAULT_ALBUMS;
 
     try {
       let rows: any;
       if (authorId) {
-        // 当前登录用户的专辑统计
+        // 当前登录用户的专属专辑统计：严格限定 a.author_id = ?
         rows = await db.prepare(`
           SELECT 
             a.id, a.slug, a.title, a.description, a.cover_image, a.sort_order, a.created_at,
@@ -949,12 +949,17 @@ export class BlogService {
             coalesce(sum(length(art.content)), 0) as total_chars
           FROM albums a
           LEFT JOIN articles art ON a.id = art.album_id AND art.author_id = ? AND art.is_published = 1
-          WHERE a.is_published = 1
+          WHERE a.author_id = ? AND a.is_published = 1
           GROUP BY a.id
           ORDER BY a.sort_order ASC, a.created_at DESC
-        `).bind(authorId).all();
+        `).bind(authorId, authorId).all();
+
+        // 新注册用户无任何专栏，严格返回空数组
+        if (!rows?.results || rows.results.length === 0) {
+          return [];
+        }
       } else {
-        // 未登录访客场景：显示专辑列表，但文章数归零/马赛克化
+        // 未登录访客场景：查询全局公开专辑列表（用于全区域虚化预览底色）
         rows = await db.prepare(`
           SELECT 
             a.id, a.slug, a.title, a.description, a.cover_image, a.sort_order, a.created_at,
@@ -964,10 +969,10 @@ export class BlogService {
           WHERE a.is_published = 1
           ORDER BY a.sort_order ASC, a.created_at DESC
         `).all();
-      }
 
-      if (!rows?.results || rows.results.length === 0) {
-        return DEFAULT_ALBUMS;
+        if (!rows?.results || rows.results.length === 0) {
+          return DEFAULT_ALBUMS;
+        }
       }
 
       const sealChars: Record<string, string> = {
@@ -990,7 +995,7 @@ export class BlogService {
         alb_growth: { cat: "道", label: "道 · 心智" },
       };
 
-      return rows.results.map((r) => {
+      return rows.results.map((r: any) => {
         const totalWords = r.total_chars > 10000 
           ? (r.total_chars / 10000).toFixed(1) + "w 字"
           : `${Math.round(r.total_chars / 2)} 字`;
@@ -1014,8 +1019,8 @@ export class BlogService {
         };
       });
     } catch (e) {
-      console.error('Failed to query albums, returning fallback:', e);
-      return DEFAULT_ALBUMS;
+      console.error('Failed to query albums:', e);
+      return authorId ? [] : DEFAULT_ALBUMS;
     }
   }
 

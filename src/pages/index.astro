@@ -45,7 +45,7 @@ let categoryStats = {
 };
 
 let calendarDots: Record<string, number> = {};
-let albums = DEFAULT_ALBUMS;
+let albums = isGuest ? DEFAULT_ALBUMS : [];
 let initialArticlesResult = {
   data: isGuest ? DEFAULT_ARTICLES.slice(0, 9) : [],
   total: isGuest ? DEFAULT_ARTICLES.length : 0,
