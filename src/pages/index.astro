@@ -13,7 +13,7 @@ import { BlogService, DIMENSIONS, DEFAULT_ALBUMS, DEFAULT_ARTICLES } from '../se
 export const prerender = false;
 
 // 1. 获取 Cloudflare D1 边缘数据库连接
-const db = cfEnv?.DB || (Astro.locals as any)?.runtime?.env?.DB;
+const db = cfEnv?.DB;
 
 // 2. 检测当前登录用户状态
 const sessionUser = (Astro.locals as any)?.user;

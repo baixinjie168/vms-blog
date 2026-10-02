@@ -6,7 +6,7 @@ export const prerender = false;
 
 export const GET: APIRoute = async ({ request, locals }) => {
   try {
-    const db = cfEnv?.DB || (locals as any)?.runtime?.env?.DB;
+    const db = cfEnv?.DB;
     const url = new URL(request.url);
     const category = url.searchParams.get('category') || undefined;
     const albumSlug = url.searchParams.get('album') || undefined;
@@ -47,7 +47,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const db = cfEnv?.DB || (locals as any)?.runtime?.env?.DB;
+    const db = cfEnv?.DB;
     const body = await request.json();
     const { id, title, category, date, content, is_published } = body;
 

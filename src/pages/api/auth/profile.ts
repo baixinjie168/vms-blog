@@ -6,7 +6,7 @@ export const prerender = false;
 
 export const PUT: APIRoute = async ({ request, locals }) => {
   try {
-    const env = cfEnv?.DB ? cfEnv : (locals as any)?.runtime?.env;
+    const env = cfEnv;
     const sessionUser = (locals as any)?.user;
     if (!sessionUser) {
       return new Response(JSON.stringify({ error: "请先登录" }), {

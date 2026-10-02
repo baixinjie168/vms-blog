@@ -19,9 +19,9 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-export const GET: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async ({ request }) => {
   try {
-    const db = cfEnv?.DB || (locals as any)?.runtime?.env?.DB;
+    const db = cfEnv?.DB;
     const url = new URL(request.url);
     const articleIdStr = url.searchParams.get('articleId');
     const articleId = articleIdStr ? parseInt(articleIdStr, 10) : undefined;
@@ -47,7 +47,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   try {
-    const db = cfEnv?.DB || (locals as any)?.runtime?.env?.DB;
+    const db = cfEnv?.DB;
     const ip = clientAddress || request.headers.get('cf-connecting-ip') || '127.0.0.1';
 
     const body = await request.json();

@@ -1,3 +1,4 @@
+import { env as cfEnv } from "cloudflare:workers";
 import { buildEmailMessage } from "./emailMessage";
 
 export interface MailPayload {
@@ -27,7 +28,7 @@ export async function sendEmailUnified(
   const { to, subject, html, fromName = "VMS · 未鸣时", fromEmail = "auth@250258.xyz" } = payload;
   const resendApiKey =
     env?.RESEND_API_KEY ||
-    env?.runtime?.env?.RESEND_API_KEY ||
+    (cfEnv as any)?.RESEND_API_KEY ||
     (typeof process !== "undefined" ? process.env?.RESEND_API_KEY : undefined);
 
   // 1. 若配置了 Resend 密钥，优先通过 Resend API 发送（可直达外部邮箱，无 Cloudflare 免费版白名单限制）
@@ -82,7 +83,8 @@ export async function sendEmailUnified(
   }
 
   // 2. 尝试使用 Cloudflare Workers 原生 EMAIL_SERVICE 绑定
-  if (env?.EMAIL_SERVICE && typeof env.EMAIL_SERVICE.send === "function") {
+  const emailService = env?.EMAIL_SERVICE || (cfEnv as any)?.EMAIL_SERVICE;
+  if (emailService && typeof emailService.send === "function") {
     try {
       const message = buildEmailMessage({
         from: fromEmail,
@@ -92,7 +94,7 @@ export async function sendEmailUnified(
         html,
       });
 
-      await env.EMAIL_SERVICE.send(message);
+      await emailService.send(message);
       return { success: true, provider: "cloudflare" };
     } catch (err: any) {
       const errMsg = err?.message || String(err);

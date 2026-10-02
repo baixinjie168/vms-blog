@@ -4,9 +4,9 @@ import { BlogService } from '../../services/blogService';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async ({ request }) => {
   try {
-    const db = cfEnv?.DB || (locals as any)?.runtime?.env?.DB;
+    const db = cfEnv?.DB;
     const url = new URL(request.url);
     const now = new Date();
     const year = parseInt(url.searchParams.get('year') || String(now.getFullYear()), 10);
