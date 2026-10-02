@@ -132,7 +132,15 @@ export const POST: APIRoute = async ({ request }) => {
     const origin = reqUrl.origin;
     const activationUrl = `${origin}/auth/activate?token=${activationToken}`;
 
-    // 6. 发送激活邮件 (支持 Resend 与 Cloudflare Workers Email)
+    // 6. 渲染激活邮件内容
+    const emailHtml = renderActivationEmail({
+      nickname: finalNickname,
+      email,
+      activationUrl,
+      expiresInHours: 24
+    });
+
+    // 7. 发送激活邮件 (支持 Resend 与 Cloudflare Workers Email)
     const sendResult = await sendEmailUnified(env, {
       to: email,
       subject: "【VMS】激活您的数字花园研读账号",
