@@ -124,7 +124,7 @@ export default function TOCSidebar({
             }`}
             title={article?.title || '卷帙文章'}
           >
-            {article?.title || '构建长期主义数字花园：从信息投喂到终极意义探索'}
+            {article?.title || '卷帙篇目'}
           </h2>
         </div>
 

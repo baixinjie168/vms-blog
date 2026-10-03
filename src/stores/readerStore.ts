@@ -275,15 +275,7 @@ export function buildArticleReaderContent(article: ArticleItem): {
   toc: TOCItem[];
   comments: ReaderComment[];
 } {
-  if (article.slug === 'building-digital-garden-from-scratch' || !article.slug) {
-    return {
-      spreads: DEFAULT_FLAGSHIP_SPREADS,
-      toc: DEFAULT_FLAGSHIP_TOC,
-      comments: DEFAULT_COMMENTS,
-    };
-  }
-
-  const dimensionName = article.dimensionName || `${article.dimensionChar} · 认知体系`;
+  const dimensionName = article.dimensionName || `${article.dimensionChar || '道'} · 认知体系`;
   const dimensionColor = article.dimensionColor || '#70C000';
   const seal = article.dimensionChar || '道';
 
@@ -427,32 +419,7 @@ export function buildArticleReaderContent(article: ArticleItem): {
     { level: 2, title: '四、 结语 · 行远自迩', page: 5, tag: '章四' },
   ];
 
-  const comments: ReaderComment[] = [
-    {
-      id: 101,
-      user: '林深见鹿',
-      avatarBg: 'bg-rose-600',
-      avatarChar: '鹿',
-      page: '第 1 页',
-      time: '半小时前',
-      quote: article.summary ? `“${article.summary.slice(0, 30)}...”` : undefined,
-      content: '文章思路非常清晰，层层递进，很有启发性！',
-      likes: 12,
-      liked: false,
-    },
-    {
-      id: 102,
-      user: '白心解',
-      isAuthor: true,
-      avatarBg: 'bg-stone-900',
-      avatarChar: '白',
-      page: '第 3 页',
-      time: '1小时前',
-      content: '本篇重点探讨了工程可复现性与长周期沉淀，欢迎各位道友交流指正。',
-      likes: 28,
-      liked: true,
-    },
-  ];
+  const comments: ReaderComment[] = [];
 
   return { spreads, toc, comments };
 }
@@ -474,12 +441,30 @@ const initialReaderState: ReaderState = {
   article: null,
   currentSpreadIndex: 0,
   paperTheme: getInitialPaperTheme(),
-  spreads: DEFAULT_FLAGSHIP_SPREADS,
-  toc: DEFAULT_FLAGSHIP_TOC,
-  comments: DEFAULT_COMMENTS,
+  spreads: [],
+  toc: [],
+  comments: [],
 };
 
 export const $reader = map<ReaderState>(initialReaderState);
+
+// 异步从云端拉取文章真实批注列表
+export async function loadComments(articleId: number) {
+  if (typeof window === 'undefined') return;
+  try {
+    const res = await fetch(`/api/comments?articleId=${articleId}`, {
+      cache: 'no-store',
+    });
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success && Array.isArray(result.data)) {
+        $reader.setKey('comments', result.data);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load comments:', err);
+  }
+}
 
 // 打开翻书阅读器
 export function openBookReader(article: ArticleItem, initialPage: number = 1) {
@@ -489,12 +474,16 @@ export function openBookReader(article: ArticleItem, initialPage: number = 1) {
   $reader.set({
     isOpen: true,
     article,
-    currentSpreadIndex: Math.min(targetSpread, content.spreads.length - 1),
+    currentSpreadIndex: Math.min(targetSpread, Math.max(0, content.spreads.length - 1)),
     paperTheme: $reader.get().paperTheme,
     spreads: content.spreads,
     toc: content.toc,
-    comments: content.comments,
+    comments: [], // 先置空，等待 loadComments 注入真实批注
   });
+
+  if (article?.id) {
+    loadComments(article.id);
+  }
 
   if (typeof window !== 'undefined') {
     // 隐藏顶栏与三栏工作台
@@ -580,7 +569,7 @@ export function likeComment(commentId: number | string) {
 }
 
 // 发表新评注
-export function addComment(commentData: {
+export async function addComment(commentData: {
   content: string;
   quote?: string;
   user?: string;
@@ -589,10 +578,11 @@ export function addComment(commentData: {
   isAuthor?: boolean;
 }) {
   const { article, currentSpreadIndex, spreads, comments } = $reader.get();
-  const spread = spreads[currentSpreadIndex] || spreads[0];
+  const spread = spreads[currentSpreadIndex] || spreads[0] || { leftPageNum: 1, rightPageNum: 2 };
 
+  const tempId = `temp_${Date.now()}`;
   const newComment: ReaderComment = {
-    id: Date.now(),
+    id: tempId,
     user: commentData.user || '墨客读者',
     avatarBg: commentData.avatarBg || 'bg-stone-800',
     avatarChar: commentData.avatarChar || (commentData.user ? commentData.user.slice(0, 1) : '墨'),
@@ -608,15 +598,30 @@ export function addComment(commentData: {
   $reader.setKey('comments', [newComment, ...comments]);
 
   if (typeof window !== 'undefined') {
-    fetch('/api/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        articleId: article?.id || 1,
-        pageIndex: currentSpreadIndex + 1,
-        quoteText: commentData.quote,
-        content: commentData.content,
-      }),
-    }).catch(() => {});
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          articleId: article?.id || 1,
+          pageIndex: currentSpreadIndex + 1,
+          quoteText: commentData.quote,
+          content: commentData.content,
+        }),
+      });
+      const data = await res.json();
+      if (data?.data?.id) {
+        const current = $reader.get().comments;
+        $reader.setKey(
+          'comments',
+          current.map((c) => (c.id === tempId ? { ...c, id: data.data.id } : c))
+        );
+      }
+      if (article?.id) {
+        loadComments(article.id);
+      }
+    } catch (e) {
+      console.error('Failed to post comment:', e);
+    }
   }
 }

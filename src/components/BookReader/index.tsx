@@ -31,20 +31,22 @@ export default function BookReader() {
   useEffect(() => {
     const handleOpenEvent = (e: Event) => {
       const customEvent = e as CustomEvent<{ slug?: string; id?: number; title?: string }>;
-      const { slug, id, title } = customEvent.detail || {};
+      const { slug, id, title, article } = customEvent.detail || {};
 
-      let targetArticle: ArticleItem | undefined;
-      if (slug) {
+      let targetArticle: ArticleItem | undefined = article;
+      if (!targetArticle && slug) {
         targetArticle = DEFAULT_ARTICLES.find((a) => a.slug === slug);
       }
       if (!targetArticle && id) {
         targetArticle = DEFAULT_ARTICLES.find((a) => a.id === id);
       }
-      if (!targetArticle) {
+      if (!targetArticle && DEFAULT_ARTICLES.length > 0) {
         targetArticle = DEFAULT_ARTICLES[0];
       }
 
-      openBookReader(targetArticle);
+      if (targetArticle) {
+        openBookReader(targetArticle);
+      }
       setMobileDrawer('none');
     };
 
@@ -117,7 +119,7 @@ export default function BookReader() {
       id="view-reader"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="fixed inset-0 z-50 w-full h-screen max-h-screen px-2 sm:px-4 lg:px-6 py-2 sm:py-3.5 flex flex-col overflow-hidden transition-opacity duration-300 bg-stone-900/10 backdrop-blur-xs select-none"
+      className="fixed inset-0 z-50 w-full h-screen max-h-screen px-2 sm:px-4 lg:px-6 py-2 sm:py-3.5 flex flex-col overflow-hidden transition-opacity duration-300 bg-stone-900/10 backdrop-blur-xs"
     >
       {/* 移动端专属浮动控制条 (仅在 lg 屏幕以下显示) */}
       <div className="flex lg:hidden items-center justify-between bg-white/95 px-3 py-1.5 rounded-xl border border-stone-200/90 shadow-xs mb-2 flex-shrink-0 text-xs font-serif">

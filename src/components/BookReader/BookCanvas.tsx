@@ -106,7 +106,7 @@ export default function BookCanvas({
         ref={bookContainerRef}
         id="book-container"
         style={{ backgroundColor: themeStyles.bg, color: themeStyles.text }}
-        className={`relative w-full max-w-4xl xl:max-w-[980px] 2xl:max-w-[1040px] h-full rounded-2xl shadow-2xl border ${themeStyles.border} flex overflow-hidden book-spine-shadow transition-all duration-300 select-none`}
+        className={`relative w-full max-w-4xl xl:max-w-[980px] 2xl:max-w-[1040px] h-full rounded-2xl shadow-2xl border ${themeStyles.border} flex overflow-hidden book-spine-shadow transition-all duration-300`}
       >
         {/* 左侧翻页边翼 (常驻显示，边缘自带优雅纸墨渐变过渡色) */}
         <div
@@ -200,11 +200,11 @@ export default function BookCanvas({
           id="page-left"
           className={`${
             mobileActiveHalf === 'left' ? 'flex' : 'hidden'
-          } md:flex flex-col flex-1 pl-12 pr-6 lg:pl-14 lg:pr-8 pt-6 pb-3 border-r ${themeStyles.pageSpineBorder} left-page-spine relative overflow-hidden select-none`}
+          } md:flex flex-col flex-1 pl-12 pr-6 lg:pl-14 lg:pr-8 pt-6 pb-3 border-r ${themeStyles.pageSpineBorder} left-page-spine relative overflow-hidden`}
         >
           <div
             id="content-left"
-            className="flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start"
+            className="flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start select-text cursor-text"
             dangerouslySetInnerHTML={{ __html: spread.leftContent }}
           />
 
@@ -222,7 +222,7 @@ export default function BookCanvas({
         </div>
 
         {/* 中央书脊仿真折痕 */}
-        <div className="hidden md:block w-px bg-stone-300/60 shadow-[0_0_12px_rgba(0,0,0,0.2)] z-10" />
+        <div className="hidden md:block w-px bg-stone-300/60 shadow-[0_0_12px_rgba(0,0,0,0.2)] z-10 select-none" />
 
         {/* 右半页 (桌面端双页对开，移动端根据切换展示) */}
         <div
@@ -230,11 +230,11 @@ export default function BookCanvas({
           id="page-right"
           className={`${
             mobileActiveHalf === 'right' ? 'flex' : 'hidden'
-          } md:flex flex-col flex-1 pr-12 pl-6 lg:pr-14 lg:pl-8 pt-6 pb-3 right-page-spine relative overflow-hidden select-none`}
+          } md:flex flex-col flex-1 pr-12 pl-6 lg:pr-14 lg:pl-8 pt-6 pb-3 right-page-spine relative overflow-hidden`}
         >
           <div
             id="content-right"
-            className="flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start"
+            className="flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start select-text cursor-text"
             dangerouslySetInnerHTML={{ __html: spread.rightContent }}
           />
 
