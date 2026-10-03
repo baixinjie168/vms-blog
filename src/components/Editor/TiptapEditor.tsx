@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -7,6 +8,8 @@ import { PageBreak } from './PageBreakExtension';
 import {
   Bold,
   Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
   Heading2,
   Heading3,
   Quote,
@@ -17,6 +20,11 @@ import {
   Image as ImageIcon,
   BookOpen,
   Check,
+  Undo2,
+  Redo2,
+  Link as LinkIcon,
+  Unlink,
+  RemoveFormatting,
 } from 'lucide-react';
 
 interface TiptapEditorProps {
@@ -66,6 +74,13 @@ export default function TiptapEditor({
         heading: {
           levels: [2, 3, 4],
         },
+        link: {
+          openOnClick: false,
+          HTMLAttributes: {
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          },
+        },
       }),
       PageBreak,
       Image.configure({
@@ -73,14 +88,14 @@ export default function TiptapEditor({
         allowBase64: true,
       }),
       Placeholder.configure({
-        placeholder: '在此书写 Markdown / 富文本内容，支持直接拖入/粘贴截图...',
+        placeholder: '在此书写 Markdown / 富文本内容，支持直接拖入/粘贴截图，选中文字可唤出浮动格式栏...',
       }),
     ],
     content: initialContent,
     editorProps: {
       attributes: {
         class:
-          'prose prose-stone max-w-none focus:outline-none min-h-[420px] p-4 text-xs sm:text-sm leading-relaxed font-serif text-stone-800 selection:bg-limeBrand selection:text-white',
+          'tiptap-content focus:outline-none min-h-[460px] p-5 text-sm sm:text-base leading-relaxed font-serif text-stone-800 selection:bg-limeBrand selection:text-white',
       },
       handleDrop: (view, event, slice, moved) => {
         if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
@@ -143,6 +158,19 @@ export default function TiptapEditor({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleSetLink = () => {
+    if (!editor) return;
+    const previousUrl = editor.getAttributes('link').href;
+    const url = window.prompt('请输入超链接网址 (URL):', previousUrl || 'https://');
+    if (url === null) return;
+    if (url.trim() === '') {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+    const finalUrl = /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`;
+    editor.chain().focus().extendMarkRange('link').setLink({ href: finalUrl }).run();
+  };
+
   if (!editor) {
     return (
       <div className="flex-1 p-8 text-center text-xs text-stone-400 font-serif">
@@ -152,10 +180,157 @@ export default function TiptapEditor({
   }
 
   return (
-    <div className="flex flex-col bg-white rounded-2xl border border-stone-300 shadow-sm overflow-hidden h-full">
-      {/* 快捷排版工具栏 */}
+    <div className="flex flex-col bg-white rounded-2xl border border-stone-300 shadow-sm overflow-hidden h-full relative">
+      {/* Tiptap 浮动划词气泡工具栏 (Bubble Menu) */}
+      {editor && (
+        <BubbleMenu
+          editor={editor}
+          className="flex items-center gap-0.5 p-1 bg-stone-900/95 backdrop-blur-md text-white rounded-xl shadow-xl border border-stone-700/60 text-xs z-50 select-none animate-fade-in"
+        >
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
+              editor.isActive('bold') ? 'bg-limeBrand text-white font-bold' : 'text-stone-300'
+            }`}
+            title="加粗 (Ctrl+B)"
+          >
+            <Bold className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
+              editor.isActive('italic') ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="斜体 (Ctrl+I)"
+          >
+            <Italic className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
+              editor.isActive('underline') ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="下划线 (Ctrl+U)"
+          >
+            <UnderlineIcon className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
+              editor.isActive('strike') ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="删除线"
+          >
+            <Strikethrough className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
+              editor.isActive('code') ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="行内代码"
+          >
+            <Code className="w-3.5 h-3.5" />
+          </button>
+          <span className="w-px h-3.5 bg-stone-700 mx-0.5" />
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={`px-1.5 py-1 rounded-lg hover:bg-stone-800 transition text-[11px] font-bold ${
+              editor.isActive('heading', { level: 2 }) ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="二级标题"
+          >
+            H2
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            className={`px-1.5 py-1 rounded-lg hover:bg-stone-800 transition text-[11px] font-bold ${
+              editor.isActive('heading', { level: 3 }) ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="三级标题"
+          >
+            H3
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
+              editor.isActive('blockquote') ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="引用金句"
+          >
+            <Quote className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleSetLink}
+            className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
+              editor.isActive('link') ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="插入/修改链接"
+          >
+            <LinkIcon className="w-3.5 h-3.5" />
+          </button>
+        </BubbleMenu>
+      )}
+
+      {/* 顶部排版工具栏 */}
       <div className="flex items-center justify-between px-3 py-2 bg-stone-50/90 border-b border-stone-200 text-stone-600 text-xs flex-shrink-0 select-none">
         <div className="flex items-center space-x-1 flex-wrap gap-y-1">
+          {/* 历史记录：撤销 / 重做 */}
+          <button
+            type="button"
+            disabled={!editor.can().undo()}
+            onClick={() => editor.chain().focus().undo().run()}
+            className="p-1.5 rounded hover:bg-stone-200 text-stone-600 transition disabled:opacity-30 disabled:hover:bg-transparent"
+            title="撤销 (Ctrl+Z)"
+          >
+            <Undo2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            disabled={!editor.can().redo()}
+            onClick={() => editor.chain().focus().redo().run()}
+            className="p-1.5 rounded hover:bg-stone-200 text-stone-600 transition disabled:opacity-30 disabled:hover:bg-transparent"
+            title="重做 (Ctrl+Y)"
+          >
+            <Redo2 className="w-3.5 h-3.5" />
+          </button>
+
+          <span className="w-px h-4 bg-stone-200 mx-0.5" />
+
+          {/* 标题层级 */}
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+              editor.isActive('heading', { level: 2 }) ? 'bg-stone-200 text-stone-900 font-bold' : ''
+            }`}
+            title="二级标题 (##)"
+          >
+            <Heading2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+              editor.isActive('heading', { level: 3 }) ? 'bg-stone-200 text-stone-900 font-bold' : ''
+            }`}
+            title="三级标题 (###)"
+          >
+            <Heading3 className="w-3.5 h-3.5" />
+          </button>
+
+          <span className="w-px h-4 bg-stone-200 mx-0.5" />
+
+          {/* 行内文字格式 */}
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -178,24 +353,38 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
             className={`p-1.5 rounded hover:bg-stone-200 transition ${
-              editor.isActive('heading', { level: 2 }) ? 'bg-stone-200 text-stone-900 font-bold' : ''
+              editor.isActive('underline') ? 'bg-stone-200 text-stone-900 font-bold' : ''
             }`}
-            title="二级标题 (##)"
+            title="下划线 (Ctrl+U)"
           >
-            <Heading2 className="w-3.5 h-3.5" />
+            <UnderlineIcon className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
-            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            onClick={() => editor.chain().focus().toggleStrike().run()}
             className={`p-1.5 rounded hover:bg-stone-200 transition ${
-              editor.isActive('heading', { level: 3 }) ? 'bg-stone-200 text-stone-900 font-bold' : ''
+              editor.isActive('strike') ? 'bg-stone-200 text-stone-900 font-bold' : ''
             }`}
-            title="三级标题 (###)"
+            title="删除线"
           >
-            <Heading3 className="w-3.5 h-3.5" />
+            <Strikethrough className="w-3.5 h-3.5" />
           </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+              editor.isActive('code') ? 'bg-stone-200 text-stone-900' : ''
+            }`}
+            title="行内代码 (`code`)"
+          >
+            <Code className="w-3.5 h-3.5" />
+          </button>
+
+          <span className="w-px h-4 bg-stone-200 mx-0.5" />
+
+          {/* 块级元素 */}
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -205,16 +394,6 @@ export default function TiptapEditor({
             title="引用金句 (>)"
           >
             <Quote className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
-              editor.isActive('codeBlock') ? 'bg-stone-200 text-stone-900' : ''
-            }`}
-            title="代码块 (```)"
-          >
-            <Code className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
@@ -244,6 +423,32 @@ export default function TiptapEditor({
           >
             <Minus className="w-3.5 h-3.5" />
           </button>
+
+          <span className="w-px h-4 bg-stone-200 mx-0.5" />
+
+          {/* 链接与装帧专属功能 */}
+          <button
+            type="button"
+            onClick={handleSetLink}
+            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+              editor.isActive('link') ? 'bg-stone-200 text-limeDark font-bold' : ''
+            }`}
+            title="插入/修改超链接"
+          >
+            <LinkIcon className="w-3.5 h-3.5" />
+          </button>
+          {editor.isActive('link') && (
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().unsetLink().run()}
+              className="p-1.5 rounded hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition"
+              title="清除超链接"
+            >
+              <Unlink className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* 装帧分页 */}
           <button
             type="button"
             onClick={() => {
@@ -262,6 +467,8 @@ export default function TiptapEditor({
             <BookOpen className="w-3.5 h-3.5 text-limeBrand" />
             <span>装帧分页</span>
           </button>
+
+          {/* 传图 */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -278,14 +485,24 @@ export default function TiptapEditor({
             className="hidden"
             onChange={onFileInputChange}
           />
+
+          {/* 清除格式 */}
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+            className="p-1.5 rounded hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition"
+            title="清除所选区域格式"
+          >
+            <RemoveFormatting className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        {/* 字数与渲染状态 */}
+        {/* 字数与引擎状态 */}
         <div className="flex items-center space-x-2.5 text-stone-400 font-mono text-[11px] flex-shrink-0">
           <span id="editor-word-count">字数: {wordCount}</span>
-          <span className="text-emerald-600 flex items-center gap-1 font-medium">
-            <Check className="w-3 h-3" />
-            <span>实时切片</span>
+          <span className="text-limeDark bg-lime-50 border border-lime-200 px-2 py-0.5 rounded-full flex items-center gap-1 font-medium text-[10px]">
+            <Check className="w-3 h-3 text-limeBrand" />
+            <span>Tiptap 引擎</span>
           </span>
         </div>
       </div>

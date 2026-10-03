@@ -72,9 +72,190 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tiptap 编辑器装帧分页符与页码展示 */
+/* ============================================================
+   Tiptap 富文本编辑器专属书卷排版体系 (解决 Tailwind Preflight 覆盖)
+   ============================================================ */
 .tiptap {
   counter-reset: page-break-num 1;
+  outline: none !important;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, "Songti SC", "SimSun", serif;
+  color: #292524;
+}
+
+/* 占位符提示 (Placeholder) */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #a8a29e;
+  pointer-events: none;
+  height: 0;
+  font-style: normal;
+}
+
+/* 段落间距与文字排版 */
+.tiptap p {
+  margin-top: 0.65em;
+  margin-bottom: 0.65em;
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+/* 标题层级 */
+.tiptap h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1c1917;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  line-height: 1.3;
+}
+
+.tiptap h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1c1917;
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+  line-height: 1.35;
+  border-bottom: 1px solid #e7e5e4;
+  padding-bottom: 0.35rem;
+}
+
+.tiptap h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #292524;
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+  line-height: 1.4;
+}
+
+.tiptap h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #44403c;
+  margin-top: 1em;
+  margin-bottom: 0.3em;
+}
+
+/* 无序列表与有序列表 */
+.tiptap ul {
+  list-style-type: disc !important;
+  padding-left: 1.6rem !important;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.tiptap ol {
+  list-style-type: decimal !important;
+  padding-left: 1.6rem !important;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.tiptap li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+  line-height: 1.7;
+}
+
+.tiptap li p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* 引用金句 (Blockquote) */
+.tiptap blockquote {
+  border-left: 3.5px solid #70c000;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  background-color: #fafaf9;
+  color: #57534e;
+  font-style: italic;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.tiptap blockquote p {
+  margin: 0.25rem 0;
+}
+
+/* 行内代码与代码块 */
+.tiptap code:not(pre code) {
+  background-color: #f4f4f5;
+  color: #e11d48;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.3rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.tiptap pre {
+  background-color: #1e2024;
+  color: #f8fafc;
+  padding: 0.85rem 1.15rem;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.tiptap pre code {
+  color: inherit;
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+/* 超链接 */
+.tiptap a {
+  color: #559400;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.tiptap a:hover {
+  color: #70c000;
+}
+
+/* 普通分割线 (hr) */
+.tiptap hr:not(.page-break) {
+  border: none;
+  border-top: 1px solid #e7e5e4;
+  margin: 1.75rem 0;
+}
+
+/* 图片 */
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1rem auto;
+  display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 强调文字 */
+.tiptap strong {
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.tiptap em {
+  font-style: italic;
+}
+
+.tiptap u {
+  text-decoration: underline;
+  text-underline-offset: 2.5px;
+}
+
+.tiptap s {
+  text-decoration: line-through;
+  color: #78716c;
 }
 
 .tiptap .page-break,
