@@ -22,41 +22,33 @@ export interface EditorState {
   chapterLabel?: string;
 }
 
-const DEFAULT_EDITOR_CONTENT = `<h3>一、 大势所趋：AI 不是替代，而是杠杆</h3>
-<p>当我们站在 2026 年的节点回望，技术的剧变并未消解人类对深度沉淀的渴望，反而让<strong>具有个人独特视角与温度的原创思想</strong>变得愈发稀缺。</p>
-<blockquote>“势者，因势利导也。君子顺势而动，顺势而为。”</blockquote>
-<p>在七维体系中，「势」解决的是“我如何借势？”的终极追问。面对智能浪潮，博客不再是碎片杂货铺，而是一套七维通达的个人思想庇护所。</p>
-<h3>二、 告别信息浮躁，回归书页专注</h3>
-<p>我们习惯了在无尽滚动的信息瀑布流中快速滑动屏幕，却未曾察觉这种交互模式是如何撕裂专注力的。</p>
-<ul>
-  <li><strong>有限开本</strong>：将长文裁切为固定的双页印张。</li>
-  <li><strong>翻页交互</strong>：用手指点击或键盘方向键替代漫不经心的滑动。</li>
-  <li><strong>沉浸心流</strong>：一页一境，给思维留白。</li>
-</ul>`;
-
 const todayStr = new Date().toISOString().slice(0, 10);
-const initialPagination = paginateHtmlContent(DEFAULT_EDITOR_CONTENT);
+const emptyPagination = paginateHtmlContent('');
 
 export const initialEditorState: EditorState = {
   isOpen: false,
   articleId: null,
-  title: '以势乘风：探究 AI 时代个人知识资产与行业周期的重塑',
-  category: '势',
-  tags: '趋势, 借势, AI',
+  title: '',
+  category: '道',
+  tags: '',
   date: todayStr,
-  content: DEFAULT_EDITOR_CONTENT,
+  content: '',
   isSaving: false,
   isPublished: false,
-  previewSpreads: initialPagination.spreads,
-  totalPages: initialPagination.totalPages,
-  totalSpreads: initialPagination.totalSpreads,
-  wordCount: DEFAULT_EDITOR_CONTENT.replace(/<[^>]+>/g, '').length,
+  previewSpreads: emptyPagination.spreads,
+  totalPages: emptyPagination.totalPages,
+  totalSpreads: emptyPagination.totalSpreads,
+  wordCount: 0,
+  albumId: null,
+  albumOrder: 1,
+  chapterLabel: '',
 };
 
 export const $editor = map<EditorState>(initialEditorState);
 
 // 打开写作编辑器
 export function openEditor(article?: ArticleItem) {
+  const currentToday = new Date().toISOString().slice(0, 10);
   if (article) {
     const content = article.content || `<p>${article.summary || ''}</p>`;
     const pagination = paginateHtmlContent(content);
@@ -66,7 +58,7 @@ export function openEditor(article?: ArticleItem) {
       title: article.title,
       category: article.dimensionChar || '道',
       tags: article.tags || '',
-      date: article.date_str || todayStr,
+      date: article.date_str || currentToday,
       content,
       isSaving: false,
       isPublished: true,
@@ -79,12 +71,25 @@ export function openEditor(article?: ArticleItem) {
       chapterLabel: article.chapter_label || '',
     });
   } else {
-    $editor.setKey('isOpen', true);
-    $editor.setKey('articleId', null);
-    $editor.setKey('albumId', null);
-    $editor.setKey('albumOrder', 1);
-    $editor.setKey('chapterLabel', '');
-    $editor.setKey('tags', '');
+    const freshPagination = paginateHtmlContent('');
+    $editor.set({
+      isOpen: true,
+      articleId: null,
+      title: '',
+      category: '道',
+      tags: '',
+      date: currentToday,
+      content: '',
+      isSaving: false,
+      isPublished: false,
+      previewSpreads: freshPagination.spreads,
+      totalPages: freshPagination.totalPages,
+      totalSpreads: freshPagination.totalSpreads,
+      wordCount: 0,
+      albumId: null,
+      albumOrder: 1,
+      chapterLabel: '',
+    });
   }
 
   if (typeof window !== 'undefined') {

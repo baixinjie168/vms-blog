@@ -30,10 +30,11 @@ export function paginateHtmlContent(
   }
 
   // 1. 块级标签粗粒度拆分
-  // 识别自定义分页符 <hr class="page-break"> 或标准块元素
+  // 识别自定义分页符 <hr class="page-break"> 或 <div class="page-break"> 或带 data-page-break 的块元素
   const normalized = htmlContent
-    .replace(/<hr class="page-break"[^>]*>/gi, '<!-- PAGE_BREAK -->')
-    .replace(/<div class="page-break"[^>]*>.*?<\/div>/gi, '<!-- PAGE_BREAK -->');
+    .replace(/<hr[^>]*class=["'][^"']*page-break[^"']*["'][^>]*>/gi, '<!-- PAGE_BREAK -->')
+    .replace(/<div[^>]*class=["'][^"']*page-break[^"']*["'][^>]*>[\s\S]*?<\/div>/gi, '<!-- PAGE_BREAK -->')
+    .replace(/<(?:hr|div)[^>]*data-page-break[^>]*>(?:<\/(?:hr|div)>)?/gi, '<!-- PAGE_BREAK -->');
 
   const rawBlocks = normalized
     .split(/(?=<(?:h[1-6]|p|blockquote|pre|ul|ol|table|figure|div|!-- PAGE_BREAK --))/i)

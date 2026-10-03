@@ -71,3 +71,85 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Tiptap 编辑器装帧分页符与页码展示 */
+.tiptap {
+  counter-reset: page-break-num 1;
+}
+
+.tiptap .page-break,
+.tiptap hr.page-break {
+  counter-increment: page-break-num;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2.25rem 0;
+  padding: 0;
+  height: 28px;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  outline: none;
+}
+
+/* 分页水平虚线 (雅致书卷青柠虚线) */
+.tiptap .page-break::before,
+.tiptap hr.page-break::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    #70c000 0px,
+    #70c000 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  z-index: 1;
+}
+
+/* 中央页码标识胶囊 */
+.tiptap .page-break::after,
+.tiptap hr.page-break::after {
+  content: "❖ 装帧分页 · 第 " counter(page-break-num) " 页 ❖";
+  position: relative;
+  z-index: 2;
+  padding: 3px 16px;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, "Songti SC", "SimSun", serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #559400;
+  background-color: #f7fee7;
+  border: 1px solid #d9f99d;
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease-in-out;
+}
+
+/* 悬停微动与加亮 */
+.tiptap .page-break:hover::after,
+.tiptap hr.page-break:hover::after {
+  background-color: #ecfccb;
+  border-color: #a3e635;
+  transform: scale(1.02);
+}
+
+/* 节点被选中态（ProseMirror 选中节点时可按 Delete/Backspace 键直接删除分页符） */
+.tiptap .page-break.ProseMirror-selectednode::after,
+.tiptap hr.page-break.ProseMirror-selectednode::after {
+  outline: 2px solid #70c000;
+  outline-offset: 2px;
+  background-color: #70c000;
+  color: #ffffff;
+}
+
+/* 打印与标准分页容器通用属性 */
+.page-break {
+  page-break-before: always;
+  break-before: page;
+}

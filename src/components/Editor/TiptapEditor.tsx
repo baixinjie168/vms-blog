@@ -1,8 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import { PageBreak } from './PageBreakExtension';
 import {
   Bold,
   Italic,
@@ -66,6 +67,7 @@ export default function TiptapEditor({
           levels: [2, 3, 4],
         },
       }),
+      PageBreak,
       Image.configure({
         inline: true,
         allowBase64: true,
@@ -120,6 +122,15 @@ export default function TiptapEditor({
       onContentChange(editor.getHTML());
     },
   });
+
+  // 监听外部内容重置与文章切换
+  useEffect(() => {
+    if (!editor) return;
+    if (initialContent === '' && editor.isEmpty) return;
+    if (editor.getHTML() !== initialContent) {
+      editor.commands.setContent(initialContent || '');
+    }
+  }, [initialContent, editor]);
 
   const onFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -236,10 +247,17 @@ export default function TiptapEditor({
           <button
             type="button"
             onClick={() => {
-              editor.chain().focus().insertContent('<hr class="page-break" />').run();
+              editor
+                .chain()
+                .focus()
+                .insertContent([
+                  { type: 'pageBreak' },
+                  { type: 'paragraph' },
+                ])
+                .run();
             }}
             className="p-1.5 rounded hover:bg-stone-200 text-limeDark hover:text-limeDark transition flex items-center gap-1 text-[11px] font-serif font-bold"
-            title="手动插入装帧分页符"
+            title="手动插入装帧分页符（带页码分界线）"
           >
             <BookOpen className="w-3.5 h-3.5 text-limeBrand" />
             <span>装帧分页</span>
