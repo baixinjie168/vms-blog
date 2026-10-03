@@ -11,6 +11,20 @@ export const GET: APIRoute = async ({ request, locals }) => {
     await ensureBlogSchema(db);
 
     const url = new URL(request.url);
+    const slug = url.searchParams.get('slug');
+    if (slug && db) {
+      const article = await BlogService.getArticleBySlug(db, slug);
+      if (!article) {
+        return new Response(JSON.stringify({ success: false, error: '文章不存在' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ success: true, article }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const category = url.searchParams.get('category') || undefined;
     const albumSlug = url.searchParams.get('album') || undefined;
     const date = url.searchParams.get('date') || undefined;

@@ -47,18 +47,32 @@ export const initialEditorState: EditorState = {
 export const $editor = map<EditorState>(initialEditorState);
 
 // 打开写作编辑器
-export function openEditor(article?: ArticleItem) {
+export async function openEditor(article?: ArticleItem) {
   const currentToday = new Date().toISOString().slice(0, 10);
   if (article) {
-    const content = article.content || `<p>${article.summary || ''}</p>`;
+    let fullArticle = article;
+    if (!fullArticle.content && fullArticle.slug) {
+      try {
+        const res = await fetch(`/api/articles?slug=${fullArticle.slug}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.article) {
+            fullArticle = { ...fullArticle, ...json.article };
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch full article for editor:', e);
+      }
+    }
+    const content = fullArticle.content || `<p>${fullArticle.summary || ''}</p>`;
     const pagination = paginateHtmlContent(content);
     $editor.set({
       isOpen: true,
-      articleId: article.id,
-      title: article.title,
-      category: article.dimensionChar || '道',
-      tags: article.tags || '',
-      date: article.date_str || currentToday,
+      articleId: fullArticle.id,
+      title: fullArticle.title,
+      category: fullArticle.dimensionChar || '道',
+      tags: fullArticle.tags || '',
+      date: fullArticle.date_str || currentToday,
       content,
       isSaving: false,
       isPublished: true,
@@ -66,9 +80,9 @@ export function openEditor(article?: ArticleItem) {
       totalPages: pagination.totalPages,
       totalSpreads: pagination.totalSpreads,
       wordCount: content.replace(/<[^>]+>/g, '').length,
-      albumId: article.album_id || null,
-      albumOrder: article.album_order || 1,
-      chapterLabel: article.chapter_label || '',
+      albumId: fullArticle.album_id || null,
+      albumOrder: fullArticle.album_order || 1,
+      chapterLabel: fullArticle.chapter_label || '',
     });
   } else {
     const freshPagination = paginateHtmlContent('');

@@ -663,7 +663,7 @@ export class BlogService {
       // 分页查询文章列表
       const querySql = `
         SELECT 
-          a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary,
+          a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary, a.content,
           a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.tags, a.read_time, a.views,
           a.published_at, a.created_at, length(a.content) as content_length,
           alb.slug as album_slug, alb.title as album_title,
@@ -681,7 +681,7 @@ export class BlogService {
       const data: ArticleItem[] = (rows.results || []).map((r) => {
         const norm = normalizeDimension(r.dimension) || "dao";
         const meta = DIMENSIONS[norm] || DIMENSIONS.dao;
-        const chars = r.content_length || 3000;
+        const chars = r.content_length || (r.content ? r.content.length : 3000);
         const wordCount = `${chars.toLocaleString()}字`;
 
         return {
@@ -691,6 +691,7 @@ export class BlogService {
           slug: r.slug,
           title: r.title,
           summary: r.summary,
+          content: r.content || '',
           cover_image: r.cover_image,
           dimension: norm,
           dimensionChar: meta.char,

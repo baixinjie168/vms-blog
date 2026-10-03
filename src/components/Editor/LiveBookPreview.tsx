@@ -103,7 +103,7 @@ export default function LiveBookPreview({
             {/* 左页 */}
             <div className="flex flex-col justify-between min-h-[300px] border-b md:border-b-0 md:border-r border-stone-200 pb-3 md:pb-0 md:pr-3">
               <div
-                className="text-stone-800 text-xs leading-relaxed text-justify space-y-2 overflow-hidden"
+                className="book-page-content text-stone-800 text-xs leading-relaxed text-justify space-y-2 overflow-hidden"
                 dangerouslySetInnerHTML={{ __html: currentSpread?.leftContent || '' }}
               />
               <div className="pt-2 mt-auto text-[9px] font-mono text-stone-400 flex justify-between">
@@ -115,7 +115,7 @@ export default function LiveBookPreview({
             {/* 右页 */}
             <div className="flex flex-col justify-between min-h-[300px] md:pl-1">
               <div
-                className="text-stone-800 text-xs leading-relaxed text-justify space-y-2 overflow-hidden"
+                className="book-page-content text-stone-800 text-xs leading-relaxed text-justify space-y-2 overflow-hidden"
                 dangerouslySetInnerHTML={{ __html: currentSpread?.rightContent || '' }}
               />
               <div className="pt-2 mt-auto text-[9px] font-mono text-stone-400 flex justify-between">

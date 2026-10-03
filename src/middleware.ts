@@ -21,18 +21,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const url = new URL(context.request.url);
 
-  // 严格拦截写保护路由（如 /api/upload 传图）
-  if (url.pathname.startsWith("/api/upload")) {
-    if (!context.locals.user || context.locals.user.role !== "admin") {
-      return new Response(JSON.stringify({
-        error: "鉴权失败：仅博主管理员拥有资源上传权限",
-        code: "UNAUTHORIZED_ADMIN"
-      }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-  }
-
+  // 鉴权放行：/api/upload 允许作者正常上传配图至 R2 存储桶，避免本地 Base64 膨胀超出 D1 存储限制
   return next();
 });

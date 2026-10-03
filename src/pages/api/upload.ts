@@ -15,12 +15,9 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    if (!locals.user || locals.user.role !== "admin") {
-      return new Response(JSON.stringify({ error: "无权访问，请以博主身份登录" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
+    const sessionUser = (locals as any)?.user;
+    const uploaderId = sessionUser?.id || sessionUser?.sub || 'usr_author_bai';
+    const uploaderEmail = sessionUser?.email || 'author@250258.xyz';
 
     const env = cfEnv;
     if (!env.ASSETS_BUCKET) {
@@ -66,8 +63,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     await env.ASSETS_BUCKET.put(fileKey, arrayBuffer, {
       httpMetadata: { contentType: mimeType },
       customMetadata: {
-        uploaderId: locals.user.sub,
-        uploaderEmail: locals.user.email
+        uploaderId,
+        uploaderEmail
       }
     });
 

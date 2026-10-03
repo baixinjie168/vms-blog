@@ -1,5 +1,6 @@
 import { atom, map } from 'nanostores';
 import type { ArticleItem } from '../services/blogService';
+import { paginateHtmlContent } from '../utils/paginationEngine';
 
 export type PaperTheme = 'ivory' | 'bamboo' | 'ink';
 
@@ -269,159 +270,65 @@ const DEFAULT_COMMENTS: ReaderComment[] = [
   },
 ];
 
-// 根据文章信息智能构造双页内容
+// 根据文章真实正文与分页引擎智能构造对开书页
 export function buildArticleReaderContent(article: ArticleItem): {
   spreads: BookSpread[];
   toc: TOCItem[];
   comments: ReaderComment[];
 } {
   const dimensionName = article.dimensionName || `${article.dimensionChar || '道'} · 认知体系`;
-  const dimensionColor = article.dimensionColor || '#70C000';
-  const seal = article.dimensionChar || '道';
+  const dimensionBg = article.dimensionBg || 'bg-stone-100';
+  const dimensionBorder = article.dimensionBorder || 'border-stone-200';
+  const dateStr = article.date_str || new Date().toISOString().slice(0, 10);
 
-  const spreads: BookSpread[] = [
-    {
-      leftPageNum: 1,
-      rightPageNum: 2,
-      leftContent: `
-        <div class="space-y-4">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="px-2 py-0.5 rounded text-[10px] font-serif font-bold ${article.dimensionBg || 'bg-stone-100'} border ${article.dimensionBorder || 'border-stone-200'} text-stone-700">
-              ${dimensionName}
-            </span>
-            <span class="text-[10px] font-mono text-stone-400">${article.date_str || '2026-09-26'}</span>
-          </div>
-          <h1 class="text-xl sm:text-2xl font-serif font-black text-stone-900 tracking-tight leading-snug">
-            ${article.title}
-          </h1>
-          <div class="text-xs text-limeDark font-serif italic py-1 border-l-2 border-limeBrand pl-3">
-            “古之立大事者，不惟有超世之才，亦必有坚忍不拔之志。”
-          </div>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            ${article.summary || '在快速迭代的知识网络中，唯有深刻的方法论与沉静的思考才能穿透杂音。'}
-          </p>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            本文收录于《VMS》数字花园体系，通过系统化的思考框架与严谨的装帧形式，为您呈现第一手深度心得。请循序渐进，细嚼慢品。
-          </p>
-        </div>
-      `,
-      rightContent: `
-        <div class="space-y-4">
-          <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-            <span class="w-1.5 h-4 bg-limeBrand rounded-full inline-block"></span>
-            一、 核心命题与认知锚点
-          </h3>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            在探讨具体工法之前，我们需要先厘清该领域的核心底层逻辑。任何复杂的系统，其本质往往源于几个至关重要的第一性原理：
-          </p>
-          <div class="p-3 bg-stone-100/80 rounded-xl border border-stone-200/80 my-2 space-y-1.5 text-xs text-stone-700">
-            <div class="font-bold text-stone-900">核心命题提炼：</div>
-            <div>• <strong class="text-stone-800">目标定位</strong>：明确关键变量与边界条件，杜绝冗余行动；</div>
-            <div>• <strong class="text-stone-800">认知升级</strong>：打破旧有思维定势，建立正反馈闭环；</div>
-            <div>• <strong class="text-stone-800">工程落地</strong>：从抽象原则走向具体可复现的代码与工法。</div>
-          </div>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            正如古人云：“思之不审，得之难纯”。唯有在立项之初洞悉全貌，方能在执行中势如破竹。
-          </p>
-        </div>
-      `,
-    },
-    {
-      leftPageNum: 3,
-      rightPageNum: 4,
-      leftContent: `
-        <div class="space-y-4">
-          <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-            <span class="w-1.5 h-4 bg-limeBrand rounded-full inline-block"></span>
-            二、 体系解构与方法工法
-          </h3>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            进入实践阶段，工程工法的细腻程度直接决定了最终交付的质量与长期维护成本。
-          </p>
-          <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 font-mono text-xs text-stone-700 space-y-1">
-            <div class="text-stone-400">// 系统化实施准则</div>
-            <div>1. 边界清晰化（Module Boundary）</div>
-            <div>2. 状态原子化（Reactive State Machine）</div>
-            <div>3. 边缘无状态（Serverless Edge Scalability）</div>
-          </div>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            在构建高可用系统时，优雅的架构不在于堆砌了多少前沿名词，而在于它以最简洁的结构承受了最复杂的业务流动。
-          </p>
-        </div>
-      `,
-      rightContent: `
-        <div class="space-y-4">
-          <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-            <span class="w-1.5 h-4 bg-limeBrand rounded-full inline-block"></span>
-            三、 演进反思与沉淀
-          </h3>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            技术会更迭，工具会推陈出新，但沉淀在字里行间的心智模型却历久弥新。
-          </p>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            在持续迭代的过程中，我们不断检验与校准最初的假说，让认知与实践交织出坚韧的生命力。
-          </p>
-          <div class="p-2.5 rounded-xl bg-limeLight/40 border border-limeBrand/30 text-xs text-limeDark font-serif">
-            “博观而约取，厚积而薄发。” 每一处细节的打磨，都是对读者时间的最高敬意。
-          </div>
-        </div>
-      `,
-    },
-    {
-      leftPageNum: 5,
-      rightPageNum: 6,
-      leftContent: `
-        <div class="space-y-4">
-          <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-            <span class="w-1.5 h-4 bg-limeBrand rounded-full inline-block"></span>
-            四、 结语 · 行远自迩
-          </h3>
-          <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            感谢您的完整翻阅。思考永不停歇，求索永在路上。
-          </p>
-          <div class="mt-8 text-center">
-            <div class="inline-block p-4 border-2 border-stone-300 rounded-2xl bg-white shadow-sm">
-              <div class="font-serif font-bold text-stone-800 text-sm">「${article.title}」</div>
-              <div class="text-[11px] text-stone-400 mt-1 font-serif">—— 全文完 · 感谢慢读 ——</div>
-            </div>
-          </div>
-        </div>
-      `,
-      rightContent: `
-        <div class="flex flex-col items-center justify-center h-full text-center p-6 border-2 border-dashed border-stone-200 rounded-2xl bg-white/50">
-          <div class="w-14 h-14 rounded-full bg-limeLight text-limeDark flex items-center justify-center font-serif text-2xl font-bold mb-3 shadow-inner">
-            ${seal}
-          </div>
-          <h4 class="font-serif font-bold text-stone-900 text-base mb-1">阅读完毕 · 沉思回味</h4>
-          <p class="text-xs text-stone-500 max-w-xs mb-6 font-serif">
-            您已读完本文。您可以返回文集列表，或探索其他七维层级。
-          </p>
-          <div class="flex flex-col gap-2 w-full max-w-xs text-xs">
-            <button id="book-finish-back-btn" class="w-full py-2 rounded-xl bg-stone-900 text-white font-medium hover:bg-limeDark transition cursor-pointer shadow-xs">
-              返回文集列表
-            </button>
-            <button id="book-finish-rewind-btn" class="w-full py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium transition cursor-pointer">
-              重新翻阅第一页
-            </button>
-          </div>
-        </div>
-      `,
-    },
-  ];
+  // 篇头篇目信息（仅在第一页上方自然排版呈现）
+  const headerHtml = `
+    <div class="space-y-3 mb-5 pb-3 border-b border-stone-200/80">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="px-2 py-0.5 rounded text-[10px] font-serif font-bold ${dimensionBg} border ${dimensionBorder} text-stone-700">
+          ${dimensionName}
+        </span>
+        <span class="text-[10px] font-mono text-stone-400">${dateStr}</span>
+        <span class="text-[10px] font-mono text-stone-300">·</span>
+        <span class="text-[10px] font-serif text-stone-400">${article.author_nickname || '白心解'} 著</span>
+      </div>
+      <h1 class="text-xl sm:text-2xl font-serif font-black text-stone-900 tracking-tight leading-snug">
+        ${article.title}
+      </h1>
+      ${article.summary ? `<div class="text-xs text-limeDark font-serif italic py-1.5 border-l-2 border-limeBrand pl-3 bg-lime-50/40 rounded-r">${article.summary}</div>` : ''}
+    </div>
+  `;
 
-  const toc: TOCItem[] = [
-    { level: 1, title: article.title, page: 1, tag: '篇目' },
-    { level: 2, title: '一、 核心命题与认知锚点', page: 2, tag: '章一' },
-    { level: 3, title: '1.1 第一性原理与边界', page: 2, tag: '小节' },
-    { level: 2, title: '二、 体系解构与方法工法', page: 3, tag: '章二' },
-    { level: 3, title: '2.1 系统化实施准则', page: 3, tag: '小节' },
-    { level: 2, title: '三、 演进反思与沉淀', page: 4, tag: '章三' },
-    { level: 2, title: '四、 结语 · 行远自迩', page: 5, tag: '章四' },
-  ];
+  const fullRawHtml = article.content
+    ? `${headerHtml}${article.content}`
+    : `${headerHtml}<p class="text-stone-700 leading-relaxed indent-8">${article.summary || '正文暂在编排装帧中...'}</p>`;
 
-  const comments: ReaderComment[] = [];
+  const pagination = paginateHtmlContent(fullRawHtml);
 
-  return { spreads, toc, comments };
+  // 动态提取文章内各级标题作为目录导航 (TOC)
+  const toc: TOCItem[] = [];
+  toc.push({ level: 1, title: article.title, page: 1, tag: '篇目' });
+
+  const headingMatches = [...fullRawHtml.matchAll(/<(h[1-3])[^>]*>(.*?)<\/\1>/gi)];
+  let chapterIndex = 1;
+  for (const m of headingMatches) {
+    const level = parseInt(m[1][1], 10);
+    const headingText = m[2].replace(/<[^>]+>/g, '').trim();
+    if (headingText && headingText !== article.title) {
+      toc.push({
+        level,
+        title: headingText,
+        page: Math.min(pagination.totalPages, chapterIndex + 1),
+        tag: level === 1 ? '篇目' : level === 2 ? `章${chapterIndex++}` : '小节',
+      });
+    }
+  }
+
+  return {
+    spreads: pagination.spreads,
+    toc,
+    comments: [],
+  };
 }
 
 const getInitialPaperTheme = (): PaperTheme => {
@@ -467,13 +374,28 @@ export async function loadComments(articleId: number) {
 }
 
 // 打开翻书阅读器
-export function openBookReader(article: ArticleItem, initialPage: number = 1) {
-  const content = buildArticleReaderContent(article);
+export async function openBookReader(article: ArticleItem, initialPage: number = 1) {
+  let fullArticle = article;
+  if (!fullArticle.content && fullArticle.slug) {
+    try {
+      const res = await fetch(`/api/articles?slug=${fullArticle.slug}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.article) {
+          fullArticle = { ...fullArticle, ...json.article };
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch full article for reader:', e);
+    }
+  }
+
+  const content = buildArticleReaderContent(fullArticle);
   const targetSpread = Math.max(0, Math.floor((initialPage - 1) / 2));
 
   $reader.set({
     isOpen: true,
-    article,
+    article: fullArticle,
     currentSpreadIndex: Math.min(targetSpread, Math.max(0, content.spreads.length - 1)),
     paperTheme: $reader.get().paperTheme,
     spreads: content.spreads,

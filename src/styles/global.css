@@ -73,11 +73,15 @@ body {
 }
 
 /* ============================================================
-   Tiptap 富文本编辑器专属书卷排版体系 (解决 Tailwind Preflight 覆盖)
+   Tiptap 富文本编辑器与翻书阅读器专属书卷排版体系 (解决 Tailwind Preflight 覆盖)
    ============================================================ */
 .tiptap {
   counter-reset: page-break-num 1;
   outline: none !important;
+}
+
+.tiptap,
+.book-page-content {
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, "Songti SC", "SimSun", serif;
   color: #292524;
 }
@@ -93,7 +97,8 @@ body {
 }
 
 /* 段落间距与文字排版 */
-.tiptap p {
+.tiptap p,
+.book-page-content p {
   margin-top: 0.65em;
   margin-bottom: 0.65em;
   line-height: 1.8;
@@ -101,71 +106,80 @@ body {
 }
 
 /* 标题层级 */
-.tiptap h1 {
-  font-size: 1.75rem;
+.tiptap h1,
+.book-page-content h1 {
+  font-size: 1.65rem;
   font-weight: 800;
   color: #1c1917;
-  margin-top: 1.6em;
-  margin-bottom: 0.6em;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
   line-height: 1.3;
 }
 
-.tiptap h2 {
-  font-size: 1.35rem;
+.tiptap h2,
+.book-page-content h2 {
+  font-size: 1.3rem;
   font-weight: 700;
   color: #1c1917;
-  margin-top: 1.4em;
-  margin-bottom: 0.5em;
+  margin-top: 1.35em;
+  margin-bottom: 0.45em;
   line-height: 1.35;
   border-bottom: 1px solid #e7e5e4;
   padding-bottom: 0.35rem;
 }
 
-.tiptap h3 {
+.tiptap h3,
+.book-page-content h3 {
   font-size: 1.15rem;
   font-weight: 700;
   color: #292524;
-  margin-top: 1.2em;
-  margin-bottom: 0.4em;
+  margin-top: 1.15em;
+  margin-bottom: 0.35em;
   line-height: 1.4;
 }
 
-.tiptap h4 {
+.tiptap h4,
+.book-page-content h4 {
   font-size: 1.05rem;
   font-weight: 600;
   color: #44403c;
-  margin-top: 1em;
+  margin-top: 0.9em;
   margin-bottom: 0.3em;
 }
 
 /* 无序列表与有序列表 */
-.tiptap ul {
+.tiptap ul,
+.book-page-content ul {
   list-style-type: disc !important;
   padding-left: 1.6rem !important;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
 
-.tiptap ol {
+.tiptap ol,
+.book-page-content ol {
   list-style-type: decimal !important;
   padding-left: 1.6rem !important;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
 
-.tiptap li {
+.tiptap li,
+.book-page-content li {
   margin-top: 0.25em;
   margin-bottom: 0.25em;
   line-height: 1.7;
 }
 
-.tiptap li p {
+.tiptap li p,
+.book-page-content li p {
   margin-top: 0;
   margin-bottom: 0;
 }
 
 /* 引用金句 (Blockquote) */
-.tiptap blockquote {
+.tiptap blockquote,
+.book-page-content blockquote {
   border-left: 3.5px solid #70c000;
   padding: 0.5rem 1rem;
   margin: 1rem 0;
@@ -175,12 +189,14 @@ body {
   border-radius: 0 0.5rem 0.5rem 0;
 }
 
-.tiptap blockquote p {
+.tiptap blockquote p,
+.book-page-content blockquote p {
   margin: 0.25rem 0;
 }
 
 /* 行内代码与代码块 */
-.tiptap code:not(pre code) {
+.tiptap code:not(pre code),
+.book-page-content code:not(pre code) {
   background-color: #f4f4f5;
   color: #e11d48;
   padding: 0.15rem 0.4rem;
@@ -189,7 +205,8 @@ body {
   font-size: 0.85em;
 }
 
-.tiptap pre {
+.tiptap pre,
+.book-page-content pre {
   background-color: #1e2024;
   color: #f8fafc;
   padding: 0.85rem 1.15rem;
@@ -201,7 +218,8 @@ body {
   line-height: 1.6;
 }
 
-.tiptap pre code {
+.tiptap pre code,
+.book-page-content pre code {
   color: inherit;
   padding: 0;
   background: none;
@@ -209,7 +227,8 @@ body {
 }
 
 /* 超链接 */
-.tiptap a {
+.tiptap a,
+.book-page-content a {
   color: #559400;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -217,19 +236,22 @@ body {
   transition: color 0.15s ease;
 }
 
-.tiptap a:hover {
+.tiptap a:hover,
+.book-page-content a:hover {
   color: #70c000;
 }
 
 /* 普通分割线 (hr) */
-.tiptap hr:not(.page-break) {
+.tiptap hr:not(.page-break),
+.book-page-content hr:not(.page-break) {
   border: none;
   border-top: 1px solid #e7e5e4;
   margin: 1.75rem 0;
 }
 
 /* 图片 */
-.tiptap img {
+.tiptap img,
+.book-page-content img {
   max-width: 100%;
   height: auto;
   border-radius: 0.75rem;
@@ -239,21 +261,25 @@ body {
 }
 
 /* 强调文字 */
-.tiptap strong {
+.tiptap strong,
+.book-page-content strong {
   font-weight: 700;
   color: #1c1917;
 }
 
-.tiptap em {
+.tiptap em,
+.book-page-content em {
   font-style: italic;
 }
 
-.tiptap u {
+.tiptap u,
+.book-page-content u {
   text-decoration: underline;
   text-underline-offset: 2.5px;
 }
 
-.tiptap s {
+.tiptap s,
+.book-page-content s {
   text-decoration: line-through;
   color: #78716c;
 }

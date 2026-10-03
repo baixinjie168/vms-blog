@@ -10,10 +10,12 @@ import {
   Italic,
   Underline as UnderlineIcon,
   Strikethrough,
+  Heading1,
   Heading2,
   Heading3,
   Quote,
   Code,
+  SquareCode,
   List,
   ListOrdered,
   Minus,
@@ -72,7 +74,7 @@ export default function TiptapEditor({
     extensions: [
       StarterKit.configure({
         heading: {
-          levels: [2, 3, 4],
+          levels: [1, 2, 3, 4],
         },
         link: {
           openOnClick: false,
@@ -181,7 +183,7 @@ export default function TiptapEditor({
 
   return (
     <div className="flex flex-col bg-white rounded-2xl border border-stone-300 shadow-sm overflow-hidden h-full relative">
-      {/* Tiptap 浮动划词气泡工具栏 (Bubble Menu) */}
+      {/* Tiptap 浮动划词气泡工具栏 (Bubble Menu) - onMouseDown 阻止失焦 */}
       {editor && (
         <BubbleMenu
           editor={editor}
@@ -189,6 +191,7 @@ export default function TiptapEditor({
         >
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
               editor.isActive('bold') ? 'bg-limeBrand text-white font-bold' : 'text-stone-300'
@@ -199,6 +202,7 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
               editor.isActive('italic') ? 'bg-limeBrand text-white' : 'text-stone-300'
@@ -209,6 +213,7 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleUnderline().run()}
             className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
               editor.isActive('underline') ? 'bg-limeBrand text-white' : 'text-stone-300'
@@ -219,6 +224,7 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleStrike().run()}
             className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
               editor.isActive('strike') ? 'bg-limeBrand text-white' : 'text-stone-300'
@@ -229,6 +235,7 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleCode().run()}
             className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
               editor.isActive('code') ? 'bg-limeBrand text-white' : 'text-stone-300'
@@ -240,6 +247,18 @@ export default function TiptapEditor({
           <span className="w-px h-3.5 bg-stone-700 mx-0.5" />
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={`px-1.5 py-1 rounded-lg hover:bg-stone-800 transition text-[11px] font-bold ${
+              editor.isActive('heading', { level: 1 }) ? 'bg-limeBrand text-white' : 'text-stone-300'
+            }`}
+            title="一级标题"
+          >
+            H1
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             className={`px-1.5 py-1 rounded-lg hover:bg-stone-800 transition text-[11px] font-bold ${
               editor.isActive('heading', { level: 2 }) ? 'bg-limeBrand text-white' : 'text-stone-300'
@@ -250,6 +269,7 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
             className={`px-1.5 py-1 rounded-lg hover:bg-stone-800 transition text-[11px] font-bold ${
               editor.isActive('heading', { level: 3 }) ? 'bg-limeBrand text-white' : 'text-stone-300'
@@ -260,6 +280,7 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
               editor.isActive('blockquote') ? 'bg-limeBrand text-white' : 'text-stone-300'
@@ -270,6 +291,7 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={handleSetLink}
             className={`p-1.5 rounded-lg hover:bg-stone-800 transition ${
               editor.isActive('link') ? 'bg-limeBrand text-white' : 'text-stone-300'
@@ -281,15 +303,16 @@ export default function TiptapEditor({
         </BubbleMenu>
       )}
 
-      {/* 顶部排版工具栏 */}
+      {/* 顶部排版工具栏 - 所有按钮均通过 onMouseDown 阻止选区失焦 */}
       <div className="flex items-center justify-between px-3 py-2 bg-stone-50/90 border-b border-stone-200 text-stone-600 text-xs flex-shrink-0 select-none">
         <div className="flex items-center space-x-1 flex-wrap gap-y-1">
           {/* 历史记录：撤销 / 重做 */}
           <button
             type="button"
             disabled={!editor.can().undo()}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().undo().run()}
-            className="p-1.5 rounded hover:bg-stone-200 text-stone-600 transition disabled:opacity-30 disabled:hover:bg-transparent"
+            className="p-1.5 rounded hover:bg-stone-200 text-stone-600 transition disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
             title="撤销 (Ctrl+Z)"
           >
             <Undo2 className="w-3.5 h-3.5" />
@@ -297,8 +320,9 @@ export default function TiptapEditor({
           <button
             type="button"
             disabled={!editor.can().redo()}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().redo().run()}
-            className="p-1.5 rounded hover:bg-stone-200 text-stone-600 transition disabled:opacity-30 disabled:hover:bg-transparent"
+            className="p-1.5 rounded hover:bg-stone-200 text-stone-600 transition disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
             title="重做 (Ctrl+Y)"
           >
             <Redo2 className="w-3.5 h-3.5" />
@@ -306,24 +330,37 @@ export default function TiptapEditor({
 
           <span className="w-px h-4 bg-stone-200 mx-0.5" />
 
-          {/* 标题层级 */}
+          {/* 标题层级 (H1 / H2 / H3) */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
+              editor.isActive('heading', { level: 1 }) ? 'bg-stone-200 text-stone-900 font-bold' : ''
+            }`}
+            title="一级篇目标题 (#)"
+          >
+            <Heading1 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('heading', { level: 2 }) ? 'bg-stone-200 text-stone-900 font-bold' : ''
             }`}
-            title="二级标题 (##)"
+            title="二级章节标题 (##)"
           >
             <Heading2 className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('heading', { level: 3 }) ? 'bg-stone-200 text-stone-900 font-bold' : ''
             }`}
-            title="三级标题 (###)"
+            title="三级小节标题 (###)"
           >
             <Heading3 className="w-3.5 h-3.5" />
           </button>
@@ -333,8 +370,9 @@ export default function TiptapEditor({
           {/* 行内文字格式 */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('bold') ? 'bg-stone-200 text-stone-900 font-bold' : ''
             }`}
             title="加粗 (Ctrl+B)"
@@ -343,8 +381,9 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('italic') ? 'bg-stone-200 text-stone-900 italic' : ''
             }`}
             title="斜体 (Ctrl+I)"
@@ -353,8 +392,9 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('underline') ? 'bg-stone-200 text-stone-900 font-bold' : ''
             }`}
             title="下划线 (Ctrl+U)"
@@ -363,8 +403,9 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('strike') ? 'bg-stone-200 text-stone-900 font-bold' : ''
             }`}
             title="删除线"
@@ -373,8 +414,9 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleCode().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('code') ? 'bg-stone-200 text-stone-900' : ''
             }`}
             title="行内代码 (`code`)"
@@ -384,11 +426,12 @@ export default function TiptapEditor({
 
           <span className="w-px h-4 bg-stone-200 mx-0.5" />
 
-          {/* 块级元素 */}
+          {/* 块级段落元素：引用 / 代码块 / 列表 */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('blockquote') ? 'bg-stone-200 text-stone-900' : ''
             }`}
             title="引用金句 (>)"
@@ -397,8 +440,20 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
+              editor.isActive('codeBlock') ? 'bg-stone-200 text-stone-900 font-bold' : ''
+            }`}
+            title="代码块 (```)"
+          >
+            <SquareCode className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('bulletList') ? 'bg-stone-200 text-stone-900' : ''
             }`}
             title="无序列表 (-)"
@@ -407,8 +462,9 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('orderedList') ? 'bg-stone-200 text-stone-900' : ''
             }`}
             title="有序列表 (1.)"
@@ -417,20 +473,22 @@ export default function TiptapEditor({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            className="p-1.5 rounded hover:bg-stone-200 transition"
-            title="分割线 (---)"
+            className="p-1.5 rounded hover:bg-stone-200 transition cursor-pointer"
+            title="普通分割线 (---)"
           >
             <Minus className="w-3.5 h-3.5" />
           </button>
 
           <span className="w-px h-4 bg-stone-200 mx-0.5" />
 
-          {/* 链接与装帧专属功能 */}
+          {/* 链接管理 */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={handleSetLink}
-            className={`p-1.5 rounded hover:bg-stone-200 transition ${
+            className={`p-1.5 rounded hover:bg-stone-200 transition cursor-pointer ${
               editor.isActive('link') ? 'bg-stone-200 text-limeDark font-bold' : ''
             }`}
             title="插入/修改超链接"
@@ -440,17 +498,19 @@ export default function TiptapEditor({
           {editor.isActive('link') && (
             <button
               type="button"
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => editor.chain().focus().unsetLink().run()}
-              className="p-1.5 rounded hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition"
+              className="p-1.5 rounded hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition cursor-pointer"
               title="清除超链接"
             >
               <Unlink className="w-3.5 h-3.5" />
             </button>
           )}
 
-          {/* 装帧分页 */}
+          {/* 装帧分页 (专属动态页码横线) */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
               editor
                 .chain()
@@ -461,19 +521,20 @@ export default function TiptapEditor({
                 ])
                 .run();
             }}
-            className="p-1.5 rounded hover:bg-stone-200 text-limeDark hover:text-limeDark transition flex items-center gap-1 text-[11px] font-serif font-bold"
+            className="p-1.5 rounded hover:bg-stone-200 text-limeDark hover:text-limeDark transition flex items-center gap-1 text-[11px] font-serif font-bold cursor-pointer"
             title="手动插入装帧分页符（带页码分界线）"
           >
             <BookOpen className="w-3.5 h-3.5 text-limeBrand" />
             <span>装帧分页</span>
           </button>
 
-          {/* 传图 */}
+          {/* 传图至 Cloudflare R2 */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => fileInputRef.current?.click()}
-            className="p-1.5 rounded hover:bg-stone-200 transition flex items-center gap-1 text-[11px]"
-            title="上传并插入图片至 R2"
+            className="p-1.5 rounded hover:bg-stone-200 transition flex items-center gap-1 text-[11px] cursor-pointer"
+            title="上传并插入图片至 Cloudflare R2"
           >
             <ImageIcon className="w-3.5 h-3.5 text-stone-600" />
             <span>传图</span>
@@ -489,8 +550,9 @@ export default function TiptapEditor({
           {/* 清除格式 */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-            className="p-1.5 rounded hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition"
+            className="p-1.5 rounded hover:bg-stone-200 text-stone-400 hover:text-stone-700 transition cursor-pointer"
             title="清除所选区域格式"
           >
             <RemoveFormatting className="w-3.5 h-3.5" />

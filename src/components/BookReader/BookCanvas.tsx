@@ -204,7 +204,7 @@ export default function BookCanvas({
         >
           <div
             id="content-left"
-            className="flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start select-text cursor-text"
+            className="book-page-content flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start select-text cursor-text"
             dangerouslySetInnerHTML={{ __html: spread.leftContent }}
           />
 
@@ -234,7 +234,7 @@ export default function BookCanvas({
         >
           <div
             id="content-right"
-            className="flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start select-text cursor-text"
+            className="book-page-content flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start select-text cursor-text"
             dangerouslySetInnerHTML={{ __html: spread.rightContent }}
           />
 
