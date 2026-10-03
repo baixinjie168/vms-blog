@@ -95,7 +95,7 @@ export const POST: APIRoute = async ({ request }) => {
       to: user.email,
       subject: "【VMS】重新发送：激活您的数字花园研读账号",
       html: emailHtml,
-      fromName: "VMS · 未鸣时",
+      fromName: "VMS",
       fromEmail: SENDER_EMAIL
     });
 

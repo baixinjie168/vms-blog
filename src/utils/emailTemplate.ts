@@ -88,7 +88,7 @@ export function renderActivationEmail(params: {
           <div style="margin-bottom: 26px;">
             <div style="width: 34px; height: 34px; line-height: 34px; text-align: center; background: #70C000; color: #FFFFFF; font-weight: bold; font-size: 16px; border-radius: 9px; display: inline-block;">V</div>
             <span style="margin-left: 12px; font-size: 17px; font-weight: 900; color: #1C1917; vertical-align: middle; letter-spacing: 0.5px;">
-              VMS · 未鸣时
+              VMS
             </span>
             <span style="font-size: 11px; color: #78716C; margin-left: 8px; vertical-align: middle; font-family: monospace; background: #EDE8D8; padding: 2px 6px; border-radius: 6px;">
               250258.xyz
@@ -102,7 +102,7 @@ export function renderActivationEmail(params: {
             尊敬的 <strong>${nickname}</strong>（<span style="color: #78716C; font-family: monospace;">${email}</span>）：
           </p>
           <p style="font-size: 13px; color: #57534E; margin: 0 0 24px 0; line-height: 1.7;">
-            感谢您注册《VMS · 未鸣时》个人数字花园。请点击下方按钮完成邮箱验证并激活您的账号，激活后您即可使用账号密码随时漫步林泉、研读长文与发表书卷批注：
+            感谢您注册《VMS》个人数字花园。请点击下方按钮完成邮箱验证并激活您的账号，激活后您即可使用账号密码随时漫步林泉、研读长文与发表书卷批注：
           </p>
 
           <!-- 激活按钮区域 -->

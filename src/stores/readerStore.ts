@@ -309,7 +309,7 @@ export function buildArticleReaderContent(article: ArticleItem): {
             ${article.summary || '在快速迭代的知识网络中，唯有深刻的方法论与沉静的思考才能穿透杂音。'}
           </p>
           <p class="text-sm text-stone-700 leading-relaxed indent-8">
-            本文收录于《未鸣时》数字花园体系，通过系统化的思考框架与严谨的装帧形式，为您呈现第一手深度心得。请循序渐进，细嚼慢品。
+            本文收录于《VMS》数字花园体系，通过系统化的思考框架与严谨的装帧形式，为您呈现第一手深度心得。请循序渐进，细嚼慢品。
           </p>
         </div>
       `,

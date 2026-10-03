@@ -25,7 +25,7 @@ export async function sendEmailUnified(
   env: any,
   payload: MailPayload
 ): Promise<MailSendResult> {
-  const { to, subject, html, fromName = "VMS · 未鸣时", fromEmail = "auth@250258.xyz" } = payload;
+  const { to, subject, html, fromName = "VMS", fromEmail = "auth@250258.xyz" } = payload;
   const resendApiKey =
     env?.RESEND_API_KEY ||
     (cfEnv as any)?.RESEND_API_KEY ||

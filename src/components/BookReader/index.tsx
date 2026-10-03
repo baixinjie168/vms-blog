@@ -131,7 +131,7 @@ export default function BookReader() {
         </button>
 
         <span className="font-bold text-stone-800 line-clamp-1 max-w-[160px] text-center">
-          {article?.title || '未鸣时 · 卷帙'}
+          {article?.title || 'VMS · 卷帙'}
         </span>
 
         <div className="flex items-center space-x-1">
