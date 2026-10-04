@@ -281,6 +281,14 @@ export function buildArticleReaderContent(article: ArticleItem): {
   const dimensionBorder = article.dimensionBorder || 'border-stone-200';
   const dateStr = article.date_str || new Date().toISOString().slice(0, 10);
 
+  // 摘要由发布时自动截取正文前 140 字生成，若它只是正文开头的重复，则不再作为导语二次渲染
+  const contentPlain = (article.content || '').replace(/<[^>]+>/g, '').trim();
+  const leadText = (article.summary || '').trim();
+  const showLead =
+    Boolean(leadText) &&
+    Boolean(contentPlain) &&
+    !contentPlain.startsWith(leadText.replace(/\.\.\.$/, '').trim());
+
   // 篇头篇目信息（仅在第一页上方自然排版呈现）
   const headerHtml = `
     <div class="space-y-3 mb-5 pb-3 border-b border-stone-200/80">
@@ -295,7 +303,7 @@ export function buildArticleReaderContent(article: ArticleItem): {
       <h1 class="text-xl sm:text-2xl font-serif font-black text-stone-900 tracking-tight leading-snug">
         ${article.title}
       </h1>
-      ${article.summary ? `<div class="text-xs text-limeDark font-serif italic py-1.5 border-l-2 border-limeBrand pl-3 bg-lime-50/40 rounded-r">${article.summary}</div>` : ''}
+      ${showLead ? `<div class="text-xs text-limeDark font-serif italic py-1.5 border-l-2 border-limeBrand pl-3 bg-lime-50/40 rounded-r">${article.summary}</div>` : ''}
     </div>
   `;
 
