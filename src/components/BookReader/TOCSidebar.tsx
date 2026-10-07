@@ -26,9 +26,9 @@ export default function TOCSidebar({
   onJumpPage,
 }: TOCSidebarProps) {
   const currentUser = useStore($currentUser);
-  const currentSpread = spreads[currentSpreadIndex] || spreads[0] || { leftPageNum: 1, rightPageNum: 2 };
+  const currentSpread = spreads[currentSpreadIndex] || spreads[0] || { leftPageNum: 1, rightPageNum: 1 };
   const totalSpreads = spreads.length || 1;
-  const totalPages = totalSpreads * 2;
+  const totalPages = totalSpreads;
   const progressPercent = Math.min(100, Math.round(((currentSpreadIndex + 1) / totalSpreads) * 100));
 
   const isInk = paperTheme === 'ink';
@@ -137,7 +137,7 @@ export default function TOCSidebar({
           }`}
         >
           <span id="reading-progress-text">
-            第 {currentSpread.leftPageNum}-{currentSpread.rightPageNum} / {totalPages} 页
+            第 {currentSpreadIndex + 1} / {totalPages} 页
           </span>
           <div className="flex items-center space-x-2">
             <div className={`w-14 h-1.5 rounded-full overflow-hidden ${isInk ? 'bg-stone-700' : 'bg-stone-200'}`}>
@@ -185,8 +185,7 @@ export default function TOCSidebar({
         className="flex-1 min-h-0 overflow-y-auto hover-scrollbar py-1 space-y-0.5 pr-1"
       >
         {toc.map((item, idx) => {
-          const isCurrentActive =
-            item.page === currentSpread.leftPageNum || item.page === currentSpread.rightPageNum;
+          const isCurrentActive = item.page === (currentSpreadIndex + 1);
 
           let levelClass = '';
           let prefixIcon = '';

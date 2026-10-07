@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { BookOpen, ArrowRight, PenSquare, Edit3, Trash2 } from 'lucide-react';
+import { BookOpen, ArrowRight, PenSquare, Edit3, Trash2, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { $filter, filterByCategory } from '../stores/filterStore';
 import { openBookReader } from '../stores/readerStore';
 import { openEditor } from '../stores/editorStore';
@@ -13,7 +13,7 @@ interface ArticleGridProps {
   currentUserId?: string;
   isAdmin?: boolean;
   onOpenArticle?: (article: ArticleItem) => void;
-  onArticleDeleted?: (articleId: number) => void;
+  onArticleDeleted?: (articleId: number | string) => void;
 }
 
 export default function ArticleGrid({
@@ -29,24 +29,59 @@ export default function ArticleGrid({
   const activeUserId = currentUserId || currentUser?.id;
   const isSuperAdmin = isAdmin || currentUser?.role === 'admin';
 
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (text: string, type: 'success' | 'error') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const handleDelete = async (article: ArticleItem) => {
     const ok = window.confirm(`确定要将卷帙《${article.title}》从书箧中抹除吗？\n此操作不可逆。`);
     if (!ok) return;
 
     try {
+      setDeletingId(article.id);
       const res = await fetch(`/api/articles?id=${article.id}`, { method: 'DELETE' });
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}));
+
       if (!res.ok || !json.success) {
-        alert(json.error || '删除失败');
+        // 若服务端返回 404 或已删除，同步从视图移除并平滑刷新
+        if (res.status === 404 || json.error?.includes('不存在') || json.error?.includes('已删除')) {
+          showToast(json.error || '文章已从书箧中抹除', 'success');
+          if (onArticleDeleted) {
+            onArticleDeleted(article.id);
+          }
+          setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              window.location.reload();
+            }
+          }, 800);
+          return;
+        }
+        showToast(json.error || '删除失败，请稍后重试', 'error');
         return;
       }
+
+      // 1. 弹出成功提示
+      showToast(`🎉 卷帙《${article.title}》已成功抹除`, 'success');
+
+      // 2. 毫秒级即时从当前卡片列表移除
       if (onArticleDeleted) {
         onArticleDeleted(article.id);
-      } else if (typeof window !== 'undefined') {
-        window.location.reload();
       }
+
+      // 3. 延迟 700ms 刷新页面，同步左栏七维认知数、右栏专辑文章数、个人名片统计与日历打点
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.reload();
+        }
+      }, 700);
     } catch (err: any) {
-      alert(err?.message || '网络异常，删除失败');
+      showToast(err?.message || '网络异常，删除失败', 'error');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -65,32 +100,56 @@ export default function ArticleGrid({
     }
   };
 
-  if (loading) {
+  const renderToast = () => {
+    if (!toastMessage) return null;
+    const isSuccess = toastMessage.type === 'success';
     return (
       <div
-        id="nine-cards-container"
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-h-0 content-stretch"
+        className={`fixed top-14 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl shadow-xl border text-xs sm:text-sm font-serif backdrop-blur-md transition-all select-none duration-200 animate-in fade-in slide-in-from-top-2 ${
+          isSuccess
+            ? 'bg-stone-900/95 border-emerald-500/40 text-white'
+            : 'bg-stone-900/95 border-rose-500/40 text-white'
+        }`}
       >
-        {Array.from({ length: 9 }).map((_, idx) => (
-          <div
-            key={idx}
-            className="bg-white/80 rounded-2xl border border-stone-200/80 p-3 h-full flex flex-col justify-between animate-pulse"
-          >
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <div className="w-16 h-4 bg-stone-200 rounded" />
-                <div className="w-16 h-3 bg-stone-100 rounded" />
-              </div>
-              <div className="w-3/4 h-4 bg-stone-200 rounded pt-1" />
-              <div className="w-full h-8 bg-stone-100 rounded" />
-            </div>
-            <div className="flex justify-between pt-2 border-t border-stone-100">
-              <div className="w-20 h-3 bg-stone-200 rounded" />
-              <div className="w-14 h-3 bg-stone-200 rounded" />
-            </div>
-          </div>
-        ))}
+        {isSuccess ? (
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+        ) : (
+          <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+        )}
+        <span>{toastMessage.text}</span>
       </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <>
+        {renderToast()}
+        <div
+          id="nine-cards-container"
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-h-0 content-stretch"
+        >
+          {Array.from({ length: 9 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-white/80 rounded-2xl border border-stone-200/80 p-3 h-full flex flex-col justify-between animate-pulse"
+            >
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <div className="w-16 h-4 bg-stone-200 rounded" />
+                  <div className="w-16 h-3 bg-stone-100 rounded" />
+                </div>
+                <div className="w-3/4 h-4 bg-stone-200 rounded pt-1" />
+                <div className="w-full h-8 bg-stone-100 rounded" />
+              </div>
+              <div className="flex justify-between pt-2 border-t border-stone-100">
+                <div className="w-20 h-3 bg-stone-200 rounded" />
+                <div className="w-14 h-3 bg-stone-200 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
     );
   }
 
@@ -98,10 +157,12 @@ export default function ArticleGrid({
     const isFiltered = filter.mode !== 'all' && (filter.category || filter.albumSlug || filter.searchKeyword || filter.date);
 
     return (
-      <div
-        id="nine-cards-container"
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-h-0 content-stretch"
-      >
+      <>
+        {renderToast()}
+        <div
+          id="nine-cards-container"
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-h-0 content-stretch"
+        >
         <div className="col-span-full h-full flex flex-col items-center justify-center text-center p-8 bg-white rounded-2xl border border-stone-200/90 text-stone-400 select-none">
           <BookOpen className="w-10 h-10 text-stone-300 mb-3" />
           <p className="font-serif text-sm font-bold text-stone-800">
@@ -133,15 +194,18 @@ export default function ArticleGrid({
             )}
           </div>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div
-      id="nine-cards-container"
-      className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-h-0 content-stretch"
-    >
+    <>
+      {renderToast()}
+      <div
+        id="nine-cards-container"
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 flex-1 min-h-0 content-stretch"
+      >
       {articles.map((item, index) => {
         return (
           <article
@@ -202,14 +266,19 @@ export default function ArticleGrid({
                           </button>
                           <button
                             type="button"
+                            disabled={deletingId === item.id}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDelete(item);
                             }}
-                            className="p-1 rounded-md hover:bg-rose-50 text-stone-400 hover:text-rose-600 transition cursor-pointer"
+                            className="p-1 rounded-md hover:bg-rose-50 text-stone-400 hover:text-rose-600 transition cursor-pointer disabled:opacity-50"
                             title="抹除此篇卷帙"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            {deletingId === item.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin text-rose-500" />
+                            ) : (
+                              <Trash2 className="w-3 h-3" />
+                            )}
                           </button>
                         </div>
                       )}
@@ -264,6 +333,7 @@ export default function ArticleGrid({
           </article>
         );
       })}
-    </div>
+      </div>
+    </>
   );
 }

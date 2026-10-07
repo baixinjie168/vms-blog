@@ -4,9 +4,10 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { TableKit } from '@tiptap/extension-table';
+import { TableKit, Table } from '@tiptap/extension-table';
 import { Markdown } from '@tiptap/markdown';
 import { PageBreak } from './PageBreakExtension';
+import { FontSize } from './FontSizeExtension';
 import {
   Bold,
   Italic,
@@ -15,6 +16,7 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  Type,
   Quote,
   Code,
   SquareCode,
@@ -32,6 +34,25 @@ import {
   Table as TableIcon,
   Trash,
 } from 'lucide-react';
+
+const CustomTable = Table.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      density: {
+        default: 'normal',
+        parseHTML: (el) => el.getAttribute('data-density') || 'normal',
+        renderHTML: (attrs) => {
+          if (!attrs.density || attrs.density === 'normal') return {};
+          return {
+            'data-density': attrs.density,
+            class: `table-${attrs.density}`,
+          };
+        },
+      },
+    };
+  },
+});
 
 interface TiptapEditorProps {
   initialContent: string;
@@ -65,11 +86,11 @@ export default function TiptapEditor({
 }: TiptapEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 表格插入面板：StarterKit 不含表格、也未装 markdown 扩展，
-  // 所以粘贴管道语法不会转成表格——必须由这里提供唯一的插入入口。
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const [hoverGrid, setHoverGrid] = useState({ rows: 0, cols: 0 });
   const tableMenuRef = useRef<HTMLDivElement>(null);
+  const [fontSizeMenuOpen, setFontSizeMenuOpen] = useState(false);
+  const fontSizeMenuRef = useRef<HTMLDivElement>(null);
 
   // 上传图片至 Cloudflare R2 (/api/upload)
   const handleUploadImage = async (file: File) => {
@@ -114,10 +135,14 @@ export default function TiptapEditor({
         },
       }),
       PageBreak,
-      // 表格：StarterKit 刻意不含表格，需显式注册官方扩展（Tiptap 3 已合并为单包）
+      // 表格：支持单元格列宽调整与行高密度属性
       TableKit.configure({
-        table: { resizable: true },
+        table: false,
       }),
+      CustomTable.configure({
+        resizable: true,
+      }),
+      FontSize,
       // Markdown 解析器：本身不注册任何输入/粘贴规则，仅让 insertContent/setContent
       // 支持 contentType: 'markdown'（不传该选项时行为与原来完全一致）。
       // 表格扩展自带的 markdownTokenizer 正好由它驱动。
@@ -197,16 +222,22 @@ export default function TiptapEditor({
     }
   }, [initialContent, editor]);
 
-  // 点击面板外部或按 Esc 关闭表格面板
+  // 点击面板外部或按 Esc 关闭表格与字号面板
   useEffect(() => {
-    if (!tableMenuOpen) return;
+    if (!tableMenuOpen && !fontSizeMenuOpen) return;
     const onPointerDown = (e: MouseEvent) => {
       if (tableMenuRef.current && !tableMenuRef.current.contains(e.target as Node)) {
         setTableMenuOpen(false);
       }
+      if (fontSizeMenuRef.current && !fontSizeMenuRef.current.contains(e.target as Node)) {
+        setFontSizeMenuOpen(false);
+      }
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setTableMenuOpen(false);
+      if (e.key === 'Escape') {
+        setTableMenuOpen(false);
+        setFontSizeMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
@@ -214,7 +245,7 @@ export default function TiptapEditor({
       document.removeEventListener('mousedown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [tableMenuOpen]);
+  }, [tableMenuOpen, fontSizeMenuOpen]);
 
   // 按网格尺寸插入表格，首行固定为表头
   const insertTable = (rows: number, cols: number) => {
@@ -451,6 +482,85 @@ export default function TiptapEditor({
             <Heading3 className="w-3.5 h-3.5" />
           </button>
 
+          {/* 局部字号调节：选中任意文字后调小/调大 */}
+          <div className="relative" ref={fontSizeMenuRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setFontSizeMenuOpen((open) => !open)}
+              className={`p-1.5 rounded hover:bg-stone-200 transition flex items-center gap-0.5 text-[11px] cursor-pointer ${
+                editor.isActive('fontSize') || fontSizeMenuOpen ? 'bg-stone-200 text-stone-900 font-bold' : ''
+              }`}
+              title="局部字号微调：选中文字后调小，可让一页容纳更多内容"
+            >
+              <Type className="w-3.5 h-3.5" />
+              <span className="text-[10px]">字号</span>
+            </button>
+            {fontSizeMenuOpen && (
+              <div className="absolute left-0 top-full mt-1 z-50 w-36 rounded-xl border border-stone-200 bg-white p-1.5 shadow-xl space-y-0.5">
+                <div className="px-2 py-1 text-[10px] font-bold text-stone-500 border-b border-stone-100">
+                  局部字号设置
+                </div>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    editor.chain().focus().setFontSize('xs').run();
+                    setFontSizeMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2 py-1 rounded text-xs flex items-center justify-between cursor-pointer ${
+                    editor.isActive('fontSize', { size: 'xs' }) ? 'bg-limeLight text-limeDark font-bold' : 'hover:bg-stone-100 text-stone-700'
+                  }`}
+                >
+                  <span className="text-[11px]">极小 (78%)</span>
+                  <span className="font-mono text-[9px] opacity-60">xs</span>
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    editor.chain().focus().setFontSize('sm').run();
+                    setFontSizeMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2 py-1 rounded text-xs flex items-center justify-between cursor-pointer ${
+                    editor.isActive('fontSize', { size: 'sm' }) ? 'bg-limeLight text-limeDark font-bold' : 'hover:bg-stone-100 text-stone-700'
+                  }`}
+                >
+                  <span className="text-xs">小号 (88%)</span>
+                  <span className="font-mono text-[9px] opacity-60">sm</span>
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    editor.chain().focus().unsetFontSize().run();
+                    setFontSizeMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2 py-1 rounded text-xs flex items-center justify-between cursor-pointer ${
+                    !editor.isActive('fontSize') ? 'bg-limeLight text-limeDark font-bold' : 'hover:bg-stone-100 text-stone-700'
+                  }`}
+                >
+                  <span className="text-xs">标准默认</span>
+                  <span className="font-mono text-[9px] opacity-60">100%</span>
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    editor.chain().focus().setFontSize('lg').run();
+                    setFontSizeMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2 py-1 rounded text-xs flex items-center justify-between cursor-pointer ${
+                    editor.isActive('fontSize', { size: 'lg' }) ? 'bg-limeLight text-limeDark font-bold' : 'hover:bg-stone-100 text-stone-700'
+                  }`}
+                >
+                  <span className="text-sm font-medium">大号 (115%)</span>
+                  <span className="font-mono text-[9px] opacity-60">lg</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           <span className="w-px h-4 bg-stone-200 mx-0.5" />
 
           {/* 行内文字格式 */}
@@ -619,6 +729,40 @@ export default function TiptapEditor({
                 </div>
 
                 <div className="h-px bg-stone-200 mb-2" />
+
+                {/* 表格行高密度调节 (紧凑/标准/宽松) */}
+                {editor.isActive('table') && (
+                  <div className="mb-2 p-1.5 bg-stone-50 rounded-lg border border-stone-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-bold text-stone-700">表格行高密度</span>
+                      <span className="text-[9px] text-limeDark font-serif">推荐紧凑模式</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1">
+                      {(['compact', 'normal', 'relaxed'] as const).map((mode) => {
+                        const currentDensity = editor.getAttributes('table').density || 'normal';
+                        const isActive = currentDensity === mode;
+                        const labels = { compact: '紧凑', normal: '标准', relaxed: '宽松' };
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              editor.chain().focus().updateAttributes('table', { density: mode }).run();
+                            }}
+                            className={`py-1 px-1 rounded text-[10px] font-medium text-center transition cursor-pointer ${
+                              isActive
+                                ? 'bg-limeBrand text-white font-bold shadow-2xs'
+                                : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
+                            }`}
+                          >
+                            {labels[mode]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* 增删操作：面板保持开启，便于连续调整 */}
                 <div className="grid grid-cols-2 gap-1">

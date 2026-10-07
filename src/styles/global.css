@@ -430,3 +430,78 @@ body {
   page-break-before: always;
   break-before: page;
 }
+
+/* ========================================================
+   表格行高密度调节 (紧凑 / 标准 / 宽松)
+   ======================================================== */
+.tiptap table.table-compact th,
+.tiptap table.table-compact td,
+.book-page-content table.table-compact th,
+.book-page-content table.table-compact td,
+.reader-table-compact table th,
+.reader-table-compact table td {
+  padding: 0.22rem 0.5rem !important;
+  line-height: 1.35 !important;
+  font-size: 0.8rem !important;
+}
+
+.tiptap table.table-relaxed th,
+.tiptap table.table-relaxed td,
+.book-page-content table.table-relaxed th,
+.book-page-content table.table-relaxed td,
+.reader-table-relaxed table th,
+.reader-table-relaxed table td {
+  padding: 0.65rem 0.85rem !important;
+  line-height: 1.75 !important;
+  font-size: 0.875rem !important;
+}
+
+/* ========================================================
+   正文部分字体大小微调 (可在编辑器中选中局部文本设置)
+   ======================================================== */
+.text-size-xs,
+span[data-size="xs"] {
+  font-size: 0.78em;
+  line-height: 1.38;
+}
+
+.text-size-sm,
+span[data-size="sm"] {
+  font-size: 0.88em;
+  line-height: 1.48;
+}
+
+.text-size-base,
+span[data-size="base"] {
+  font-size: 1em;
+}
+
+.text-size-lg,
+span[data-size="lg"] {
+  font-size: 1.15em;
+  line-height: 1.68;
+}
+
+.text-size-xl,
+span[data-size="xl"] {
+  font-size: 1.3em;
+  line-height: 1.75;
+}
+
+/* ========================================================
+   阅读器整卷字体字号层级 (小 / 中 / 大)
+   ======================================================== */
+.reader-font-small .book-page-content {
+  font-size: 13.5px !important;
+  line-height: 1.62 !important;
+}
+
+.reader-font-normal .book-page-content {
+  font-size: 15px !important;
+  line-height: 1.72 !important;
+}
+
+.reader-font-large .book-page-content {
+  font-size: 16.5px !important;
+  line-height: 1.85 !important;
+}

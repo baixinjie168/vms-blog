@@ -25,8 +25,14 @@ export default function CenterColumn({
   const [loading, setLoading] = useState<boolean>(false);
   const isFirstRender = useRef(true);
 
-  const handleArticleDeleted = (deletedId: number) => {
-    setArticles((prev) => prev.filter((a) => a.id !== deletedId));
+  const handleArticleDeleted = (deletedId: number | string) => {
+    setArticles((prev) =>
+      prev.filter(
+        (a) =>
+          String(a.id) !== String(deletedId) &&
+          Number(a.id) !== Number(deletedId)
+      )
+    );
     setTotal((prev) => Math.max(0, prev - 1));
   };
 

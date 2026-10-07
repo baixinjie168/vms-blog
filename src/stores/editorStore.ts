@@ -1,6 +1,6 @@
 import { atom, map } from 'nanostores';
 import type { ArticleItem } from '../services/blogService';
-import { paginateHtmlContent } from '../utils/paginationEngine';
+import { paginateHtmlContent, type ReaderFontSize, type TableDensity } from '../utils/paginationEngine';
 import { countPlainChars } from '../utils/textStats';
 import type { BookSpread } from './readerStore';
 
@@ -15,6 +15,8 @@ export interface EditorState {
   isSaving: boolean;
   isPublished: boolean;
   previewSpreads: BookSpread[];
+  previewFontSize: ReaderFontSize;
+  previewTableDensity: TableDensity;
   totalPages: number;
   totalSpreads: number;
   wordCount: number;
@@ -37,6 +39,8 @@ export const initialEditorState: EditorState = {
   isSaving: false,
   isPublished: false,
   previewSpreads: emptyPagination.spreads,
+  previewFontSize: 'normal',
+  previewTableDensity: 'normal',
   totalPages: emptyPagination.totalPages,
   totalSpreads: emptyPagination.totalSpreads,
   wordCount: 0,
@@ -66,7 +70,11 @@ export async function openEditor(article?: ArticleItem) {
       }
     }
     const content = fullArticle.content || `<p>${fullArticle.summary || ''}</p>`;
-    const pagination = paginateHtmlContent(content);
+    const { previewFontSize, previewTableDensity } = $editor.get();
+    const pagination = paginateHtmlContent(content, {
+      fontSize: previewFontSize,
+      tableDensity: previewTableDensity,
+    });
     $editor.set({
       isOpen: true,
       articleId: fullArticle.id,
@@ -78,6 +86,8 @@ export async function openEditor(article?: ArticleItem) {
       isSaving: false,
       isPublished: true,
       previewSpreads: pagination.spreads,
+      previewFontSize,
+      previewTableDensity,
       totalPages: pagination.totalPages,
       totalSpreads: pagination.totalSpreads,
       wordCount: countPlainChars(content),
@@ -86,7 +96,11 @@ export async function openEditor(article?: ArticleItem) {
       chapterLabel: fullArticle.chapter_label || '',
     });
   } else {
-    const freshPagination = paginateHtmlContent('');
+    const { previewFontSize, previewTableDensity } = $editor.get();
+    const freshPagination = paginateHtmlContent('', {
+      fontSize: previewFontSize,
+      tableDensity: previewTableDensity,
+    });
     $editor.set({
       isOpen: true,
       articleId: null,
@@ -98,6 +112,8 @@ export async function openEditor(article?: ArticleItem) {
       isSaving: false,
       isPublished: false,
       previewSpreads: freshPagination.spreads,
+      previewFontSize,
+      previewTableDensity,
       totalPages: freshPagination.totalPages,
       totalSpreads: freshPagination.totalSpreads,
       wordCount: 0,
@@ -135,7 +151,11 @@ export function closeEditor() {
 
 // 实时更新正文内容
 export function updateEditorContent(newContent: string) {
-  const pagination = paginateHtmlContent(newContent);
+  const { previewFontSize, previewTableDensity } = $editor.get();
+  const pagination = paginateHtmlContent(newContent, {
+    fontSize: previewFontSize,
+    tableDensity: previewTableDensity,
+  });
   const textChars = countPlainChars(newContent);
 
   $editor.setKey('content', newContent);
@@ -143,6 +163,32 @@ export function updateEditorContent(newContent: string) {
   $editor.setKey('totalPages', pagination.totalPages);
   $editor.setKey('totalSpreads', pagination.totalSpreads);
   $editor.setKey('wordCount', textChars);
+}
+
+// 切换编辑期预览字号大小
+export function setEditorPreviewFontSize(fontSize: ReaderFontSize) {
+  $editor.setKey('previewFontSize', fontSize);
+  const { content, previewTableDensity } = $editor.get();
+  const pagination = paginateHtmlContent(content, {
+    fontSize,
+    tableDensity: previewTableDensity,
+  });
+  $editor.setKey('previewSpreads', pagination.spreads);
+  $editor.setKey('totalPages', pagination.totalPages);
+  $editor.setKey('totalSpreads', pagination.totalSpreads);
+}
+
+// 切换编辑期预览表格行高密度
+export function setEditorPreviewTableDensity(tableDensity: TableDensity) {
+  $editor.setKey('previewTableDensity', tableDensity);
+  const { content, previewFontSize } = $editor.get();
+  const pagination = paginateHtmlContent(content, {
+    fontSize: previewFontSize,
+    tableDensity,
+  });
+  $editor.setKey('previewSpreads', pagination.spreads);
+  $editor.setKey('totalPages', pagination.totalPages);
+  $editor.setKey('totalSpreads', pagination.totalSpreads);
 }
 
 // 更新元数据字段
