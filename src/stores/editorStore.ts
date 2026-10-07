@@ -1,6 +1,7 @@
 import { atom, map } from 'nanostores';
 import type { ArticleItem } from '../services/blogService';
 import { paginateHtmlContent } from '../utils/paginationEngine';
+import { countPlainChars } from '../utils/textStats';
 import type { BookSpread } from './readerStore';
 
 export interface EditorState {
@@ -79,7 +80,7 @@ export async function openEditor(article?: ArticleItem) {
       previewSpreads: pagination.spreads,
       totalPages: pagination.totalPages,
       totalSpreads: pagination.totalSpreads,
-      wordCount: content.replace(/<[^>]+>/g, '').length,
+      wordCount: countPlainChars(content),
       albumId: fullArticle.album_id || null,
       albumOrder: fullArticle.album_order || 1,
       chapterLabel: fullArticle.chapter_label || '',
@@ -135,7 +136,7 @@ export function closeEditor() {
 // 实时更新正文内容
 export function updateEditorContent(newContent: string) {
   const pagination = paginateHtmlContent(newContent);
-  const textChars = newContent.replace(/<[^>]+>/g, '').length;
+  const textChars = countPlainChars(newContent);
 
   $editor.setKey('content', newContent);
   $editor.setKey('previewSpreads', pagination.spreads);
