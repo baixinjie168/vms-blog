@@ -1,9 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import { TableKit } from '@tiptap/extension-table';
 import { PageBreak } from './PageBreakExtension';
 import {
   Bold,
@@ -27,6 +28,8 @@ import {
   Link as LinkIcon,
   Unlink,
   RemoveFormatting,
+  Table as TableIcon,
+  Trash,
 } from 'lucide-react';
 
 interface TiptapEditorProps {
@@ -41,6 +44,12 @@ export default function TiptapEditor({
   wordCount,
 }: TiptapEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 表格插入面板：StarterKit 不含表格、也未装 markdown 扩展，
+  // 所以粘贴管道语法不会转成表格——必须由这里提供唯一的插入入口。
+  const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const [hoverGrid, setHoverGrid] = useState({ rows: 0, cols: 0 });
+  const tableMenuRef = useRef<HTMLDivElement>(null);
 
   // 上传图片至 Cloudflare R2 (/api/upload)
   const handleUploadImage = async (file: File) => {
@@ -85,6 +94,10 @@ export default function TiptapEditor({
         },
       }),
       PageBreak,
+      // 表格：StarterKit 刻意不含表格，需显式注册官方扩展（Tiptap 3 已合并为单包）
+      TableKit.configure({
+        table: { resizable: true },
+      }),
       Image.configure({
         inline: true,
         allowBase64: true,
@@ -148,6 +161,44 @@ export default function TiptapEditor({
       editor.commands.setContent(initialContent || '');
     }
   }, [initialContent, editor]);
+
+  // 点击面板外部或按 Esc 关闭表格面板
+  useEffect(() => {
+    if (!tableMenuOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (tableMenuRef.current && !tableMenuRef.current.contains(e.target as Node)) {
+        setTableMenuOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setTableMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [tableMenuOpen]);
+
+  // 按网格尺寸插入表格，首行固定为表头
+  const insertTable = (rows: number, cols: number) => {
+    editor?.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+    setTableMenuOpen(false);
+    setHoverGrid({ rows: 0, cols: 0 });
+  };
+
+  // 表格增删操作：均依赖光标所在单元格，故不在表格内时统一置灰
+  const tableOps = [
+    { key: 'row-before', label: '上方插入行', run: () => editor?.chain().focus().addRowBefore().run() },
+    { key: 'row-after', label: '下方插入行', run: () => editor?.chain().focus().addRowAfter().run() },
+    { key: 'row-delete', label: '删除本行', run: () => editor?.chain().focus().deleteRow().run() },
+    { key: 'col-before', label: '左侧插入列', run: () => editor?.chain().focus().addColumnBefore().run() },
+    { key: 'col-after', label: '右侧插入列', run: () => editor?.chain().focus().addColumnAfter().run() },
+    { key: 'col-delete', label: '删除本列', run: () => editor?.chain().focus().deleteColumn().run() },
+    { key: 'merge', label: '合并/拆分', run: () => editor?.chain().focus().mergeOrSplit().run() },
+    { key: 'header', label: '切换表头行', run: () => editor?.chain().focus().toggleHeaderRow().run() },
+  ];
 
   const onFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -480,6 +531,94 @@ export default function TiptapEditor({
           >
             <Minus className="w-3.5 h-3.5" />
           </button>
+
+          {/* 表格：插入与行列增删（StarterKit 不含表格、也未装 markdown 扩展，此处是唯一入口） */}
+          <div className="relative" ref={tableMenuRef}>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setTableMenuOpen((open) => !open)}
+              className={`p-1.5 rounded hover:bg-stone-200 transition flex items-center gap-1 text-[11px] cursor-pointer ${
+                editor.isActive('table') || tableMenuOpen ? 'bg-stone-200 text-stone-900 font-bold' : ''
+              }`}
+              title="插入表格 / 增删行列"
+            >
+              <TableIcon className="w-3.5 h-3.5" />
+              <span>表格</span>
+            </button>
+
+            {tableMenuOpen && (
+              <div className="absolute left-0 top-full mt-1 z-50 w-56 rounded-xl border border-stone-200 bg-white p-2.5 shadow-xl">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11px] font-bold text-stone-700">插入表格</span>
+                  <span className="font-mono text-[11px] text-limeDark">
+                    {hoverGrid.rows > 0 ? `${hoverGrid.rows} × ${hoverGrid.cols}` : '选择行列'}
+                  </span>
+                </div>
+
+                {/* 尺寸网格：悬停预览，点击即插入 */}
+                <div
+                  className="grid grid-cols-8 gap-0.5 w-fit mb-2.5"
+                  onMouseLeave={() => setHoverGrid({ rows: 0, cols: 0 })}
+                >
+                  {Array.from({ length: 6 }, (_, r) =>
+                    Array.from({ length: 8 }, (_, c) => {
+                      const inRange = r < hoverGrid.rows && c < hoverGrid.cols;
+                      return (
+                        <button
+                          key={`${r}-${c}`}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onMouseEnter={() => setHoverGrid({ rows: r + 1, cols: c + 1 })}
+                          onClick={() => insertTable(r + 1, c + 1)}
+                          className={`w-4 h-4 rounded-[3px] border transition cursor-pointer ${
+                            inRange
+                              ? 'bg-limeBrand/25 border-limeBrand'
+                              : 'bg-stone-50 border-stone-200 hover:border-limeBrand'
+                          }`}
+                          title={`插入 ${r + 1} 行 × ${c + 1} 列`}
+                        />
+                      );
+                    })
+                  )}
+                </div>
+
+                <div className="h-px bg-stone-200 mb-2" />
+
+                {/* 增删操作：面板保持开启，便于连续调整 */}
+                <div className="grid grid-cols-2 gap-1">
+                  {tableOps.map((op) => (
+                    <button
+                      key={op.key}
+                      type="button"
+                      disabled={!editor.isActive('table')}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={op.run}
+                      className="px-1.5 py-1 rounded-md text-[11px] text-left text-stone-600 hover:bg-stone-100 transition disabled:opacity-35 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      {op.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="h-px bg-stone-200 my-2" />
+
+                <button
+                  type="button"
+                  disabled={!editor.isActive('table')}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    editor.chain().focus().deleteTable().run();
+                    setTableMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-1 px-1.5 py-1 rounded-md text-[11px] text-cinnabar hover:bg-red-50 transition disabled:opacity-35 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <Trash className="w-3.5 h-3.5" />
+                  <span>删除整个表格</span>
+                </button>
+              </div>
+            )}
+          </div>
 
           <span className="w-px h-4 bg-stone-200 mx-0.5" />
 

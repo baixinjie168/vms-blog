@@ -260,6 +260,76 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+/* 表格 (Tiptap TableKit)：编辑期由 .tiptap 承载，阅读期由 .book-page-content 承载 */
+.tiptap table,
+.book-page-content table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 100%;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* 开启 resizable 后 Tiptap 会外包一层滚动容器，宽表格在此横向滚动而非撑破书页 */
+.tiptap .tableWrapper {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.tiptap .tableWrapper table {
+  margin: 0;
+}
+
+.tiptap th,
+.tiptap td,
+.book-page-content th,
+.book-page-content td {
+  position: relative;
+  border: 1px solid #e7e5e4;
+  padding: 0.45rem 0.7rem;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.tiptap th,
+.book-page-content th {
+  background-color: #fafaf9;
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.tiptap tbody tr:nth-child(even),
+.book-page-content tbody tr:nth-child(even) {
+  background-color: rgba(250, 250, 249, 0.55);
+}
+
+/* 光标所在单元格高亮 */
+.tiptap .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(112, 192, 0, 0.16);
+}
+
+/* 拖拽调整列宽时的把手与光标 */
+.tiptap .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  pointer-events: none;
+  background-color: #70c000;
+}
+
+.tiptap.resize-cursor {
+  cursor: col-resize;
+}
+
 /* 强调文字 */
 .tiptap strong,
 .book-page-content strong {
