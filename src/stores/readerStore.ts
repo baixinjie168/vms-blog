@@ -475,7 +475,7 @@ export function setPaperTheme(theme: PaperTheme) {
 }
 
 // 点赞评论
-export function likeComment(commentId: number | string) {
+export function likeComment(commentId: number) {
   const comments = [...$reader.get().comments];
   const idx = comments.findIndex((c) => c.id === commentId);
   if (idx !== -1) {
@@ -488,7 +488,9 @@ export function likeComment(commentId: number | string) {
     };
     $reader.setKey('comments', comments);
 
-    if (typeof window !== 'undefined' && liked) {
+    // 负数 id 是尚未落库的乐观占位批注：服务端会更新 0 行却仍返回 success，
+    // 所以这类点赞只留在本地，不发请求。
+    if (typeof window !== 'undefined' && liked && commentId > 0) {
       fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -510,7 +512,9 @@ export async function addComment(commentData: {
   const { article, currentSpreadIndex, spreads, comments } = $reader.get();
   const spread = spreads[currentSpreadIndex] || spreads[0] || { leftPageNum: 1, rightPageNum: 2 };
 
-  const tempId = `temp_${Date.now()}`;
+  // 用负数占位：既满足 ReaderComment.id 的 number 类型，也不会与真实自增 id 冲突。
+  // 落库成功后会被 data.data.id 替换；失败则保持负数，点赞时据此识别为未持久化。
+  const tempId = -Date.now();
   const newComment: ReaderComment = {
     id: tempId,
     user: commentData.user || '墨客读者',

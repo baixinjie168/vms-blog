@@ -3,6 +3,16 @@
  * 基于 Cloudflare D1 (Serverless SQLite)，原生类型安全
  */
 
+/**
+ * 总字数展示的唯一口径：超过 1 万按「n.nw 字」缩写，否则原值加单位。
+ * 所有出口共用此函数，避免同一份数据在不同卡片上显示成两个不同的数字。
+ * 注意：数据源是 length(content)，含 HTML 标签，属估算值而非精确字数。
+ */
+function formatWordCount(chars: number): string {
+  if (!chars || chars <= 0) return '0 字';
+  return chars > 10000 ? `${(chars / 10000).toFixed(1)}w 字` : `${chars} 字`;
+}
+
 export interface AuthorProfile {
   id: string;
   nickname: string;
@@ -364,9 +374,7 @@ export class BlogService {
 
       const articleCount = stats?.count || 0;
       const totalChars = stats?.total_chars || 0;
-      const totalWords = totalChars > 10000 
-        ? (totalChars / 10000).toFixed(1) + "w" 
-        : `${totalChars}`;
+      const totalWords = formatWordCount(totalChars);
 
       // 耕耘天数：从该用户注册时间算起
       const now = Math.floor(Date.now() / 1000);
@@ -530,9 +538,7 @@ export class BlogService {
       };
 
       return rows.results.map((r: any) => {
-        const totalWords = r.total_chars > 10000 
-          ? (r.total_chars / 10000).toFixed(1) + "w 字"
-          : `${Math.round(r.total_chars / 2)} 字`;
+        const totalWords = formatWordCount(r.total_chars);
 
         const meta = catMapping[r.id] || { cat: "术", label: "术 · 卷册" };
 
