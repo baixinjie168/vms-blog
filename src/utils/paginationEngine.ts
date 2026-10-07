@@ -84,8 +84,8 @@ function splitTopLevelBlocks(html: string): string[] {
   return blocks;
 }
 
-/** 书页中单个表格单元格每行约容纳的汉字数（窄页粗估） */
-const CELL_CHARS_PER_LINE = 7;
+/** 书页中单个表格单元格每行约容纳的汉字数（单页宽画布估算） */
+const CELL_CHARS_PER_LINE = 14;
 /** 单元格每行的高度 (px) */
 const CELL_LINE_HEIGHT = 22;
 /** 表格外边距合计 (px) */
@@ -94,7 +94,7 @@ const TABLE_MARGIN = 24;
  * 表格首块要求的最小可用空间。
  * 低于此值说明当前页只剩一点尾巴，与其塞进一两行不如另起一页再排整张表。
  */
-const MIN_TABLE_FIRST_CHUNK = 160;
+const MIN_TABLE_FIRST_CHUNK = 220;
 
 /**
  * 估算表格行的渲染高度。
@@ -184,19 +184,19 @@ function splitTallTable(tableHtml: string, capacity: number): string[] {
  */
 export function paginateHtmlContent(
   htmlContent: string,
-  maxPageCapacity: number = 660
+  maxPageCapacity: number = 760
 ): PaginatedResult {
   if (!htmlContent || !htmlContent.trim()) {
     return {
       spreads: [
         {
           leftPageNum: 1,
-          rightPageNum: 2,
+          rightPageNum: 1,
           leftContent: '<div class="text-stone-400 font-serif p-4">正文虚位以待...</div>',
-          rightContent: '<div class="text-stone-300 font-serif p-4 text-center">印张待著</div>',
+          rightContent: '<div class="text-stone-400 font-serif p-4">正文虚位以待...</div>',
         },
       ],
-      totalPages: 2,
+      totalPages: 1,
       totalSpreads: 1,
     };
   }
@@ -297,27 +297,16 @@ export function paginateHtmlContent(
     pages.push(currentPageBlocks.join('\n'));
   }
 
-  // 保证偶数页成对 (双开本装帧)
-  if (pages.length % 2 !== 0) {
-    pages.push(`
-      <div class="flex flex-col items-center justify-center h-full text-center p-6 border border-dashed border-stone-200/80 rounded-2xl bg-white/40">
-        <div class="text-stone-300 font-serif text-2xl font-bold mb-2">❖</div>
-        <p class="text-xs text-stone-400 font-serif">纸墨开本 · 沉思留白</p>
-      </div>
-    `);
-  }
-
-  // 2. 两两合并为 Spread 双对页
-  const spreads: BookSpread[] = [];
-  for (let p = 0; p < pages.length; p += 2) {
-    const spreadIndex = Math.floor(p / 2);
-    spreads.push({
-      leftPageNum: p + 1,
-      rightPageNum: p + 2,
-      leftContent: `<div class="space-y-3.5 text-stone-800 text-xs sm:text-sm leading-relaxed text-justify">${pages[p]}</div>`,
-      rightContent: `<div class="space-y-3.5 text-stone-800 text-xs sm:text-sm leading-relaxed text-justify">${pages[p + 1]}</div>`,
-    });
-  }
+  // 2. 单页装帧模式：每一页作为一个独立优雅印张，不再进行偶数补白
+  const spreads: BookSpread[] = pages.map((content, idx) => {
+    const pageHtml = `<div class="space-y-4 text-stone-800 text-sm sm:text-[15px] leading-relaxed text-justify">${content}</div>`;
+    return {
+      leftPageNum: idx + 1,
+      rightPageNum: idx + 1,
+      leftContent: pageHtml,
+      rightContent: pageHtml,
+    };
+  });
 
   return {
     spreads,

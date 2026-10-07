@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { BookSpread, PaperTheme } from '../../stores/readerStore';
 
@@ -25,14 +25,8 @@ export default function BookCanvas({
 }: BookCanvasProps) {
   const isFirstSpread = currentSpreadIndex === 0;
   const isLastSpread = currentSpreadIndex === totalSpreads - 1;
-  const rightPageRef = useRef<HTMLDivElement>(null);
+  const pageContainerRef = useRef<HTMLDivElement>(null);
   const bookContainerRef = useRef<HTMLDivElement>(null);
-  const [mobileActiveHalf, setMobileActiveHalf] = useState<'left' | 'right'>('left');
-
-  // 跨度切换时移动端默认显示左半页
-  useEffect(() => {
-    setMobileActiveHalf('left');
-  }, [currentSpreadIndex]);
 
   // 纸张色温材质主题样式
   const themeStyles = {
@@ -67,8 +61,8 @@ export default function BookCanvas({
 
   // 监听末页交互按钮点击 (事件委托)
   useEffect(() => {
-    const rightEl = rightPageRef.current;
-    if (!rightEl) return;
+    const pageEl = pageContainerRef.current;
+    if (!pageEl) return;
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -79,9 +73,9 @@ export default function BookCanvas({
       }
     };
 
-    rightEl.addEventListener('click', handleClick);
+    pageEl.addEventListener('click', handleClick);
     return () => {
-      rightEl.removeEventListener('click', handleClick);
+      pageEl.removeEventListener('click', handleClick);
     };
   }, [onClose, onRewind, currentSpreadIndex]);
 
@@ -101,19 +95,19 @@ export default function BookCanvas({
       id="reader-book-wrapper"
       className="relative bg-stone-800/10 p-1 sm:p-2 rounded-3xl border border-stone-300/80 shadow-xl flex-1 min-h-0 flex flex-col justify-center items-center overflow-hidden h-full"
     >
-      {/* 书籍本体 */}
+      {/* 单页书籍画卷本体 */}
       <div
         ref={bookContainerRef}
         id="book-container"
         style={{ backgroundColor: themeStyles.bg, color: themeStyles.text }}
-        className={`relative w-full max-w-4xl xl:max-w-[980px] 2xl:max-w-[1040px] h-full rounded-2xl shadow-2xl border ${themeStyles.border} flex overflow-hidden book-spine-shadow transition-all duration-300`}
+        className={`relative w-full max-w-3xl xl:max-w-4xl 2xl:max-w-[1020px] h-full rounded-2xl shadow-2xl border ${themeStyles.border} flex flex-col overflow-hidden transition-all duration-300`}
       >
         {/* 左侧翻页边翼 (常驻显示，边缘自带优雅纸墨渐变过渡色) */}
         <div
           id="reader-prev-zone"
           onClick={!isFirstSpread ? onPrev : undefined}
-          className={`absolute left-0 top-0 bottom-0 w-12 sm:w-14 z-30 flex items-center justify-start pl-1.5 sm:pl-2 group transition-all duration-300 bg-gradient-to-r from-stone-400/15 via-stone-200/5 to-transparent select-none ${
-            isFirstSpread ? 'pointer-events-none' : 'cursor-pointer'
+          className={`absolute left-0 top-0 bottom-0 w-12 sm:w-16 z-30 flex items-center justify-start pl-1.5 sm:pl-2.5 group transition-all duration-300 bg-gradient-to-r from-stone-400/15 via-stone-200/5 to-transparent select-none ${
+            isFirstSpread ? 'pointer-events-none opacity-30' : 'cursor-pointer'
           }`}
           title={isFirstSpread ? '已是第一页' : '翻至上一页 (快捷键: ←)'}
         >
@@ -144,8 +138,8 @@ export default function BookCanvas({
         <div
           id="reader-next-zone"
           onClick={!isLastSpread ? onNext : undefined}
-          className={`absolute right-0 top-0 bottom-0 w-12 sm:w-14 z-30 flex items-center justify-end pr-1.5 sm:pr-2 group transition-all duration-300 bg-gradient-to-l from-stone-400/15 via-stone-200/5 to-transparent select-none ${
-            isLastSpread ? 'pointer-events-none' : 'cursor-pointer'
+          className={`absolute right-0 top-0 bottom-0 w-12 sm:w-16 z-30 flex items-center justify-end pr-1.5 sm:pr-2.5 group transition-all duration-300 bg-gradient-to-l from-stone-400/15 via-stone-200/5 to-transparent select-none ${
+            isLastSpread ? 'pointer-events-none opacity-30' : 'cursor-pointer'
           }`}
           title={isLastSpread ? '已是最后一页' : '翻至下一页 (快捷键: →)'}
         >
@@ -172,81 +166,28 @@ export default function BookCanvas({
           </button>
         </div>
 
-        {/* 移动端对开单页分段指示器 (仅在 md 以下小屏幕呈现) */}
-        <div className="flex md:hidden items-center justify-center gap-1.5 py-1 px-2 border-b border-stone-200/50 bg-stone-100/40 text-[10px] font-mono select-none w-full flex-shrink-0 z-20">
-          <button
-            type="button"
-            onClick={() => setMobileActiveHalf('left')}
-            className={`px-2.5 py-0.5 rounded cursor-pointer transition ${
-              mobileActiveHalf === 'left' ? 'bg-limeBrand text-white font-bold shadow-2xs' : 'text-stone-500'
-            }`}
-          >
-            左面对开 · P.{spread.leftPageNum}
-          </button>
-          <span className="text-stone-300">|</span>
-          <button
-            type="button"
-            onClick={() => setMobileActiveHalf('right')}
-            className={`px-2.5 py-0.5 rounded cursor-pointer transition ${
-              mobileActiveHalf === 'right' ? 'bg-limeBrand text-white font-bold shadow-2xs' : 'text-stone-500'
-            }`}
-          >
-            右面对开 · P.{spread.rightPageNum}
-          </button>
-        </div>
-
-        {/* 左半页 (桌面端双页对开，移动端根据切换展示) */}
+        {/* 单页典藏大视窗容器 */}
         <div
+          ref={pageContainerRef}
           id="page-left"
-          className={`${
-            mobileActiveHalf === 'left' ? 'flex' : 'hidden'
-          } md:flex flex-col flex-1 pl-12 pr-6 lg:pl-14 lg:pr-8 pt-6 pb-3 border-r ${themeStyles.pageSpineBorder} left-page-spine relative overflow-hidden`}
+          className="flex-1 flex flex-col w-full h-full pl-14 pr-14 sm:pl-18 sm:pr-18 md:pl-20 md:pr-20 pt-6 sm:pt-8 pb-4 relative overflow-hidden select-text"
         >
           <div
             id="content-left"
-            className="book-page-content flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start select-text cursor-text"
+            className="book-page-content flex-1 font-serif leading-relaxed text-justify overflow-y-auto hover-scrollbar select-text cursor-text pr-1"
             dangerouslySetInnerHTML={{ __html: spread.leftContent }}
           />
 
           {/* 底部优雅极简角标页码 */}
           <div
-            className={`pt-1.5 mt-auto flex items-center justify-between text-[11px] font-mono ${themeStyles.bottomMeta} flex-shrink-0 select-none`}
+            className={`pt-2 mt-auto border-t border-stone-200/40 flex items-center justify-between text-[11px] font-mono ${themeStyles.bottomMeta} flex-shrink-0 select-none`}
           >
-            <span id="page-num-left" className="font-bold">
-              PAGE {spread.leftPageNum}
+            <span id="page-num-left" className="font-bold flex items-center gap-1.5">
+              <span>PAGE {spread.leftPageNum}</span>
+              <span className="opacity-50 font-normal">/ {totalSpreads}</span>
             </span>
             <span className={`text-[9px] font-serif ${themeStyles.watermark} tracking-widest`}>
-              VMS · 纸墨装帧
-            </span>
-          </div>
-        </div>
-
-        {/* 中央书脊仿真折痕 */}
-        <div className="hidden md:block w-px bg-stone-300/60 shadow-[0_0_12px_rgba(0,0,0,0.2)] z-10 select-none" />
-
-        {/* 右半页 (桌面端双页对开，移动端根据切换展示) */}
-        <div
-          ref={rightPageRef}
-          id="page-right"
-          className={`${
-            mobileActiveHalf === 'right' ? 'flex' : 'hidden'
-          } md:flex flex-col flex-1 pr-12 pl-6 lg:pr-14 lg:pl-8 pt-6 pb-3 right-page-spine relative overflow-hidden`}
-        >
-          <div
-            id="content-right"
-            className="book-page-content flex-1 font-serif leading-relaxed text-justify overflow-hidden flex flex-col justify-start select-text cursor-text"
-            dangerouslySetInnerHTML={{ __html: spread.rightContent }}
-          />
-
-          {/* 底部优雅极简角标页码 */}
-          <div
-            className={`pt-1.5 mt-auto flex items-center justify-between text-[11px] font-mono ${themeStyles.bottomMeta} flex-shrink-0 select-none`}
-          >
-            <span className={`text-[9px] font-serif ${themeStyles.watermark} tracking-widest`}>
-              纸墨开本
-            </span>
-            <span id="page-num-right" className="font-bold">
-              PAGE {spread.rightPageNum}
+              VMS · 纸墨单页典藏
             </span>
           </div>
         </div>

@@ -42,11 +42,11 @@ export interface ReaderState {
   comments: ReaderComment[];
 }
 
-// 旗舰文章精修 3 对页 (6 页面)
+// 旗舰文章精修 6 单页印张
 const DEFAULT_FLAGSHIP_SPREADS: BookSpread[] = [
   {
     leftPageNum: 1,
-    rightPageNum: 2,
+    rightPageNum: 1,
     leftContent: `
       <div class="space-y-4">
         <h1 class="text-xl sm:text-2xl font-serif font-black text-stone-900 tracking-tight leading-snug">
@@ -67,6 +67,23 @@ const DEFAULT_FLAGSHIP_SPREADS: BookSpread[] = [
       </div>
     `,
     rightContent: `
+      <div class="space-y-4">
+        <h1 class="text-xl sm:text-2xl font-serif font-black text-stone-900 tracking-tight leading-snug">
+          构建长期主义数字花园：<br/>从信息投喂到终极意义探索
+        </h1>
+        <div class="text-xs text-limeDark font-serif italic py-1 border-l-2 border-limeBrand pl-3">
+          “道者，令民与上同意也，故可以与之死，可以与之生，而不畏危也。” ——《孙子兵法》
+        </div>
+        <p class="text-sm text-stone-700 leading-relaxed indent-8">
+          在快节奏与算法主导的数字媒介中，我们的大脑每天都在经历剧烈的信息冲刷。短视频、碎片化快讯与信息流瀑布，让知识获取看似唾手可得，实则沉淀极浅。我们习惯了被动接收算法编织的认知茧房，却渐渐遗失了向内审视、严谨构建生命知识底座的耐心。
+        </p>
+      </div>
+    `,
+  },
+  {
+    leftPageNum: 2,
+    rightPageNum: 2,
+    leftContent: `
       <div class="space-y-4">
         <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
           <span class="w-1.5 h-4 bg-orient-dao rounded-full inline-block"></span>
@@ -103,10 +120,18 @@ const DEFAULT_FLAGSHIP_SPREADS: BookSpread[] = [
         </p>
       </div>
     `,
+    rightContent: `
+      <div class="space-y-4">
+        <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-orient-dao rounded-full inline-block"></span>
+          一、 七维心智框架的贯通
+        </h3>
+      </div>
+    `,
   },
   {
     leftPageNum: 3,
-    rightPageNum: 4,
+    rightPageNum: 3,
     leftContent: `
       <div class="space-y-4">
         <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
@@ -120,7 +145,7 @@ const DEFAULT_FLAGSHIP_SPREADS: BookSpread[] = [
           当一篇文章具有无限向下延伸的可能时，读者的大脑会不由自主地产生预期的焦虑：“这篇到底有多长？我还要滑多久？”。而纸质书籍则通过实体厚度与固定开本，给读者建立了极其强烈的空间位置锚点与掌控感。
         </p>
         <div class="p-3 bg-stone-100/80 rounded-xl border border-stone-200/80 my-2">
-          <div class="font-bold text-xs text-stone-800 mb-1.5">双页翻书的心流心智模型：</div>
+          <div class="font-bold text-xs text-stone-800 mb-1.5">单页翻书的心流心智模型：</div>
           <ul class="list-disc list-inside text-xs text-stone-600 space-y-1">
             <li><strong>边界清晰</strong>：每一面书页只有固定的容量，容量满了就必须翻页，给予思维明确的完结反馈。</li>
             <li><strong>呼吸节奏</strong>：手指点击或按键翻页的动作，构成了一次微小的认知缓冲期，让上一页的思考充分沉淀。</li>
@@ -128,11 +153,23 @@ const DEFAULT_FLAGSHIP_SPREADS: BookSpread[] = [
           </ul>
         </div>
         <p class="text-sm text-stone-700 leading-relaxed indent-8">
-          通过有限视窗双对页装帧，屏幕不再是一条冰冷滑动的资讯传送带，而是一本静待慢读、触手可及的典藏线装长卷。
+          通过有限视窗单页典藏装帧，屏幕不再是一条冰冷滑动的资讯传送带，而是一本静待慢读、触手可及的典藏长卷。
         </p>
       </div>
     `,
     rightContent: `
+      <div class="space-y-4">
+        <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-orient-dao rounded-full inline-block"></span>
+          二、 为什么坚决拒绝无尽垂直滚动条？
+        </h3>
+      </div>
+    `,
+  },
+  {
+    leftPageNum: 4,
+    rightPageNum: 4,
+    leftContent: `
       <div class="space-y-4">
         <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
           <span class="w-1.5 h-4 bg-orient-dao rounded-full inline-block"></span>
@@ -142,26 +179,34 @@ const DEFAULT_FLAGSHIP_SPREADS: BookSpread[] = [
           在技术实现上，我们彻底抛弃将整个文章内容一口气挂载到无限长 DOM 树的做法。相反，我们通过计算可视视窗尺寸结合流式结构切片分发：
         </p>
         <pre class="bg-stone-900 text-stone-100 p-3 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed">
-// 结构化双页对开排版引擎核心心法
-function layoutBookSpreads(astNodes, pageCapacity) {
+// 结构化单页印张排版引擎核心心法
+function layoutBookPages(astNodes, pageCapacity) {
   const pages = measureAndPaginate(astNodes, pageCapacity);
-  return pages.reduce((spreads, page, idx) => {
-    if (idx % 2 === 0) spreads.push({ left: page, right: pages[idx + 1] });
-    return spreads;
-  }, []);
+  return pages.map((page, idx) => ({
+    pageNum: idx + 1,
+    content: page
+  }));
 }</pre>
         <p class="text-sm text-stone-700 leading-relaxed indent-8">
-          双对页仿真不仅还原了中缝折痕（Spine crease）与微弱内卷阴影，更辅以纸张色温选择（牙白纸、竹青护眼、墨黑沉浸），彻底告别白底黑字的冰冷荧幕感。
+          单页全景仿真不仅还原了纯粹开阔的阅读视野，更辅以纸张色温选择（牙白纸、竹青护眼、墨黑沉浸），彻底告别白底黑字的冰冷荧幕感。
         </p>
         <p class="text-sm text-stone-700 leading-relaxed indent-8">
           无论是使用外接键盘的方向键（← / →），还是轻点书页两侧的优雅翻页边翼，整个翻阅过程流畅自然，如同翻动上等宣纸印张。
         </p>
       </div>
     `,
+    rightContent: `
+      <div class="space-y-4">
+        <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-orient-dao rounded-full inline-block"></span>
+          三、 翻书体验的数字化实现机制
+        </h3>
+      </div>
+    `,
   },
   {
     leftPageNum: 5,
-    rightPageNum: 6,
+    rightPageNum: 5,
     leftContent: `
       <div class="space-y-4">
         <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
@@ -183,6 +228,18 @@ function layoutBookSpreads(astNodes, pageCapacity) {
       </div>
     `,
     rightContent: `
+      <div class="space-y-4">
+        <h3 class="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-orient-dao rounded-full inline-block"></span>
+          四、 结语：让博客成为时间的容器
+        </h3>
+      </div>
+    `,
+  },
+  {
+    leftPageNum: 6,
+    rightPageNum: 6,
+    leftContent: `
       <div class="flex flex-col items-center justify-center h-full text-center p-6 border-2 border-dashed border-stone-200 rounded-2xl bg-white/50">
         <div class="w-14 h-14 rounded-full bg-limeLight text-limeDark flex items-center justify-center font-serif text-2xl font-bold mb-3 shadow-inner">
           道
@@ -199,6 +256,14 @@ function layoutBookSpreads(astNodes, pageCapacity) {
             重新翻阅第一页
           </button>
         </div>
+      </div>
+    `,
+    rightContent: `
+      <div class="flex flex-col items-center justify-center h-full text-center p-6 border-2 border-dashed border-stone-200 rounded-2xl bg-white/50">
+        <div class="w-14 h-14 rounded-full bg-limeLight text-limeDark flex items-center justify-center font-serif text-2xl font-bold mb-3 shadow-inner">
+          道
+        </div>
+        <h4 class="font-serif font-bold text-stone-900 text-base mb-1">阅读完毕 · 沉思回味</h4>
       </div>
     `,
   },
@@ -399,7 +464,7 @@ export async function openBookReader(article: ArticleItem, initialPage: number =
   }
 
   const content = buildArticleReaderContent(fullArticle);
-  const targetSpread = Math.max(0, Math.floor((initialPage - 1) / 2));
+  const targetSpread = Math.max(0, initialPage - 1);
 
   $reader.set({
     isOpen: true,
@@ -458,9 +523,9 @@ export function nextSpread() {
 // 跳转到指定页码 (1-indexed)
 export function jumpToPage(targetPage: number) {
   const { spreads } = $reader.get();
-  const targetSpread = Math.floor((targetPage - 1) / 2);
-  if (targetSpread >= 0 && targetSpread < spreads.length) {
-    $reader.setKey('currentSpreadIndex', targetSpread);
+  const targetIndex = targetPage - 1;
+  if (targetIndex >= 0 && targetIndex < spreads.length) {
+    $reader.setKey('currentSpreadIndex', targetIndex);
   }
 }
 
@@ -510,7 +575,7 @@ export async function addComment(commentData: {
   isAuthor?: boolean;
 }) {
   const { article, currentSpreadIndex, spreads, comments } = $reader.get();
-  const spread = spreads[currentSpreadIndex] || spreads[0] || { leftPageNum: 1, rightPageNum: 2 };
+  const spread = spreads[currentSpreadIndex] || spreads[0] || { leftPageNum: 1, rightPageNum: 1 };
 
   // 用负数占位：既满足 ReaderComment.id 的 number 类型，也不会与真实自增 id 冲突。
   // 落库成功后会被 data.data.id 替换；失败则保持负数，点赞时据此识别为未持久化。
@@ -521,7 +586,7 @@ export async function addComment(commentData: {
     avatarBg: commentData.avatarBg || 'bg-stone-800',
     avatarChar: commentData.avatarChar || (commentData.user ? commentData.user.slice(0, 1) : '墨'),
     isAuthor: commentData.isAuthor,
-    page: `第 ${spread.leftPageNum}-${spread.rightPageNum} 页`,
+    page: `第 ${currentSpreadIndex + 1} 页`,
     time: '刚刚',
     quote: commentData.quote,
     content: commentData.content,

@@ -40,12 +40,11 @@ export default function CommentsSidebar({
       return;
     }
 
-    // 2. 若未划选，尝试提取当前对开页中具有启发性的核心提炼语句
+    // 2. 若未划选，尝试提取当前页中具有启发性的核心提炼语句
     let fallbackQuote = '';
     if (typeof document !== 'undefined') {
-      const leftEl = document.getElementById('content-left');
-      const rightEl = document.getElementById('content-right');
-      const quoteEl = (leftEl || rightEl)?.querySelector('blockquote, .italic, h3, p');
+      const pageEl = document.getElementById('content-page') || document.getElementById('content-left') || document.getElementById('content-right');
+      const quoteEl = pageEl?.querySelector('blockquote, .italic, h3, p');
       if (quoteEl && quoteEl.textContent) {
         const text = quoteEl.textContent.trim().replace(/^“|”$/g, '');
         fallbackQuote = text.length > 60 ? `${text.slice(0, 60)}...` : text;
@@ -254,7 +253,7 @@ export default function CommentsSidebar({
                 id="comment-current-spread"
                 className={`font-mono font-bold ${isInk ? 'text-stone-300' : 'text-stone-700'}`}
               >
-                第 {currentSpread.leftPageNum}-{currentSpread.rightPageNum} 页
+                第 {currentSpread.leftPageNum} 页
               </span>
             </span>
           </span>
