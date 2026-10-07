@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { TableKit } from '@tiptap/extension-table';
+import { Markdown } from '@tiptap/markdown';
 import { PageBreak } from './PageBreakExtension';
 import {
   Bold,
@@ -36,6 +37,25 @@ interface TiptapEditorProps {
   initialContent: string;
   onContentChange: (html: string) => void;
   wordCount: number;
+}
+
+/** GFM 表格分隔行，如 |---|:--:|---| */
+const MARKDOWN_TABLE_DELIMITER = /^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)*\|?\s*$/;
+
+/**
+ * 判定粘贴内容是否为 Markdown 管道表格。
+ * 以「分隔行」为触发条件——它几乎不可能出现在普通文本里，
+ * 因此不必担心随手粘贴的散文被当成 markdown 解析。
+ * 分隔行还必须含竖线：单独的 `---` 是分割线，不是单列表格。
+ */
+function looksLikeMarkdownTable(text: string): boolean {
+  const lines = text.split(/\r?\n/);
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].includes('|')) continue;
+    if (!MARKDOWN_TABLE_DELIMITER.test(lines[i])) continue;
+    if (lines[i - 1].includes('|')) return true; // 上一行须是表头
+  }
+  return false;
 }
 
 export default function TiptapEditor({
@@ -98,6 +118,10 @@ export default function TiptapEditor({
       TableKit.configure({
         table: { resizable: true },
       }),
+      // Markdown 解析器：本身不注册任何输入/粘贴规则，仅让 insertContent/setContent
+      // 支持 contentType: 'markdown'（不传该选项时行为与原来完全一致）。
+      // 表格扩展自带的 markdownTokenizer 正好由它驱动。
+      Markdown,
       Image.configure({
         inline: true,
         allowBase64: true,
@@ -145,6 +169,17 @@ export default function TiptapEditor({
             }
           }
         }
+
+        // Markdown 管道表格：Tiptap 默认不会把纯文本 markdown 转成节点，
+        // 必须显式传 contentType: 'markdown' 才会交给 MarkdownManager 解析。
+        // 仅命中表格时拦截，其余纯文本粘贴维持原样。
+        const pastedText = event.clipboardData?.getData('text/plain') ?? '';
+        if (pastedText && looksLikeMarkdownTable(pastedText) && editor) {
+          event.preventDefault();
+          editor.chain().focus().insertContent(pastedText, { contentType: 'markdown' }).run();
+          return true;
+        }
+
         return false;
       },
     },
