@@ -8,6 +8,7 @@ export interface EditorState {
   isOpen: boolean;
   articleId: number | null;
   title: string;
+  summary: string;
   category: string;
   tags: string;
   date: string;
@@ -32,6 +33,7 @@ export const initialEditorState: EditorState = {
   isOpen: false,
   articleId: null,
   title: '',
+  summary: '',
   category: '道',
   tags: '',
   date: todayStr,
@@ -70,6 +72,12 @@ export async function openEditor(article?: ArticleItem) {
       }
     }
     const content = fullArticle.content || `<p>${fullArticle.summary || ''}</p>`;
+    // 检查历史文章摘要是否为老版本代码机械截取的前 140 字正文。若是，则视为空，避免自动残留
+    const contentPlain = (content || '').replace(/<[^>]+>/g, '').trim();
+    const rawSum = (fullArticle.summary || '').trim();
+    const isAutoSliced = Boolean(rawSum) && Boolean(contentPlain) && contentPlain.startsWith(rawSum.replace(/\.\.\.$/, '').trim());
+    const validSummary = isAutoSliced ? '' : rawSum;
+
     const { previewFontSize, previewTableDensity } = $editor.get();
     const pagination = paginateHtmlContent(content, {
       fontSize: previewFontSize,
@@ -79,6 +87,7 @@ export async function openEditor(article?: ArticleItem) {
       isOpen: true,
       articleId: fullArticle.id,
       title: fullArticle.title,
+      summary: validSummary,
       category: fullArticle.dimensionChar || '道',
       tags: fullArticle.tags || '',
       date: fullArticle.date_str || currentToday,
@@ -105,6 +114,7 @@ export async function openEditor(article?: ArticleItem) {
       isOpen: true,
       articleId: null,
       title: '',
+      summary: '',
       category: '道',
       tags: '',
       date: currentToday,
@@ -194,6 +204,10 @@ export function setEditorPreviewTableDensity(tableDensity: TableDensity) {
 // 更新元数据字段
 export function setEditorTitle(title: string) {
   $editor.setKey('title', title);
+}
+
+export function setEditorSummary(summary: string) {
+  $editor.setKey('summary', summary);
 }
 
 export function setEditorCategory(cat: string) {

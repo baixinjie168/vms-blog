@@ -11,6 +11,7 @@ import {
 
 interface LiveBookPreviewProps {
   title: string;
+  summary?: string;
   category: string;
   date: string;
   previewSpreads: BookSpread[];
@@ -20,6 +21,7 @@ interface LiveBookPreviewProps {
 
 export default function LiveBookPreview({
   title,
+  summary,
   category,
   date,
   previewSpreads,
@@ -140,6 +142,11 @@ export default function LiveBookPreview({
                 <span>·</span>
                 <span>纸墨单页印张</span>
               </div>
+              {summary && summary.trim() && (
+                <div className="text-xs text-limeDark font-serif italic py-1.5 border-l-2 border-limeBrand pl-3 bg-lime-50/50 rounded-r mt-2">
+                  {summary.trim()}
+                </div>
+              )}
             </div>
           )}
 

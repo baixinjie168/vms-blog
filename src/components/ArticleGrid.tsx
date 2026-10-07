@@ -292,10 +292,12 @@ export default function ArticleGrid({
                 {item.title}
               </h4>
 
-              {/* 摘要文字 */}
-              <p className="text-[10px] sm:text-[11px] text-stone-500 font-serif leading-relaxed line-clamp-2 mb-1">
-                {item.summary}
-              </p>
+              {/* 摘要文字 (仅在作者自主撰写了摘要时展示) */}
+              {item.summary && (
+                <p className="text-[10px] sm:text-[11px] text-stone-500 font-serif leading-relaxed line-clamp-2 mb-1">
+                  {item.summary}
+                </p>
+              )}
 
               {/* 卷帙标签 */}
               {item.tags && (

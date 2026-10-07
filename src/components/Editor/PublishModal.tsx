@@ -19,6 +19,8 @@ interface PublishModalProps {
   onConfirmPublish: () => void;
   isSaving: boolean;
   title: string;
+  summary?: string;
+  onSummaryChange?: (summary: string) => void;
   category: string;
   tags: string;
   onTagsChange: (tags: string) => void;
@@ -39,6 +41,8 @@ export default function PublishModal({
   onConfirmPublish,
   isSaving,
   title,
+  summary,
+  onSummaryChange,
   category,
   tags,
   onTagsChange,
@@ -126,6 +130,26 @@ export default function PublishModal({
             <h4 className="font-serif font-bold text-stone-900 text-sm sm:text-base line-clamp-1 leading-snug">
               《{title || '未命名卷帙'}》
             </h4>
+          </div>
+
+          {/* 卷首导语 / 文章简述 (选填，完全由作者自定) */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-serif font-bold text-stone-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-limeBrand" />
+                <span>卷首导语 / 文章简述 (选填)</span>
+              </span>
+              <span className="text-[10px] font-sans text-stone-400 font-normal">
+                留空则正文无导语
+              </span>
+            </label>
+            <textarea
+              rows={2}
+              value={summary || ''}
+              onChange={(e) => onSummaryChange?.(e.target.value)}
+              placeholder="作者自主撰写的引言、提要或题记（选填，留空则正文无导语）..."
+              className="w-full px-3 py-1.5 text-xs rounded-xl border border-stone-300 font-serif focus:outline-none focus:ring-1 focus:ring-limeBrand bg-stone-50/50 focus:bg-white transition resize-none text-stone-800"
+            />
           </div>
 
           {/* 核心诉求 1：专栏专辑收纳选项 (拦截并确认) */}
