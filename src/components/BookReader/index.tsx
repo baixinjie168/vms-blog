@@ -8,6 +8,8 @@ import {
   prevSpread,
   jumpToPage,
   setPaperTheme,
+  setReaderFontSize,
+  setReaderTableDensity,
   likeComment,
   addComment,
 } from '../../stores/readerStore';
@@ -19,7 +21,7 @@ import { ArrowLeft, ListTree, MessageSquareQuote, X } from 'lucide-react';
 
 export default function BookReader() {
   const readerState = useStore($reader);
-  const { isOpen, article, currentSpreadIndex, paperTheme, spreads, toc, comments } = readerState;
+  const { isOpen, article, currentSpreadIndex, paperTheme, fontSize, tableDensity, spreads, toc, comments } = readerState;
 
   // 移动端专用抽屉控制: 'none' | 'toc' | 'comments'
   const [mobileDrawer, setMobileDrawer] = useState<'none' | 'toc' | 'comments'>('none');
@@ -205,6 +207,10 @@ export default function BookReader() {
           currentSpreadIndex={currentSpreadIndex}
           totalSpreads={spreads.length}
           paperTheme={paperTheme}
+          fontSize={fontSize}
+          tableDensity={tableDensity}
+          onSetFontSize={setReaderFontSize}
+          onSetTableDensity={setReaderTableDensity}
           onPrev={prevSpread}
           onNext={nextSpread}
           onClose={closeBookReader}
@@ -233,7 +239,11 @@ export default function BookReader() {
               comments={comments}
               currentSpread={currentSpread}
               paperTheme={paperTheme}
+              fontSize={fontSize}
+              tableDensity={tableDensity}
               onSetTheme={setPaperTheme}
+              onSetFontSize={setReaderFontSize}
+              onSetTableDensity={setReaderTableDensity}
               onLikeComment={likeComment}
               onAddComment={addComment}
             />

@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { MessageSquareQuote, Heart, Edit3, Send } from 'lucide-react';
-import type { BookSpread, ReaderComment, PaperTheme } from '../../stores/readerStore';
+import type { BookSpread, ReaderComment, PaperTheme, ReaderFontSize, TableDensity } from '../../stores/readerStore';
 
 interface CommentsSidebarProps {
   comments: ReaderComment[];
   currentSpread: BookSpread;
   paperTheme: PaperTheme;
+  fontSize: ReaderFontSize;
+  tableDensity: TableDensity;
   onSetTheme: (theme: PaperTheme) => void;
+  onSetFontSize: (size: ReaderFontSize) => void;
+  onSetTableDensity: (density: TableDensity) => void;
   onLikeComment: (id: number) => void;
   onAddComment: (data: { content: string; quote?: string }) => void;
 }
@@ -15,7 +19,11 @@ export default function CommentsSidebar({
   comments,
   currentSpread,
   paperTheme,
+  fontSize,
+  tableDensity,
   onSetTheme,
+  onSetFontSize,
+  onSetTableDensity,
   onLikeComment,
   onAddComment,
 }: CommentsSidebarProps) {
@@ -144,6 +152,61 @@ export default function CommentsSidebar({
             }`}
             title="墨黑沉浸"
           />
+        </div>
+      </div>
+
+      {/* 阅读排版偏好：字号与表格行高 */}
+      <div
+        className={`py-2 px-1 border-b flex-shrink-0 flex items-center justify-between text-[11px] select-none ${
+          isInk ? 'border-stone-700/60 text-stone-300' : 'border-stone-100 text-stone-600'
+        }`}
+      >
+        {/* 字号设置 */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-stone-400 font-serif">字号</span>
+          <div className="flex items-center gap-1">
+            {(['small', 'normal', 'large'] as const).map((size) => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => onSetFontSize(size)}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer transition ${
+                  fontSize === size
+                    ? 'bg-limeBrand text-white font-bold shadow-2xs'
+                    : isInk
+                    ? 'bg-stone-800 text-stone-400 hover:text-white'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+                title={size === 'small' ? '小字 (容纳更多内容)' : size === 'normal' ? '标准书卷字号' : '大字 (舒适大字阅读)'}
+              >
+                {size === 'small' ? '小' : size === 'normal' ? '中' : '大'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 表格行高 */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-stone-400 font-serif">表格</span>
+          <div className="flex items-center gap-1">
+            {(['compact', 'normal', 'relaxed'] as const).map((density) => (
+              <button
+                key={density}
+                type="button"
+                onClick={() => onSetTableDensity(density)}
+                className={`px-1.5 py-0.5 rounded text-[10px] cursor-pointer transition ${
+                  tableDensity === density
+                    ? 'bg-limeBrand text-white font-bold shadow-2xs'
+                    : isInk
+                    ? 'bg-stone-800 text-stone-400 hover:text-white'
+                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+                title={density === 'compact' ? '紧凑行高' : density === 'normal' ? '标准行高' : '宽松行高'}
+              >
+                {density === 'compact' ? '紧凑' : density === 'normal' ? '标准' : '舒展'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

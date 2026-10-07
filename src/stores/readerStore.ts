@@ -1,8 +1,9 @@
 import { atom, map } from 'nanostores';
 import type { ArticleItem } from '../services/blogService';
-import { paginateHtmlContent } from '../utils/paginationEngine';
+import { paginateHtmlContent, type ReaderFontSize, type TableDensity } from '../utils/paginationEngine';
 
 export type PaperTheme = 'ivory' | 'bamboo' | 'ink';
+export type { ReaderFontSize, TableDensity };
 
 export interface TOCItem {
   level: number; // 1: H1, 2: H2, 3: H3
@@ -37,6 +38,8 @@ export interface ReaderState {
   article: ArticleItem | null;
   currentSpreadIndex: number;
   paperTheme: PaperTheme;
+  fontSize: ReaderFontSize;
+  tableDensity: TableDensity;
   spreads: BookSpread[];
   toc: TOCItem[];
   comments: ReaderComment[];
@@ -336,7 +339,11 @@ const DEFAULT_COMMENTS: ReaderComment[] = [
 ];
 
 // 根据文章真实正文与分页引擎智能构造对开书页
-export function buildArticleReaderContent(article: ArticleItem): {
+export function buildArticleReaderContent(
+  article: ArticleItem,
+  fontSize?: ReaderFontSize,
+  tableDensity?: TableDensity
+): {
   spreads: BookSpread[];
   toc: TOCItem[];
   comments: ReaderComment[];
@@ -376,7 +383,10 @@ export function buildArticleReaderContent(article: ArticleItem): {
     ? `${headerHtml}${article.content}`
     : `${headerHtml}<p class="text-stone-700 leading-relaxed indent-8">${article.summary || '正文暂在编排装帧中...'}</p>`;
 
-  const pagination = paginateHtmlContent(fullRawHtml);
+  const pagination = paginateHtmlContent(fullRawHtml, {
+    fontSize: fontSize || 'normal',
+    tableDensity: tableDensity || 'normal',
+  });
 
   // 动态提取文章内各级标题作为目录导航 (TOC)
   const toc: TOCItem[] = [];
@@ -416,11 +426,37 @@ const getInitialPaperTheme = (): PaperTheme => {
   return 'ivory';
 };
 
+const getInitialFontSize = (): ReaderFontSize => {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('vms_reader_font_size');
+      if (saved === 'small' || saved === 'normal' || saved === 'large') {
+        return saved;
+      }
+    } catch {}
+  }
+  return 'normal';
+};
+
+const getInitialTableDensity = (): TableDensity => {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('vms_reader_table_density');
+      if (saved === 'compact' || saved === 'normal' || saved === 'relaxed') {
+        return saved;
+      }
+    } catch {}
+  }
+  return 'normal';
+};
+
 const initialReaderState: ReaderState = {
   isOpen: false,
   article: null,
   currentSpreadIndex: 0,
   paperTheme: getInitialPaperTheme(),
+  fontSize: getInitialFontSize(),
+  tableDensity: getInitialTableDensity(),
   spreads: [],
   toc: [],
   comments: [],
@@ -463,7 +499,8 @@ export async function openBookReader(article: ArticleItem, initialPage: number =
     }
   }
 
-  const content = buildArticleReaderContent(fullArticle);
+  const { fontSize, tableDensity } = $reader.get();
+  const content = buildArticleReaderContent(fullArticle, fontSize, tableDensity);
   const targetSpread = Math.max(0, initialPage - 1);
 
   $reader.set({
@@ -471,6 +508,8 @@ export async function openBookReader(article: ArticleItem, initialPage: number =
     article: fullArticle,
     currentSpreadIndex: Math.min(targetSpread, Math.max(0, content.spreads.length - 1)),
     paperTheme: $reader.get().paperTheme,
+    fontSize,
+    tableDensity,
     spreads: content.spreads,
     toc: content.toc,
     comments: [], // 先置空，等待 loadComments 注入真实批注
@@ -536,6 +575,44 @@ export function setPaperTheme(theme: PaperTheme) {
     try {
       localStorage.setItem('vms_paper_theme', theme);
     } catch {}
+  }
+}
+
+// 切换阅读字号大小并重新自适应分页
+export function setReaderFontSize(fontSize: ReaderFontSize) {
+  $reader.setKey('fontSize', fontSize);
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('vms_reader_font_size', fontSize);
+    } catch {}
+  }
+
+  const { article, tableDensity, currentSpreadIndex } = $reader.get();
+  if (article) {
+    const content = buildArticleReaderContent(article, fontSize, tableDensity);
+    const safeIndex = Math.min(currentSpreadIndex, Math.max(0, content.spreads.length - 1));
+    $reader.setKey('spreads', content.spreads);
+    $reader.setKey('toc', content.toc);
+    $reader.setKey('currentSpreadIndex', safeIndex);
+  }
+}
+
+// 切换阅读器表格行高密度并重新自适应分页
+export function setReaderTableDensity(tableDensity: TableDensity) {
+  $reader.setKey('tableDensity', tableDensity);
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('vms_reader_table_density', tableDensity);
+    } catch {}
+  }
+
+  const { article, fontSize, currentSpreadIndex } = $reader.get();
+  if (article) {
+    const content = buildArticleReaderContent(article, fontSize, tableDensity);
+    const safeIndex = Math.min(currentSpreadIndex, Math.max(0, content.spreads.length - 1));
+    $reader.setKey('spreads', content.spreads);
+    $reader.setKey('toc', content.toc);
+    $reader.setKey('currentSpreadIndex', safeIndex);
   }
 }
 

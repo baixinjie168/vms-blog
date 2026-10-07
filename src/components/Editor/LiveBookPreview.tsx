@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useStore } from '@nanostores/react';
 import type { BookSpread } from '../../stores/readerStore';
 import { DIMENSIONS } from '../../services/blogService';
+import {
+  $editor,
+  setEditorPreviewFontSize,
+  setEditorPreviewTableDensity,
+} from '../../stores/editorStore';
 
 interface LiveBookPreviewProps {
   title: string;
@@ -21,6 +27,8 @@ export default function LiveBookPreview({
   totalSpreads,
 }: LiveBookPreviewProps) {
   const [spreadIndex, setSpreadIndex] = useState(0);
+  const editorState = useStore($editor);
+  const { previewFontSize, previewTableDensity } = editorState;
 
   // 保证跨度索引在有效边界内
   const safeIndex = Math.min(spreadIndex, Math.max(0, previewSpreads.length - 1));
@@ -42,6 +50,43 @@ export default function LiveBookPreview({
         </div>
 
         <div className="flex items-center space-x-2">
+          {/* 字号切换 */}
+          <div className="hidden sm:flex items-center space-x-0.5 bg-stone-200/60 rounded px-1.5 py-0.5 text-[10px]">
+            <span className="text-stone-400 font-serif mr-0.5">字号</span>
+            {(['small', 'normal', 'large'] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setEditorPreviewFontSize(s)}
+                className={`px-1 py-0.2 rounded font-mono transition cursor-pointer ${
+                  previewFontSize === s ? 'bg-limeBrand text-white font-bold shadow-2xs' : 'text-stone-500 hover:text-stone-800'
+                }`}
+                title={s === 'small' ? '小字预览 (容纳更多)' : s === 'normal' ? '标准字' : '大字预览'}
+              >
+                {s === 'small' ? '小' : s === 'normal' ? '中' : '大'}
+              </button>
+            ))}
+          </div>
+
+          {/* 表格行高切换 */}
+          <div className="hidden sm:flex items-center space-x-0.5 bg-stone-200/60 rounded px-1.5 py-0.5 text-[10px]">
+            <span className="text-stone-400 font-serif mr-0.5">表格</span>
+            {(['compact', 'normal'] as const).map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setEditorPreviewTableDensity(d)}
+                className={`px-1 py-0.2 rounded font-serif transition cursor-pointer ${
+                  previewTableDensity === d ? 'bg-limeBrand text-white font-bold shadow-2xs' : 'text-stone-500 hover:text-stone-800'
+                }`}
+                title={d === 'compact' ? '紧凑表格行高' : '标准表格行高'}
+              >
+                {d === 'compact' ? '紧凑' : '标准'}
+              </button>
+            ))}
+          </div>
+
+          {/* 翻页器 */}
           {totalPages > 1 && (
             <div className="flex items-center space-x-1 text-[11px] font-mono">
               <button
@@ -69,7 +114,7 @@ export default function LiveBookPreview({
           )}
 
           <span className="text-[10px] font-mono text-stone-500 bg-white/80 px-2 py-0.5 rounded border border-stone-200 font-medium">
-            单页排版：共 {totalPages} 页
+            共 {totalPages} 页
           </span>
         </div>
       </div>
@@ -99,7 +144,9 @@ export default function LiveBookPreview({
           )}
 
           {/* 单页装帧排版容器 */}
-          <div className="bg-white/80 p-5 sm:p-6 rounded-2xl border border-stone-200/90 shadow-xs flex flex-col justify-between min-h-[380px] relative">
+          <div className={`bg-white/80 p-5 sm:p-6 rounded-2xl border border-stone-200/90 shadow-xs flex flex-col justify-between min-h-[380px] relative reader-font-${previewFontSize} ${
+            previewTableDensity === 'compact' ? 'reader-table-compact' : ''
+          }`}>
             <div
               className="book-page-content text-stone-800 text-xs sm:text-[13px] leading-relaxed text-justify space-y-3 overflow-hidden"
               dangerouslySetInnerHTML={{ __html: currentSpread?.leftContent || '' }}
