@@ -6,7 +6,8 @@
 /**
  * 总字数展示的唯一口径：超过 1 万按「n.nw 字」缩写，否则原值加单位。
  * 所有出口共用此函数，避免同一份数据在不同卡片上显示成两个不同的数字。
- * 注意：数据源是 length(content)，含 HTML 标签，属估算值而非精确字数。
+ * 数据源是 articles.char_count（写入时剥掉 HTML 标签算好），
+ * 历史行尚未回填时退回 length(content)，仍会略虚高，回填完成即消失。
  */
 function formatWordCount(chars: number): string {
   if (!chars || chars <= 0) return '0 字';
@@ -369,7 +370,7 @@ export class BlogService {
 
       // 统计该登录作者的总文章数与估算总字数
       const stats = await db.prepare(
-        "SELECT count(*) as count, coalesce(sum(length(content)), 0) as total_chars FROM articles WHERE author_id = ? AND is_published = 1"
+        "SELECT count(*) as count, coalesce(sum(coalesce(char_count, length(content))), 0) as total_chars FROM articles WHERE author_id = ? AND is_published = 1"
       ).bind(userId).first<{ count: number; total_chars: number }>();
 
       const articleCount = stats?.count || 0;
@@ -488,7 +489,7 @@ export class BlogService {
           SELECT 
             a.id, a.slug, a.title, a.description, a.cover_image, a.sort_order, a.created_at,
             count(art.id) as article_count,
-            coalesce(sum(length(art.content)), 0) as total_chars
+            coalesce(sum(coalesce(art.char_count, length(art.content))), 0) as total_chars
           FROM albums a
           LEFT JOIN articles art ON a.id = art.album_id AND art.author_id = ? AND art.is_published = 1
           WHERE a.author_id = ? AND a.is_published = 1
@@ -671,7 +672,7 @@ export class BlogService {
         SELECT 
           a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary, a.content,
           a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.tags, a.read_time, a.views,
-          a.published_at, a.created_at, length(a.content) as content_length,
+          a.published_at, a.created_at, coalesce(a.char_count, length(a.content)) as char_count,
           alb.slug as album_slug, alb.title as album_title,
           strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
         FROM articles a
@@ -687,7 +688,7 @@ export class BlogService {
       const data: ArticleItem[] = (rows.results || []).map((r) => {
         const norm = normalizeDimension(r.dimension) || "dao";
         const meta = DIMENSIONS[norm] || DIMENSIONS.dao;
-        const chars = r.content_length || (r.content ? r.content.length : 3000);
+        const chars = r.char_count ?? (r.content ? r.content.length : 3000);
         const wordCount = `${chars.toLocaleString()}字`;
 
         return {
@@ -743,7 +744,7 @@ export class BlogService {
       SELECT 
         a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary, a.content,
         a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.tags, a.read_time, a.views,
-        a.published_at, a.created_at, length(a.content) as content_length,
+        a.published_at, a.created_at, coalesce(a.char_count, length(a.content)) as char_count,
         alb.slug as album_slug, alb.title as album_title,
         strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
       FROM articles a
@@ -757,7 +758,7 @@ export class BlogService {
 
     const norm = normalizeDimension(r.dimension) || "dao";
     const meta = DIMENSIONS[norm] || DIMENSIONS.dao;
-    const chars = r.content_length || (r.content ? r.content.length : 3000);
+    const chars = r.char_count ?? (r.content ? r.content.length : 3000);
 
     return {
       id: r.id,

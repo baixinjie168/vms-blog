@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env as cfEnv } from 'cloudflare:workers';
 import { ensureBlogSchema } from '../../utils/dbInit';
+import { countPlainChars, toPlainText } from '../../utils/textStats';
 import { BlogService, normalizeDimension } from '../../services/blogService';
 
 export const prerender = false;
@@ -104,8 +105,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const dimension = normalizeDimension(category) || 'shi_trend';
     const cleanTags = typeof tags === 'string' ? tags.trim() : '';
-    const plainText = (content || '').replace(/<[^>]+>/g, '').trim();
-    const charCount = plainText.length;
+    // 摘要与字数共用同一段纯文本，避免「摘要看着是这些字，字数却按另一套算」
+    const plainText = toPlainText(content);
+    const charCount = countPlainChars(content);
     const readTime = Math.max(2, Math.round(charCount / 400));
     const summary = plainText.slice(0, 140) + (plainText.length > 140 ? '...' : '');
 
@@ -141,7 +143,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         await db.prepare(`
           UPDATE articles
-          SET title = ?, summary = ?, content = ?, dimension = ?, album_id = ?, album_order = ?, chapter_label = ?, tags = ?, read_time = ?, is_published = ?, updated_at = ?
+          SET title = ?, summary = ?, content = ?, dimension = ?, album_id = ?, album_order = ?, chapter_label = ?, tags = ?, char_count = ?, read_time = ?, is_published = ?, updated_at = ?
           WHERE id = ?
         `).bind(
           title.trim(),
@@ -152,6 +154,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           finalOrder,
           finalChapter,
           cleanTags,
+          charCount,
           readTime,
           published,
           now,
@@ -183,8 +186,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       const slug = `art_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       const result = await db.prepare(`
-        INSERT INTO articles (author_id, slug, title, summary, content, dimension, album_id, album_order, chapter_label, tags, read_time, views, is_published, published_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+        INSERT INTO articles (author_id, slug, title, summary, content, dimension, album_id, album_order, chapter_label, tags, char_count, read_time, views, is_published, published_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
       `).bind(
         authorId,
         slug,
@@ -196,6 +199,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         assignedOrder,
         finalChapter,
         cleanTags,
+        charCount,
         readTime,
         published,
         published ? now : null,
