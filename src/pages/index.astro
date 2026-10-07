@@ -25,7 +25,7 @@ const currentUserId = sessionUser?.id || sessionUser?.sub;
 let authorProfile = {
   id: isGuest ? 'guest' : (currentUserId || ''),
   nickname: isGuest ? '访客读者' : (sessionUser?.nickname || '白心解'),
-  email: isGuest ? '' : (sessionUser?.email || 'admin@250258.xyz'),
+  email: isGuest ? '' : (sessionUser?.email || ''),
   bio: isGuest
     ? '登入开启个人名片与创作空间，沉淀您的七维认知体系与专栏长卷。'
     : '以道明向，以心修己，以法立律，以术精工，以器致远，以事立业，以势乘风。',

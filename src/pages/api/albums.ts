@@ -194,12 +194,24 @@ export const PUT: APIRoute = async ({ request, locals }) => {
         });
       }
 
-      // 更新基本信息
-      await db.prepare(`
-        UPDATE albums
-        SET title = COALESCE(?, title), description = COALESCE(?, description), updated_at = ?
-        WHERE id = ?
-      `).bind(title ? title.trim() : null, description ? description.trim() : null, now, id).run();
+      // 更新基本信息。不能用 COALESCE(?, 旧值) 兜底：空串会被绑成 NULL，
+      // 于是「清空简介」永远被旧值覆盖，用户怎么删都删不掉。
+      // 改为按「字段是否随本次请求传来」决定是否更新——传空串即清空，未传则维持原值。
+      const updates: string[] = [];
+      const updateBinds: unknown[] = [];
+      if (typeof title === 'string' && title.trim()) {
+        updates.push('title = ?');
+        updateBinds.push(title.trim());
+      }
+      if (typeof description === 'string') {
+        updates.push('description = ?');
+        updateBinds.push(description.trim());
+      }
+      if (updates.length > 0) {
+        updates.push('updated_at = ?');
+        updateBinds.push(now, id);
+        await db.prepare(`UPDATE albums SET ${updates.join(', ')} WHERE id = ?`).bind(...updateBinds).run();
+      }
 
       // 如果更新了文章收录与排序
       if (Array.isArray(articleIds)) {

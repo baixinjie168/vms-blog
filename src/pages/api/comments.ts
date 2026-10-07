@@ -98,14 +98,9 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       });
     }
 
-    // 防 XSS 过滤
-    const sanitizedContent = content
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-
+    // 原文入库。XSS 由渲染层负责：CommentsSidebar 用 React 文本节点 {item.content} /
+    // {item.quote} 输出，本身就会转义。在此提前转义会造成二次转义，
+    // 用户看到的是 &lt; / &#039; 这类实体字面量。
     const currentUser = (locals as any)?.user;
     const userId = currentUser?.id || 'usr_reader_guest';
 
@@ -115,7 +110,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
         userId,
         pageIndex: Number(pageIndex) || 1,
         quoteText: quoteText ? String(quoteText).slice(0, 120) : undefined,
-        content: sanitizedContent,
+        content: content.trim(),
       });
 
       return new Response(JSON.stringify({ success: true, data: res }), {
