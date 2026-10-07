@@ -162,7 +162,7 @@ export default function ArticleGrid({
               {(() => {
                 const canManage = Boolean(
                   activeUserId &&
-                  (item.author_id === activeUserId || item.author_id === 'usr_author_bai' || isSuperAdmin)
+                  (item.author_id === activeUserId || isSuperAdmin)
                 );
 
                 return (

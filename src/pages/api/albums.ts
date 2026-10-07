@@ -120,7 +120,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         await db.prepare(`
           UPDATE articles 
           SET album_id = ?, album_order = ?, updated_at = ?
-          WHERE id = ? AND (author_id = ? OR author_id = 'usr_author_bai' OR ? = 'admin')
+          WHERE id = ? AND (author_id = ? OR ? = 'admin')
         `).bind(albumId, orderIndex, now, artId, authorId, sessionUser.role || '').run();
       }
     }
@@ -187,7 +187,7 @@ export const PUT: APIRoute = async ({ request, locals }) => {
         });
       }
 
-      if (album.author_id !== authorId && sessionUser.role !== 'admin' && album.author_id !== 'usr_author_bai') {
+      if (album.author_id !== authorId && sessionUser.role !== 'admin') {
         return new Response(JSON.stringify({ success: false, error: '无权修改他人专栏专辑' }), {
           status: 403,
           headers: { 'Content-Type': 'application/json' },
@@ -207,7 +207,7 @@ export const PUT: APIRoute = async ({ request, locals }) => {
         await db.prepare(`
           UPDATE articles
           SET album_id = NULL, album_order = 1, updated_at = ?
-          WHERE album_id = ? AND (author_id = ? OR author_id = 'usr_author_bai' OR ? = 'admin')
+          WHERE album_id = ? AND (author_id = ? OR ? = 'admin')
         `).bind(now, id, authorId, sessionUser.role || '').run();
 
         // 重新按最新顺序分配序号
@@ -217,7 +217,7 @@ export const PUT: APIRoute = async ({ request, locals }) => {
           await db.prepare(`
             UPDATE articles 
             SET album_id = ?, album_order = ?, updated_at = ?
-            WHERE id = ? AND (author_id = ? OR author_id = 'usr_author_bai' OR ? = 'admin')
+            WHERE id = ? AND (author_id = ? OR ? = 'admin')
           `).bind(id, orderIndex, now, artId, authorId, sessionUser.role || '').run();
         }
       }
@@ -271,7 +271,7 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
         });
       }
 
-      if (album.author_id !== authorId && sessionUser.role !== 'admin' && album.author_id !== 'usr_author_bai') {
+      if (album.author_id !== authorId && sessionUser.role !== 'admin') {
         return new Response(JSON.stringify({ success: false, error: '无权删除他人专栏专辑' }), {
           status: 403,
           headers: { 'Content-Type': 'application/json' },

@@ -3,12 +3,13 @@ import { env as cfEnv } from "cloudflare:workers";
 
 export const prerender = false;
 
-const ALLOWED_MIME_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/svg+xml"
+// MIME 白名单 → 落盘扩展名。刻意排除 image/svg+xml：
+// SVG 可内嵌 <script>，而本接口经由 /api/assets 同源回源，会构成存储型 XSS。
+const ALLOWED_MIME_TYPES = new Map<string, string>([
+  ["image/jpeg", ".jpg"],
+  ["image/png", ".png"],
+  ["image/webp", ".webp"],
+  ["image/gif", ".gif"]
 ]);
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -16,8 +17,14 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const sessionUser = (locals as any)?.user;
-    const uploaderId = sessionUser?.id || sessionUser?.sub || 'usr_author_bai';
-    const uploaderEmail = sessionUser?.email || 'author@250258.xyz';
+    if (!sessionUser) {
+      return new Response(JSON.stringify({ error: "请先登入作者账号" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const uploaderId = sessionUser.id || sessionUser.sub;
+    const uploaderEmail = sessionUser.email || '';
 
     const env = cfEnv;
     if (!env.ASSETS_BUCKET) {
@@ -45,8 +52,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const mimeType = file.type || "application/octet-stream";
-    if (!ALLOWED_MIME_TYPES.has(mimeType)) {
-      return new Response(JSON.stringify({ error: "仅支持 JPG, PNG, WebP, GIF, SVG 图片" }), {
+    const ext = ALLOWED_MIME_TYPES.get(mimeType);
+    if (!ext) {
+      return new Response(JSON.stringify({ error: "仅支持 JPG, PNG, WebP, GIF 图片" }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
@@ -54,8 +62,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const date = new Date();
     const yearMonth = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, "0")}`;
-    const extMatch = file.name.match(/\.([a-zA-Z0-9]+)$/);
-    const ext = extMatch ? `.${extMatch[1].toLowerCase()}` : ".png";
+    // 扩展名取自已校验的 MIME 类型，不信任客户端文件名
     const fileKey = `uploads/${yearMonth}/${crypto.randomUUID().replace(/-/g, "")}${ext}`;
 
     const arrayBuffer = await file.arrayBuffer();

@@ -85,6 +85,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     await ensureBlogSchema(db);
 
     const sessionUser = (locals as any)?.user;
+    if (!sessionUser) {
+      return new Response(JSON.stringify({ success: false, error: '请先登入作者账号' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const body = await request.json().catch(() => ({}));
     const { id, title, category, tags, content, is_published, album_id, album_order, chapter_label } = body;
 
@@ -103,7 +110,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const summary = plainText.slice(0, 140) + (plainText.length > 140 ? '...' : '');
 
     const now = Math.floor(Date.now() / 1000);
-    const authorId = sessionUser?.id || sessionUser?.sub || 'usr_author_bai';
+    const authorId = sessionUser.id || sessionUser.sub;
     const published = is_published ? 1 : 0;
     const validAlbumId = album_id && typeof album_id === 'string' && album_id.trim() ? album_id.trim() : null;
 
@@ -121,7 +128,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           });
         }
 
-        const isOwner = existing.author_id === authorId || existing.author_id === 'usr_author_bai' || sessionUser?.role === 'admin';
+        const isOwner = existing.author_id === authorId || sessionUser.role === 'admin';
         if (!isOwner) {
           return new Response(JSON.stringify({ success: false, error: '无权编辑他人文章' }), {
             status: 403,
@@ -275,7 +282,7 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
         });
       }
 
-      const isOwner = existing.author_id === authorId || existing.author_id === 'usr_author_bai' || sessionUser.role === 'admin';
+      const isOwner = existing.author_id === authorId || sessionUser.role === 'admin';
       if (!isOwner) {
         return new Response(JSON.stringify({ success: false, error: '无权删除他人文章' }), {
           status: 403,

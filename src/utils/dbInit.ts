@@ -33,16 +33,7 @@ export async function ensureAuthSchema(db: any): Promise<void> {
       }
     }
 
-    // 4. 确保博主管理员初始密码就绪 (Admin#2026!)
-    try {
-      await db.prepare(`
-        UPDATE users 
-        SET password_hash = 'pbkdf2:sha256:100000:1f308d9dd56eea4e08d0489b65e961df:70685f66832f69a4405e69ebe3c817685355822dc4aa4fcd503a3c395c4f97f6' 
-        WHERE email = 'admin@250258.xyz' AND (password_hash IS NULL OR password_hash = '')
-      `).run();
-    } catch (_) {}
-
-    // 5. 确保 activation_tokens 关联表与索引存在
+    // 4. 确保 activation_tokens 关联表与索引存在
     try {
       await db.prepare(`
         CREATE TABLE IF NOT EXISTS activation_tokens (
