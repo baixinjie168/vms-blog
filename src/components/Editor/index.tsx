@@ -5,6 +5,7 @@ import {
   closeEditor,
   updateEditorContent,
   setEditorTitle,
+  setEditorSummary,
   setEditorCategory,
   setEditorTags,
   setEditorSaving,
@@ -23,6 +24,7 @@ export default function EditorIsland() {
   const {
     isOpen,
     title,
+    summary,
     category,
     tags,
     date,
@@ -86,6 +88,7 @@ export default function EditorIsland() {
         body: JSON.stringify({
           id: articleId,
           title,
+          summary: summary.trim() ? summary.trim() : null,
           category,
           tags,
           content,
@@ -243,6 +246,21 @@ export default function EditorIsland() {
             />
           </div>
         </div>
+
+        {/* 文章简述 / 卷首导语（作者自主撰写，选填，留空则正文无导语） */}
+        <div className="pt-2.5 mt-2.5 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+          <label className="text-[11px] font-serif font-bold text-stone-700 whitespace-nowrap flex items-center gap-1">
+            <span>文章简述 / 导语</span>
+            <span className="text-[10px] font-normal text-stone-400">（选填，由您自主撰写；若留空则正文标题下方绝不展示任何导语）</span>:
+          </label>
+          <input
+            type="text"
+            value={summary}
+            onChange={(e) => setEditorSummary(e.target.value)}
+            placeholder="输入本文提纲掣领的题记或导语（选填，未写则不自动生成）..."
+            className="flex-1 px-3 py-1 text-xs rounded-xl border border-stone-300 font-serif focus:outline-none focus:ring-1 focus:ring-limeBrand bg-stone-50/50 focus:bg-white transition-all text-stone-800"
+          />
+        </div>
       </div>
 
       {/* 编辑器双栏：左写富文本 + 右实时书页排版预览 */}
@@ -257,6 +275,7 @@ export default function EditorIsland() {
         {/* 右栏：双对开实时书页装帧效果预览 */}
         <LiveBookPreview
           title={title}
+          summary={summary}
           category={category}
           date={date}
           previewSpreads={previewSpreads}
@@ -272,6 +291,8 @@ export default function EditorIsland() {
         onConfirmPublish={() => handleSave(true)}
         isSaving={isSaving}
         title={title}
+        summary={summary}
+        onSummaryChange={setEditorSummary}
         category={category}
         tags={tags}
         onTagsChange={setEditorTags}

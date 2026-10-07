@@ -102,8 +102,8 @@ function estimateTableRowHeight(
     maxLines = Math.max(maxLines, Math.ceil(textLen / effectiveChars));
   }
 
-  const lineHeight = tableDensity === 'compact' ? 17 : tableDensity === 'relaxed' ? 26 : 22;
-  const padding = tableDensity === 'compact' ? 6 : tableDensity === 'relaxed' ? 16 : 12;
+  const lineHeight = tableDensity === 'compact' ? 16 : tableDensity === 'relaxed' ? 26 : 21;
+  const padding = tableDensity === 'compact' ? 5 : tableDensity === 'relaxed' ? 16 : 10;
 
   return maxLines * lineHeight + padding;
 }
@@ -120,7 +120,7 @@ function estimateTableHeight(
 
   const rows = tableHtml.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi) || [];
   if (rows.length === 0) return 50;
-  const tableMargin = tableDensity === 'compact' ? 16 : 24;
+  const tableMargin = tableDensity === 'compact' ? 12 : tableDensity === 'relaxed' ? 24 : 18;
   return rows.reduce((sum, row) => sum + estimateTableRowHeight(row, tableDensity, cellCharsPerLine), 0) + tableMargin;
 }
 
@@ -160,7 +160,7 @@ function splitTallTable(
   if (rows.length === 0) return [tableHtml];
 
   const headerCost = headerHtml ? estimateTableRowHeight(headerHtml, tableDensity, cellCharsPerLine) : 0;
-  const tableMargin = tableDensity === 'compact' ? 16 : 24;
+  const tableMargin = tableDensity === 'compact' ? 12 : tableDensity === 'relaxed' ? 24 : 18;
   const baseCost = headerCost + tableMargin;
 
   const chunks: string[][] = [];
@@ -201,7 +201,7 @@ export function paginateHtmlContent(
   const defaultCapacity = fontSize === 'small' ? 880 : fontSize === 'large' ? 640 : 760;
   const maxPageCapacity = opts.maxPageCapacity || defaultCapacity;
   const cellCharsPerLine = fontSize === 'small' ? 16 : fontSize === 'large' ? 12 : 14;
-  const minTableFirstChunk = tableDensity === 'compact' ? 170 : 220;
+  const minTableFirstChunk = tableDensity === 'compact' ? 140 : 210;
 
   if (!htmlContent || !htmlContent.trim()) {
     return {

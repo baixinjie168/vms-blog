@@ -41,7 +41,13 @@ const CustomTable = Table.extend({
       ...this.parent?.(),
       density: {
         default: 'normal',
-        parseHTML: (el) => el.getAttribute('data-density') || 'normal',
+        parseHTML: (el) =>
+          el.getAttribute('data-density') ||
+          (el.classList.contains('table-compact')
+            ? 'compact'
+            : el.classList.contains('table-relaxed')
+            ? 'relaxed'
+            : 'normal'),
         renderHTML: (attrs) => {
           if (!attrs.density || attrs.density === 'normal') return {};
           return {
@@ -252,6 +258,38 @@ export default function TiptapEditor({
     editor?.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
     setTableMenuOpen(false);
     setHoverGrid({ rows: 0, cols: 0 });
+  };
+
+  // 精准设置表格行高密度 (紧凑 / 标准 / 宽松)
+  const setTableDensity = (mode: 'compact' | 'normal' | 'relaxed') => {
+    if (!editor) return;
+    const { state, view } = editor;
+    const tr = state.tr;
+    let found = false;
+
+    // 1. 若光标处于表格内部，精准设置当前所在表格的密度属性
+    state.doc.nodesBetween(state.selection.from, state.selection.to, (node, pos) => {
+      if (node.type.name === 'table') {
+        tr.setNodeMarkup(pos, undefined, { ...node.attrs, density: mode });
+        found = true;
+        return false;
+      }
+    });
+
+    // 2. 若光标未在表格内部，则为全文已有的所有表格统一应用该密度
+    if (!found) {
+      state.doc.descendants((node, pos) => {
+        if (node.type.name === 'table') {
+          tr.setNodeMarkup(pos, undefined, { ...node.attrs, density: mode });
+          found = true;
+        }
+      });
+    }
+
+    if (found) {
+      view.dispatch(tr);
+      onContentChange(editor.getHTML());
+    }
   };
 
   // 表格增删操作：均依赖光标所在单元格，故不在表格内时统一置灰
@@ -731,38 +769,36 @@ export default function TiptapEditor({
                 <div className="h-px bg-stone-200 mb-2" />
 
                 {/* 表格行高密度调节 (紧凑/标准/宽松) */}
-                {editor.isActive('table') && (
-                  <div className="mb-2 p-1.5 bg-stone-50 rounded-lg border border-stone-200">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-bold text-stone-700">表格行高密度</span>
-                      <span className="text-[9px] text-limeDark font-serif">推荐紧凑模式</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-1">
-                      {(['compact', 'normal', 'relaxed'] as const).map((mode) => {
-                        const currentDensity = editor.getAttributes('table').density || 'normal';
-                        const isActive = currentDensity === mode;
-                        const labels = { compact: '紧凑', normal: '标准', relaxed: '宽松' };
-                        return (
-                          <button
-                            key={mode}
-                            type="button"
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => {
-                              editor.chain().focus().updateAttributes('table', { density: mode }).run();
-                            }}
-                            className={`py-1 px-1 rounded text-[10px] font-medium text-center transition cursor-pointer ${
-                              isActive
-                                ? 'bg-limeBrand text-white font-bold shadow-2xs'
-                                : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
-                            }`}
-                          >
-                            {labels[mode]}
-                          </button>
-                        );
-                      })}
-                    </div>
+                <div className="mb-2 p-1.5 bg-stone-50 rounded-lg border border-stone-200">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-bold text-stone-700">表格行高密度</span>
+                    <span className="text-[9px] text-limeDark font-serif">推荐紧凑模式</span>
                   </div>
-                )}
+                  <div className="grid grid-cols-3 gap-1">
+                    {(['compact', 'normal', 'relaxed'] as const).map((mode) => {
+                      const currentDensity = editor.getAttributes('table').density || 'normal';
+                      const isActive = currentDensity === mode;
+                      const labels = { compact: '紧凑', normal: '标准', relaxed: '宽松' };
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setTableDensity(mode);
+                          }}
+                          className={`py-1 px-1 rounded text-[10px] font-medium text-center transition cursor-pointer ${
+                            isActive
+                              ? 'bg-limeBrand text-white font-bold shadow-2xs'
+                              : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
+                          }`}
+                        >
+                          {labels[mode]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
                 {/* 增删操作：面板保持开启，便于连续调整 */}
                 <div className="grid grid-cols-2 gap-1">
@@ -886,6 +922,120 @@ export default function TiptapEditor({
           </span>
         </div>
       </div>
+
+      {/* 表格专属快捷控制栏：只要光标在任意表格单元格内即常驻显现，直观调整行高与增删行列 */}
+      {editor.isActive('table') && (
+        <div className="flex flex-wrap items-center justify-between px-3 py-1.5 bg-lime-50/90 border-b border-lime-200 text-xs text-stone-700 select-none animate-fade-in transition-all">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-serif font-bold text-limeDark flex items-center gap-1 text-[11px]">
+              <TableIcon className="w-3.5 h-3.5" />
+              <span>表格行高控制</span>
+            </span>
+            <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-lime-300 shadow-2xs">
+              {(['compact', 'normal', 'relaxed'] as const).map((mode) => {
+                const currentDensity = editor.getAttributes('table').density || 'normal';
+                const isActive = currentDensity === mode;
+                const labels = { compact: '紧凑行高', normal: '标准行高', relaxed: '宽松行高' };
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setTableDensity(mode)}
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-serif transition cursor-pointer ${
+                      isActive
+                        ? 'bg-limeBrand text-white font-bold shadow-2xs'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                    }`}
+                    title={mode === 'compact' ? '紧凑行高：缩小单元格边距与行高，适合一页装下多行表格' : mode === 'normal' ? '标准行高' : '宽松行高'}
+                  >
+                    {labels[mode]}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-lime-300">|</span>
+            {/* 快捷行列操作 */}
+            <div className="flex items-center gap-1 text-[10px]">
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor.chain().focus().addRowBefore().run()}
+                className="px-1.5 py-0.5 rounded hover:bg-lime-100 text-stone-700 cursor-pointer"
+                title="上方插入行"
+              >
+                +上行
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor.chain().focus().addRowAfter().run()}
+                className="px-1.5 py-0.5 rounded hover:bg-lime-100 text-stone-700 cursor-pointer"
+                title="下方插入行"
+              >
+                +下行
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor.chain().focus().deleteRow().run()}
+                className="px-1.5 py-0.5 rounded hover:bg-rose-100 text-rose-600 cursor-pointer"
+                title="删除当前行"
+              >
+                -删行
+              </button>
+              <span className="text-lime-300">|</span>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor.chain().focus().addColumnBefore().run()}
+                className="px-1.5 py-0.5 rounded hover:bg-lime-100 text-stone-700 cursor-pointer"
+                title="左侧插入列"
+              >
+                +左列
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor.chain().focus().addColumnAfter().run()}
+                className="px-1.5 py-0.5 rounded hover:bg-lime-100 text-stone-700 cursor-pointer"
+                title="右侧插入列"
+              >
+                +右列
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor.chain().focus().deleteColumn().run()}
+                className="px-1.5 py-0.5 rounded hover:bg-rose-100 text-rose-600 cursor-pointer"
+                title="删除当前列"
+              >
+                -删列
+              </button>
+              <span className="text-lime-300">|</span>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor.chain().focus().mergeOrSplit().run()}
+                className="px-1.5 py-0.5 rounded hover:bg-lime-100 text-stone-700 cursor-pointer"
+                title="合并/拆分单元格"
+              >
+                合并/拆分
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => editor.chain().focus().deleteTable().run()}
+            className="text-[10px] text-cinnabar hover:bg-rose-100 px-1.5 py-0.5 rounded cursor-pointer"
+            title="删除整个表格"
+          >
+            删除表格
+          </button>
+        </div>
+      )}
 
       {/* 富文本编辑区 */}
       <div className="flex-1 overflow-y-auto hover-scrollbar bg-stone-50/20">

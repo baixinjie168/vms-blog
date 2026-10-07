@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env as cfEnv } from 'cloudflare:workers';
 import { ensureBlogSchema } from '../../utils/dbInit';
-import { countPlainChars, toPlainText } from '../../utils/textStats';
+import { countPlainChars } from '../../utils/textStats';
 import { BlogService, normalizeDimension } from '../../services/blogService';
 
 export const prerender = false;
@@ -94,7 +94,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { id, title, category, tags, content, is_published, album_id, album_order, chapter_label } = body;
+    const { id, title, summary: inputSummary, category, tags, content, is_published, album_id, album_order, chapter_label } = body;
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return new Response(JSON.stringify({ success: false, error: '文章标题不能为空' }), {
@@ -105,11 +105,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const dimension = normalizeDimension(category) || 'shi_trend';
     const cleanTags = typeof tags === 'string' ? tags.trim() : '';
-    // 摘要与字数共用同一段纯文本，避免「摘要看着是这些字，字数却按另一套算」
-    const plainText = toPlainText(content);
     const charCount = countPlainChars(content);
     const readTime = Math.max(2, Math.round(charCount / 400));
-    const summary = plainText.slice(0, 140) + (plainText.length > 140 ? '...' : '');
+    // 导语简述：完全由用户自主撰写，未提供则存 null，绝不自动截取正文生成
+    const userSummary = typeof inputSummary === 'string' ? inputSummary.trim() : '';
+    const summary = userSummary || null;
 
     const now = Math.floor(Date.now() / 1000);
     const authorId = sessionUser.id || sessionUser.sub;

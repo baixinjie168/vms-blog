@@ -288,9 +288,20 @@ body {
 .book-page-content td {
   position: relative;
   border: 1px solid #e7e5e4;
-  padding: 0.45rem 0.7rem;
-  vertical-align: top;
+  padding: 0.38rem 0.65rem;
+  vertical-align: middle;
   word-break: break-word;
+}
+
+/* 彻底重置表格单元格内段落的边距，杜绝段落默认 0.65em 间距撑高表格行高 */
+.tiptap td p,
+.tiptap th p,
+.book-page-content td p,
+.book-page-content th p {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: inherit !important;
+  font-size: inherit !important;
 }
 
 .tiptap th,
@@ -433,16 +444,46 @@ body {
 
 /* ========================================================
    表格行高密度调节 (紧凑 / 标准 / 宽松)
+   彻底贯穿到 table, th, td 以及内部 p 标签
    ======================================================== */
+.tiptap table.table-compact,
+.book-page-content table.table-compact,
+.reader-table-compact table {
+  margin: 0.4rem 0 !important;
+  font-size: 0.76rem !important;
+  line-height: 1.25 !important;
+}
+
 .tiptap table.table-compact th,
 .tiptap table.table-compact td,
 .book-page-content table.table-compact th,
 .book-page-content table.table-compact td,
 .reader-table-compact table th,
 .reader-table-compact table td {
-  padding: 0.22rem 0.5rem !important;
-  line-height: 1.35 !important;
-  font-size: 0.8rem !important;
+  padding: 0.16rem 0.45rem !important;
+  line-height: 1.25 !important;
+  font-size: 0.76rem !important;
+  min-height: 0 !important;
+}
+
+.tiptap table.table-compact th p,
+.tiptap table.table-compact td p,
+.book-page-content table.table-compact th p,
+.book-page-content table.table-compact td p,
+.reader-table-compact table th p,
+.reader-table-compact table td p {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.25 !important;
+  font-size: 0.76rem !important;
+}
+
+.tiptap table.table-relaxed,
+.book-page-content table.table-relaxed,
+.reader-table-relaxed table {
+  margin: 1rem 0 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.75 !important;
 }
 
 .tiptap table.table-relaxed th,
@@ -451,9 +492,21 @@ body {
 .book-page-content table.table-relaxed td,
 .reader-table-relaxed table th,
 .reader-table-relaxed table td {
-  padding: 0.65rem 0.85rem !important;
+  padding: 0.65rem 0.9rem !important;
   line-height: 1.75 !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9rem !important;
+}
+
+.tiptap table.table-relaxed th p,
+.tiptap table.table-relaxed td p,
+.book-page-content table.table-relaxed th p,
+.book-page-content table.table-relaxed td p,
+.reader-table-relaxed table th p,
+.reader-table-relaxed table td p {
+  margin: 0.2rem 0 !important;
+  padding: 0 !important;
+  line-height: 1.75 !important;
+  font-size: 0.9rem !important;
 }
 
 /* ========================================================
