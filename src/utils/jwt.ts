@@ -3,6 +3,8 @@
  * 零第三方依赖，原生无缝适配 Cloudflare Workers 边缘运行时
  */
 
+import { env as cfEnv } from "cloudflare:workers";
+
 export interface JwtPayload {
   sub: string;        // user_id (如 usr_abc123)
   email: string;      // 用户真实邮箱
@@ -13,7 +15,17 @@ export interface JwtPayload {
   exp?: number;
 }
 
-export const DEFAULT_SECRET = "vms_digital_garden_jwt_edge_secret_key_2026";
+/**
+ * 解析 HMAC 签名密钥：只认运行时环境变量，绝不回落到源码常量。
+ * 仓库是公开的，任何写死在源码里的默认密钥都等同于对所有人生效。
+ */
+function resolveSecret(secret?: string): string {
+  const resolved = secret || (cfEnv as any)?.JWT_SECRET;
+  if (!resolved || typeof resolved !== "string" || resolved.length < 16) {
+    throw new Error("JWT_SECRET 未配置或强度不足，已拒绝签发/校验会话令牌");
+  }
+  return resolved;
+}
 
 /**
  * 将 UTF-8 文本转为 URL 安全的 Base64 字符串
@@ -85,7 +97,7 @@ async function getHmacKey(secret: string): Promise<CryptoKey> {
  */
 export async function signJwt(
   payload: Omit<JwtPayload, 'iat' | 'exp'>,
-  secret = DEFAULT_SECRET,
+  secret?: string,
   expiresInSeconds = 30 * 24 * 3600 // 默认 30 天
 ): Promise<string> {
   const header = { alg: "HS256", typ: "JWT" };
@@ -100,7 +112,7 @@ export async function signJwt(
   const encPayload = base64UrlEncodeText(JSON.stringify(fullPayload));
   const data = `${encHeader}.${encPayload}`;
 
-  const key = await getHmacKey(secret);
+  const key = await getHmacKey(resolveSecret(secret));
   const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
   const sigB64 = bytesToBase64Url(new Uint8Array(signature));
 
@@ -112,7 +124,7 @@ export async function signJwt(
  */
 export async function verifyJwt(
   token: string,
-  secret = DEFAULT_SECRET
+  secret?: string
 ): Promise<JwtPayload | null> {
   try {
     const parts = token.split('.');
@@ -120,7 +132,8 @@ export async function verifyJwt(
     const [headerB64, payloadB64, sigB64] = parts;
 
     const data = `${headerB64}.${payloadB64}`;
-    const key = await getHmacKey(secret);
+    // 密钥缺失时 resolveSecret 抛错，由下方 catch 兜住 → 返回 null（失败关闭，不放行）
+    const key = await getHmacKey(resolveSecret(secret));
     const sigBytes = base64UrlToBytes(sigB64);
 
     const isValid = await crypto.subtle.verify("HMAC", key, sigBytes, new TextEncoder().encode(data));

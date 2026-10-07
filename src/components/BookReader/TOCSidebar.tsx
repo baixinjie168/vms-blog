@@ -40,7 +40,7 @@ export default function TOCSidebar({
   const canManage = Boolean(
     currentUser &&
     article &&
-    (article.author_id === currentUser.id || article.author_id === 'usr_author_bai' || currentUser.role === 'admin')
+    (article.author_id === currentUser.id || currentUser.role === 'admin')
   );
 
   return (

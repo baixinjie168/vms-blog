@@ -28,6 +28,8 @@ export const GET: APIRoute = async ({ params }) => {
     }
     // 静态媒体资源设置 1 年强缓存，极大降低重复请求开销
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    // 禁止浏览器把不可信内容嗅探成 HTML/SVG 等可执行类型
+    headers.set("X-Content-Type-Options", "nosniff");
 
     return new Response(object.body, { headers });
   } catch (error: any) {

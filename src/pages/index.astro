@@ -23,7 +23,7 @@ const currentUserId = sessionUser?.id || sessionUser?.sub;
 
 // 3. 初始化回退数据（确保构建阶段与无 DB 场景零报错）
 let authorProfile = {
-  id: isGuest ? 'guest' : (currentUserId || 'usr_author_bai'),
+  id: isGuest ? 'guest' : (currentUserId || ''),
   nickname: isGuest ? '访客读者' : (sessionUser?.nickname || '白心解'),
   email: isGuest ? '' : (sessionUser?.email || 'admin@250258.xyz'),
   bio: isGuest
