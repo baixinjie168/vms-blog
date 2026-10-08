@@ -5,7 +5,6 @@ import {
   closeEditor,
   updateEditorContent,
   setEditorTitle,
-  setEditorSummary,
   setEditorCategory,
   setEditorTags,
   setEditorSaving,
@@ -24,7 +23,6 @@ export default function EditorIsland() {
   const {
     isOpen,
     title,
-    summary,
     category,
     tags,
     date,
@@ -88,7 +86,7 @@ export default function EditorIsland() {
         body: JSON.stringify({
           id: articleId,
           title,
-          summary: summary.trim() ? summary.trim() : null,
+          summary: null,
           category,
           tags,
           content,
@@ -138,11 +136,11 @@ export default function EditorIsland() {
   return (
     <section
       id="view-editor"
-      className="fixed inset-0 z-50 w-full h-screen max-h-screen bg-[#F5F5F7] px-3 sm:px-6 lg:px-8 py-3 flex flex-col overflow-hidden transition-opacity duration-300 select-none"
+      className="fixed inset-0 z-50 w-full h-screen max-h-screen bg-[#F5F5F7] px-2.5 sm:px-5 lg:px-6 py-2 sm:py-2.5 flex flex-col overflow-hidden transition-opacity duration-300 select-none"
     >
       {/* 顶部控制面板 */}
-      <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-stone-200 shadow-sm mb-3 flex-shrink-0">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-stone-100">
+      <div className="bg-white rounded-2xl p-2.5 sm:p-3 border border-stone-200 shadow-sm mb-2 sm:mb-2.5 flex-shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-stone-100">
           <div className="flex items-center space-x-3">
             <button
               type="button"
@@ -153,9 +151,9 @@ export default function EditorIsland() {
               <span>返回首页</span>
             </button>
             <span className="text-stone-300">|</span>
-            <h2 className="font-serif font-bold text-sm sm:text-base text-stone-900 flex items-center gap-2">
-              <Feather className="w-4 h-4 text-limeBrand" />
-              <span>编辑博客 · Markdown / 富文本双屏实时排版预览</span>
+            <h2 className="font-serif font-bold text-xs sm:text-sm text-stone-900 flex items-center gap-1.5">
+              <Feather className="w-3.5 h-3.5 text-limeBrand" />
+              <span>编辑博客 · 双屏实时排版预览</span>
             </h2>
           </div>
 
@@ -181,7 +179,7 @@ export default function EditorIsland() {
               type="button"
               disabled={isSaving}
               onClick={() => handleSave(false)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 text-xs font-medium transition cursor-pointer disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
               <span>暂存草稿</span>
@@ -191,7 +189,7 @@ export default function EditorIsland() {
               type="button"
               disabled={isSaving}
               onClick={handlePrePublish}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-limeBrand text-white hover:bg-limeDark text-xs font-bold shadow-md shadow-limeBrand/20 transition active:scale-95 cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-limeBrand text-white hover:bg-limeDark text-xs font-bold shadow-md shadow-limeBrand/20 transition active:scale-95 cursor-pointer disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
               <span>发布装帧成册</span>
@@ -199,10 +197,11 @@ export default function EditorIsland() {
           </div>
         </div>
 
-        {/* 元数据选择：文章题目 + 所属七维认知层级 + 标签 */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-3">
-          <div className="md:col-span-5">
-            <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
+        {/* 单行紧凑元数据：文章题目 [] 所属七维认知层级 [] 文章标签 [] */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 pt-2">
+          {/* 文章题目 [] */}
+          <div className="flex-1 flex items-center gap-2 min-w-0">
+            <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
               文章题目
             </label>
             <input
@@ -210,18 +209,19 @@ export default function EditorIsland() {
               value={title}
               onChange={(e) => setEditorTitle(e.target.value)}
               placeholder="在此输入文章标题..."
-              className="w-full px-3 py-1.5 text-xs sm:text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold bg-stone-50/50 focus:bg-white transition-all"
+              className="flex-1 min-w-0 px-3 py-1 text-xs sm:text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold bg-stone-50/50 focus:bg-white transition-all text-stone-900"
             />
           </div>
 
-          <div className="md:col-span-3">
-            <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
+          {/* 所属七维认知层级 [] */}
+          <div className="flex items-center gap-2 shrink-0">
+            <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
               所属七维认知层级
             </label>
             <select
               value={category}
               onChange={(e) => setEditorCategory(e.target.value)}
-              className="w-full px-3 py-1.5 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-800 bg-white"
+              className="px-2.5 py-1 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-800 bg-white cursor-pointer"
             >
               <option value="道">道 · 我为什么活？</option>
               <option value="心">心 · 我是什么样的人？</option>
@@ -233,38 +233,24 @@ export default function EditorIsland() {
             </select>
           </div>
 
-          <div className="md:col-span-4">
-            <label className="block text-[11px] font-serif font-bold text-stone-700 mb-1">
-              文章标签 (Tags)
+          {/* 文章标签 [] */}
+          <div className="flex items-center gap-2 sm:w-60 md:w-68 shrink-0">
+            <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
+              文章标签
             </label>
             <input
               type="text"
               value={tags}
               onChange={(e) => setEditorTags(e.target.value)}
-              placeholder="逗号分隔，如：AI, 架构, 认知"
-              className="w-full px-3 py-1.5 text-xs rounded-xl border border-stone-300 font-mono focus:outline-none focus:ring-1 focus:ring-limeBrand bg-stone-50/50 focus:bg-white transition-all"
+              placeholder="逗号分隔，如：AI, 架构"
+              className="flex-1 min-w-0 px-2.5 py-1 text-xs rounded-xl border border-stone-300 font-mono focus:outline-none focus:ring-1 focus:ring-limeBrand bg-stone-50/50 focus:bg-white transition-all"
             />
           </div>
-        </div>
-
-        {/* 文章简述 / 卷首导语（作者自主撰写，选填，留空则正文无导语） */}
-        <div className="pt-2.5 mt-2.5 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
-          <label className="text-[11px] font-serif font-bold text-stone-700 whitespace-nowrap flex items-center gap-1">
-            <span>文章简述 / 导语</span>
-            <span className="text-[10px] font-normal text-stone-400">（选填，由您自主撰写；若留空则正文标题下方绝不展示任何导语）</span>:
-          </label>
-          <input
-            type="text"
-            value={summary}
-            onChange={(e) => setEditorSummary(e.target.value)}
-            placeholder="输入本文提纲掣领的题记或导语（选填，未写则不自动生成）..."
-            className="flex-1 px-3 py-1 text-xs rounded-xl border border-stone-300 font-serif focus:outline-none focus:ring-1 focus:ring-limeBrand bg-stone-50/50 focus:bg-white transition-all text-stone-800"
-          />
         </div>
       </div>
 
       {/* 编辑器双栏：左写富文本 + 右实时书页排版预览 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 flex-1 min-h-0 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3 flex-1 min-h-0 overflow-hidden">
         {/* 左栏：Tiptap 富文本 / Markdown 写作框 */}
         <TiptapEditor
           initialContent={content}
@@ -275,7 +261,6 @@ export default function EditorIsland() {
         {/* 右栏：双对开实时书页装帧效果预览 */}
         <LiveBookPreview
           title={title}
-          summary={summary}
           category={category}
           date={date}
           previewSpreads={previewSpreads}
@@ -291,8 +276,6 @@ export default function EditorIsland() {
         onConfirmPublish={() => handleSave(true)}
         isSaving={isSaving}
         title={title}
-        summary={summary}
-        onSummaryChange={setEditorSummary}
         category={category}
         tags={tags}
         onTagsChange={setEditorTags}

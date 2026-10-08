@@ -165,7 +165,7 @@ export default function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-          'tiptap-content focus:outline-none min-h-[460px] p-5 text-sm sm:text-base leading-relaxed font-serif text-stone-800 selection:bg-limeBrand selection:text-white',
+          'tiptap-content focus:outline-none min-h-full p-4 sm:p-5 text-sm sm:text-base leading-relaxed font-serif text-stone-800 selection:bg-limeBrand selection:text-white',
       },
       handleDrop: (view, event, slice, moved) => {
         if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
@@ -1039,7 +1039,7 @@ export default function TiptapEditor({
 
       {/* 富文本编辑区 */}
       <div className="flex-1 overflow-y-auto hover-scrollbar bg-stone-50/20">
-        <EditorContent editor={editor} />
+        <EditorContent editor={editor} className="h-full flex flex-col" />
       </div>
     </div>
   );
