@@ -5,6 +5,7 @@ import {
   closeEditor,
   updateEditorContent,
   setEditorTitle,
+  setEditorSummary,
   setEditorCategory,
   setEditorTags,
   setEditorSaving,
@@ -16,13 +17,24 @@ import { openAlbumModal } from '../../stores/albumStore';
 import TiptapEditor from './TiptapEditor';
 import LiveBookPreview from './LiveBookPreview';
 import PublishModal from './PublishModal';
-import { ArrowLeft, Feather, Save, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  Save,
+  Send,
+  CheckCircle2,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  AlignLeft,
+  FileText,
+} from 'lucide-react';
 
 export default function EditorIsland() {
   const editorState = useStore($editor);
   const {
     isOpen,
     title,
+    summary,
     category,
     tags,
     date,
@@ -41,6 +53,7 @@ export default function EditorIsland() {
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [authorAlbums, setAuthorAlbums] = useState<Array<{ id: string; title: string }>>([]);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState<boolean>(false);
+  const [isSummaryDrawerOpen, setIsSummaryDrawerOpen] = useState<boolean>(false);
 
   const fetchAlbums = async () => {
     try {
@@ -86,7 +99,7 @@ export default function EditorIsland() {
         body: JSON.stringify({
           id: articleId,
           title,
-          summary: null,
+          summary: summary?.trim() ? summary.trim() : null,
           category,
           tags,
           content,
@@ -138,26 +151,99 @@ export default function EditorIsland() {
       id="view-editor"
       className="fixed inset-0 z-50 w-full h-screen max-h-screen bg-[#F5F5F7] px-2.5 sm:px-5 lg:px-6 py-2 sm:py-2.5 flex flex-col overflow-hidden transition-opacity duration-300 select-none"
     >
-      {/* 顶部控制面板 */}
-      <div className="bg-white rounded-2xl p-2.5 sm:p-3 border border-stone-200 shadow-sm mb-2 sm:mb-2.5 flex-shrink-0">
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-stone-100">
-          <div className="flex items-center space-x-3">
+      {/* 顶部紧凑控制面板 */}
+      <div className="bg-white rounded-2xl p-2 sm:p-2.5 border border-stone-200 shadow-xs mb-2 sm:mb-2.5 flex-shrink-0 transition-all">
+        {/* 单行聚合控制栏 */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* 左侧及中间：返回 + 文章题目 + 文章维度 + 文章标签 + 导语/简述入口 */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
             <button
               type="button"
               onClick={closeEditor}
-              className="inline-flex items-center gap-1 text-xs text-stone-600 hover:text-limeDark font-medium transition cursor-pointer py-1 px-2 rounded-lg hover:bg-stone-100"
+              className="inline-flex items-center gap-1 text-xs text-stone-600 hover:text-limeDark font-medium transition cursor-pointer py-1 px-2 rounded-lg hover:bg-stone-100 shrink-0"
+              title="返回博客首页"
             >
-              <ArrowLeft className="w-4 h-4 text-limeBrand" />
+              <ArrowLeft className="w-3.5 h-3.5 text-limeBrand" />
               <span>返回首页</span>
             </button>
-            <span className="text-stone-300">|</span>
-            <h2 className="font-serif font-bold text-xs sm:text-sm text-stone-900 flex items-center gap-1.5">
-              <Feather className="w-3.5 h-3.5 text-limeBrand" />
-              <span>编辑博客 · 双屏实时排版预览</span>
-            </h2>
+
+            <span className="text-stone-300 hidden sm:inline">|</span>
+
+            {/* 文章题目及输入框 (同一行，宽度适中) */}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
+                文章题目
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setEditorTitle(e.target.value)}
+                placeholder="在此输入文章标题..."
+                className="w-36 sm:w-48 md:w-56 lg:w-64 px-2.5 py-1 text-xs sm:text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold bg-stone-50/60 focus:bg-white transition-all text-stone-900"
+              />
+            </div>
+
+            {/* 文章维度 (原所属七维认知层级，精简名称与宽度) */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
+                文章维度
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setEditorCategory(e.target.value)}
+                className="w-24 sm:w-28 px-2 py-1 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-800 bg-white cursor-pointer truncate"
+                title="选择文章维度"
+              >
+                <option value="道">道 · 使命</option>
+                <option value="心">心 · 心智</option>
+                <option value="法">法 · 战略</option>
+                <option value="术">术 · 战术</option>
+                <option value="器">器 · 工具</option>
+                <option value="事">事 · 交付</option>
+                <option value="势">势 · 借势</option>
+              </select>
+            </div>
+
+            {/* 文章标签 (紧凑宽度) */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
+                文章标签
+              </label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setEditorTags(e.target.value)}
+                placeholder="逗号分隔"
+                className="w-24 sm:w-28 md:w-36 px-2 py-1 text-xs rounded-xl border border-stone-300 font-mono focus:outline-none focus:ring-1 focus:ring-limeBrand bg-stone-50/60 focus:bg-white transition-all"
+              />
+            </div>
+
+            {/* 文章简述/导语 (下拉抽屉式切换按钮) */}
+            <button
+              type="button"
+              onClick={() => setIsSummaryDrawerOpen(!isSummaryDrawerOpen)}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-serif font-medium transition cursor-pointer border shrink-0 ${
+                isSummaryDrawerOpen || (summary && summary.trim().length > 0)
+                  ? 'bg-limeLight/70 border-limeBrand/60 text-limeDark font-bold'
+                  : 'bg-stone-50/70 border-stone-300 text-stone-600 hover:bg-stone-100 hover:text-stone-900'
+              }`}
+              title="点击展开/收起文章导语与简述输入抽屉"
+            >
+              <AlignLeft className="w-3.5 h-3.5" />
+              <span>文章简述/导语</span>
+              {summary && summary.trim().length > 0 && (
+                <span className="w-1.5 h-1.5 rounded-full bg-limeBrand shrink-0" />
+              )}
+              {isSummaryDrawerOpen ? (
+                <ChevronUp className="w-3 h-3 text-stone-500 shrink-0" />
+              ) : (
+                <ChevronDown className="w-3 h-3 text-stone-500 shrink-0" />
+              )}
+            </button>
           </div>
 
-          <div className="flex items-center space-x-2">
+          {/* 右侧：保存/发布操作按钮与提示 */}
+          <div className="flex items-center space-x-2 shrink-0">
             {toastMessage && (
               <span
                 className={`text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-serif animate-fade-in ${
@@ -197,56 +283,40 @@ export default function EditorIsland() {
           </div>
         </div>
 
-        {/* 单行紧凑元数据：文章题目 [] 所属七维认知层级 [] 文章标签 [] */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 pt-2">
-          {/* 文章题目 [] */}
-          <div className="flex-1 flex items-center gap-2 min-w-0">
-            <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
-              文章题目
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setEditorTitle(e.target.value)}
-              placeholder="在此输入文章标题..."
-              className="flex-1 min-w-0 px-3 py-1 text-xs sm:text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold bg-stone-50/50 focus:bg-white transition-all text-stone-900"
+        {/* 文章简述/导语 下拉抽屉式区域 */}
+        {isSummaryDrawerOpen && (
+          <div className="mt-2 pt-2 border-t border-stone-100 animate-fade-in space-y-1.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-serif font-bold text-stone-700">
+                <FileText className="w-3.5 h-3.5 text-limeBrand" />
+                <span>文章简述 / 导语</span>
+                <span className="text-[10px] font-sans font-normal text-stone-400">
+                  (呈现于文章篇首引言或卡片摘要，帮助读者快速把握核心精粹)
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono text-stone-400">
+                  {summary ? summary.length : 0} 字
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsSummaryDrawerOpen(false)}
+                  className="text-[11px] text-stone-500 hover:text-stone-800 font-serif flex items-center gap-0.5 cursor-pointer"
+                >
+                  <span>收起抽屉</span>
+                  <ChevronUp className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+            <textarea
+              value={summary || ''}
+              onChange={(e) => setEditorSummary(e.target.value)}
+              placeholder="在此输入文章简述或导言，阐述本文核心心智认知、问题意识或创作背景..."
+              rows={3}
+              className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif text-stone-800 bg-stone-50/40 focus:bg-white resize-y transition-all"
             />
           </div>
-
-          {/* 所属七维认知层级 [] */}
-          <div className="flex items-center gap-2 shrink-0">
-            <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
-              所属七维认知层级
-            </label>
-            <select
-              value={category}
-              onChange={(e) => setEditorCategory(e.target.value)}
-              className="px-2.5 py-1 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-800 bg-white cursor-pointer"
-            >
-              <option value="道">道 · 我为什么活？</option>
-              <option value="心">心 · 我是什么样的人？</option>
-              <option value="法">法 · 我如何做事？</option>
-              <option value="术">术 · 我具体怎么做？</option>
-              <option value="器">器 · 我用什么做？</option>
-              <option value="事">事 · 我实际创造什么？</option>
-              <option value="势">势 · 我如何借势？</option>
-            </select>
-          </div>
-
-          {/* 文章标签 [] */}
-          <div className="flex items-center gap-2 sm:w-60 md:w-68 shrink-0">
-            <label className="text-xs font-serif font-bold text-stone-700 whitespace-nowrap shrink-0">
-              文章标签
-            </label>
-            <input
-              type="text"
-              value={tags}
-              onChange={(e) => setEditorTags(e.target.value)}
-              placeholder="逗号分隔，如：AI, 架构"
-              className="flex-1 min-w-0 px-2.5 py-1 text-xs rounded-xl border border-stone-300 font-mono focus:outline-none focus:ring-1 focus:ring-limeBrand bg-stone-50/50 focus:bg-white transition-all"
-            />
-          </div>
-        </div>
+        )}
       </div>
 
       {/* 编辑器双栏：左写富文本 + 右实时书页排版预览 */}
