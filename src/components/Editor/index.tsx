@@ -191,16 +191,16 @@ export default function EditorIsland() {
               <select
                 value={category}
                 onChange={(e) => setEditorCategory(e.target.value)}
-                className="w-24 sm:w-28 px-2 py-1 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-800 bg-white cursor-pointer truncate"
+                className="w-28 sm:w-36 px-2 py-1 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-800 bg-white cursor-pointer truncate"
                 title="选择文章维度"
               >
-                <option value="道">道 · 使命</option>
-                <option value="心">心 · 心智</option>
-                <option value="法">法 · 战略</option>
-                <option value="术">术 · 战术</option>
-                <option value="器">器 · 工具</option>
-                <option value="事">事 · 交付</option>
-                <option value="势">势 · 借势</option>
+                <option value="道">道 · 思想与认知</option>
+                <option value="心">心 · 自我与成长</option>
+                <option value="法">法 · 方法与系统</option>
+                <option value="术">术 · 技能与实践</option>
+                <option value="器">器 · 工具与资源</option>
+                <option value="录">录 · 生活与记录</option>
+                <option value="探">探 · 探索与发现</option>
               </select>
             </div>
 

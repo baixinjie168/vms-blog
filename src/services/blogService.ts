@@ -46,9 +46,9 @@ export const DIMENSIONS: Record<string, DimensionMeta> = {
   dao: {
     key: "dao",
     char: "道",
-    name: "道 · 我为什么活？",
-    question: "我为什么活？",
-    scope: "世界观 · 价值观 · 意义",
+    name: "道 · 思想与认知",
+    question: "思想与认知",
+    scope: "哲学、世界观、价值观、社会观察、人生思考。",
     sealChar: "道",
     color: "#8C5A2B",
     bg: "bg-[#8C5A2B]/15",
@@ -57,9 +57,9 @@ export const DIMENSIONS: Record<string, DimensionMeta> = {
   xin: {
     key: "xin",
     char: "心",
-    name: "心 · 我是什么样的人？",
-    question: "我是什么样的人？",
-    scope: "认知 · 情绪 · 人格自律",
+    name: "心 · 自我与成长",
+    question: "自我与成长",
+    scope: "心理、情绪、习惯、个人反思、成长经历。",
     sealChar: "心",
     color: "#A03C32",
     bg: "bg-[#A03C32]/15",
@@ -68,9 +68,9 @@ export const DIMENSIONS: Record<string, DimensionMeta> = {
   fa: {
     key: "fa",
     char: "法",
-    name: "法 · 我如何做事？",
-    question: "我如何做事？",
-    scope: "方法论 · 原则 · 决策系统",
+    name: "法 · 方法与系统",
+    question: "方法与系统",
+    scope: "方法论、思维模型、工作流、决策、管理系统。",
     sealChar: "法",
     color: "#3B6E8C",
     bg: "bg-[#3B6E8C]/15",
@@ -79,9 +79,9 @@ export const DIMENSIONS: Record<string, DimensionMeta> = {
   shu: {
     key: "shu",
     char: "术",
-    name: "术 · 我具体怎么做？",
-    question: "我具体怎么做？",
-    scope: "专业技能 · 架构 · 编程管理",
+    name: "术 · 技能与实践",
+    question: "技能与实践",
+    scope: "教程、技术、操作指南、实战案例、经验总结。",
     sealChar: "术",
     color: "#4A7C59",
     bg: "bg-[#4A7C59]/15",
@@ -90,37 +90,41 @@ export const DIMENSIONS: Record<string, DimensionMeta> = {
   qi: {
     key: "qi",
     char: "器",
-    name: "器 · 我用什么做？",
-    question: "我用什么做？",
-    scope: "工具 · 技术 · AI · 软件资源",
+    name: "器 · 工具与资源",
+    question: "工具与资源",
+    scope: "软件、AI、产品测评、资源导航、代码与模板。",
     sealChar: "器",
     color: "#6B5B95",
     bg: "bg-[#6B5B95]/15",
     border: "border-[#6B5B95]/30"
   },
-  shi_matter: {
-    key: "shi_matter",
-    char: "事",
-    name: "事 · 我实际创造什么？",
-    question: "我实际创造什么？",
-    scope: "工作事业 · 作品财富 · 贡献",
-    sealChar: "事",
+  lu: {
+    key: "lu",
+    char: "录",
+    name: "录 · 生活与记录",
+    question: "生活与记录",
+    scope: "日记、旅行、家庭、育儿、生活片段、年度总结。",
+    sealChar: "录",
     color: "#B8860B",
     bg: "bg-[#B8860B]/15",
     border: "border-[#B8860B]/30"
   },
-  shi_trend: {
-    key: "shi_trend",
-    char: "势",
-    name: "势 · 我如何借势？",
-    question: "我如何借势？",
-    scope: "时代浪潮 · 行业技术 · 人脉",
-    sealChar: "势",
+  tan: {
+    key: "tan",
+    char: "探",
+    name: "探 · 探索与发现",
+    question: "探索与发现",
+    scope: "新知、科学、历史、行业动态、实验、观察与研究。",
+    sealChar: "探",
     color: "#2E8B57",
     bg: "bg-[#2E8B57]/15",
     border: "border-[#2E8B57]/30"
   }
 };
+
+// 保持对旧键名 shi_matter 与 shi_trend 的别名引用，确保向下兼容
+DIMENSIONS.shi_matter = DIMENSIONS.lu;
+DIMENSIONS.shi_trend = DIMENSIONS.tan;
 
 /**
  * 将中文字符或别名归一化为数据库存取的维度 key
@@ -134,8 +138,8 @@ export function normalizeDimension(input?: string | null): string | null {
   if (trimmed === "法" || trimmed === "fa") return "fa";
   if (trimmed === "术" || trimmed === "shu") return "shu";
   if (trimmed === "器" || trimmed === "qi") return "qi";
-  if (trimmed === "事" || trimmed === "matter" || trimmed === "shi_matter") return "shi_matter";
-  if (trimmed === "势" || trimmed === "trend" || trimmed === "shi_trend") return "shi_trend";
+  if (trimmed === "录" || trimmed === "lu" || trimmed === "事" || trimmed === "matter" || trimmed === "shi_matter") return "lu";
+  if (trimmed === "探" || trimmed === "tan" || trimmed === "势" || trimmed === "trend" || trimmed === "shi_trend") return "tan";
   
   return null;
 }
@@ -231,8 +235,8 @@ export const DEFAULT_ALBUMS: AlbumItem[] = [
     sealChar: "生",
     status: "已完结 · 6卷",
     created_at: 1750300000,
-    category: "事",
-    catLabel: "事 · 生命"
+    category: "录",
+    catLabel: "录 · 生活"
   },
   {
     id: "alb_agent",
@@ -615,10 +619,16 @@ export class BlogService {
         params.push(options.authorId);
       }
 
-      // 1. 分类维度过滤 (道心法术器事势)
+      // 1. 分类维度过滤 (道心法术器录探)
       if (normDim) {
-        conditions.push("(a.dimension = ? OR a.dimension = ?)");
-        params.push(normDim, DIMENSIONS[normDim]?.char || normDim);
+        if (normDim === 'lu') {
+          conditions.push("(a.dimension = 'lu' OR a.dimension = '录' OR a.dimension = 'shi_matter' OR a.dimension = '事')");
+        } else if (normDim === 'tan') {
+          conditions.push("(a.dimension = 'tan' OR a.dimension = '探' OR a.dimension = 'shi_trend' OR a.dimension = '势')");
+        } else {
+          conditions.push("(a.dimension = ? OR a.dimension = ?)");
+          params.push(normDim, DIMENSIONS[normDim]?.char || normDim);
+        }
       }
 
       // 2. 专栏专辑过滤

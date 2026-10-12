@@ -22,6 +22,8 @@ export default function AlbumList({ albums = [], isGuest = false }: AlbumListPro
     法: 'bg-orient-fa',
     术: 'bg-limeBrand',
     器: 'bg-orient-qi',
+    录: 'bg-orient-matter',
+    探: 'bg-orient-trend',
     事: 'bg-orient-matter',
     势: 'bg-orient-trend',
   };
@@ -32,6 +34,8 @@ export default function AlbumList({ albums = [], isGuest = false }: AlbumListPro
     法: 'bg-orient-fa/15 text-orient-fa border-orient-fa/30',
     术: 'bg-limeLight text-limeDark border-limeBrand/30',
     器: 'bg-orient-qi/15 text-orient-qi border-orient-qi/30',
+    录: 'bg-orient-matter/15 text-orient-matter border-orient-matter/30',
+    探: 'bg-orient-trend/15 text-orient-trend border-orient-trend/30',
     事: 'bg-orient-matter/15 text-orient-matter border-orient-matter/30',
     势: 'bg-orient-trend/15 text-orient-trend border-orient-trend/30',
   };

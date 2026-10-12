@@ -33,7 +33,7 @@ export default function TOCSidebar({
 
   const isInk = paperTheme === 'ink';
 
-  const categoryName = article?.dimensionName || (article?.dimensionChar ? `${article.dimensionChar} · 认知体系` : '道 · 我为什么活？');
+  const categoryName = article?.dimensionName || (article?.dimensionChar ? `${article.dimensionChar} · 认知体系` : '道 · 思想与认知');
   const categoryBg = article?.dimensionBg || 'bg-limeLight/40';
   const categoryBorder = article?.dimensionBorder || 'border-limeBrand/30';
 
