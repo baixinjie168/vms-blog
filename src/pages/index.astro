@@ -9,7 +9,7 @@ import AlbumList from '../components/AlbumList';
 import BookReader from '../components/BookReader';
 import Editor from '../components/Editor';
 import AlbumModal from '../components/AlbumModal';
-import { BlogService, DIMENSIONS, DEFAULT_ALBUMS, DEFAULT_ARTICLES } from '../services/blogService';
+import { BlogService, DIMENSIONS, DIMENSION_LIST, DEFAULT_ALBUMS, DEFAULT_ARTICLES } from '../services/blogService';
 
 export const prerender = false;
 
@@ -27,8 +27,8 @@ let authorProfile = {
   nickname: isGuest ? '访客读者' : (sessionUser?.nickname || '白心解'),
   email: isGuest ? '' : (sessionUser?.email || ''),
   bio: isGuest
-    ? '登入开启个人名片与创作空间，沉淀您的七维认知体系与专栏长卷。'
-    : '以道明向，以心修己，以法立律，以术精工，以器致远，以事立业，以势乘风。',
+    ? '登入开启个人名片与创作空间，沉淀您的文章维度体系与专栏长卷。'
+    : '以道明向，以心修己，以法立律，以术精工，以器致用，以录留痕，以探求新。',
   avatar_url: null,
   avatar_bg: isGuest ? 'bg-stone-300' : 'bg-stone-900',
   role: isGuest ? 'guest' : (sessionUser?.role || 'user'),
@@ -40,7 +40,7 @@ let authorProfile = {
 };
 
 let categoryStats = {
-  dimensions: Object.values(DIMENSIONS).map((d) => ({ ...d, count: 0 })),
+  dimensions: DIMENSION_LIST.map((d) => ({ ...d, count: 0 })),
   totalArticles: 0,
   isGuest,
 };
@@ -93,7 +93,7 @@ if (db) {
         📜 卷帙文章
       </button>
       <button id="tab-btn-cognitive" type="button" class="mobile-tab-btn flex-1 py-1.5 px-2 rounded-lg text-stone-600 transition text-center hover:bg-stone-50 cursor-pointer">
-        🧭 七维体系
+        🧭 文章维度
       </button>
       <button id="tab-btn-albums" type="button" class="mobile-tab-btn flex-1 py-1.5 px-2 rounded-lg text-stone-600 transition text-center hover:bg-stone-50 cursor-pointer">
         📚 专栏专辑

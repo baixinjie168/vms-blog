@@ -170,7 +170,7 @@ export default function ArticleGrid({
           </p>
           <p className="font-serif text-xs text-stone-400 mt-1 max-w-sm">
             {isFiltered
-              ? '可尝试清除搜索词或切换到其他七维认知层级'
+              ? '可尝试清除搜索词或切换到其他文章维度'
               : '以道明向，以心修己，以法立律。立即撰写发表属于您的第一篇认知卷帙，装帧成册。'}
           </p>
           <div className="flex items-center gap-2 mt-4">

@@ -116,7 +116,7 @@ export default function CognitiveLevels({ dimensions, totalArticles, isGuest = f
       <div className="flex items-center justify-between pb-1.5 border-b border-stone-100 flex-shrink-0">
         <div className="flex items-center space-x-1.5">
           <Compass className="w-3.5 h-3.5 text-limeBrand" />
-          <h3 className="font-serif font-bold text-xs text-stone-800 tracking-wider">七大认知层级</h3>
+          <h3 className="font-serif font-bold text-xs text-stone-800 tracking-wider">文章维度</h3>
         </div>
         <span
           id="cat-facet-badge"

@@ -33,7 +33,7 @@ export default function AlbumModal() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('术');
+  const [category, setCategory] = useState('道');
   const [selectedArticleIds, setSelectedArticleIds] = useState<number[]>([]);
   const [availableArticles, setAvailableArticles] = useState<AuthorArticleOption[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,7 +47,7 @@ export default function AlbumModal() {
     if (!isOpen) {
       setTitle('');
       setDescription('');
-      setCategory('术');
+      setCategory('道');
       setSelectedArticleIds([]);
       setSearchQuery('');
       setErrorMsg('');
@@ -58,7 +58,7 @@ export default function AlbumModal() {
     if (editingAlbum) {
       setTitle(editingAlbum.title || '');
       setDescription(editingAlbum.description || '');
-      setCategory(editingAlbum.category || '术');
+      setCategory(editingAlbum.category || '道');
     }
 
     // 获取作者的所有已有文章列表供勾选
@@ -265,7 +265,7 @@ export default function AlbumModal() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="例如：Qlib 量化投研全栈实战 / 大模型 Agent 架构实践"
+                placeholder="请输入专栏名称"
                 maxLength={40}
                 required
                 className="w-full bg-white text-xs px-3 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-limeBrand focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-900"
@@ -274,20 +274,20 @@ export default function AlbumModal() {
 
             <div className="sm:col-span-4">
               <label className="block text-xs font-serif font-bold text-stone-800 mb-1">
-                所属认知层级
+                文章维度
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full bg-white text-xs px-3 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-limeBrand focus:ring-1 focus:ring-limeBrand font-serif font-bold text-stone-800"
               >
-                <option value="道">道 · 世界观/意义</option>
-                <option value="心">心 · 认知/人格</option>
-                <option value="法">法 · 方法/原则</option>
-                <option value="术">术 · 专业/工程</option>
-                <option value="器">器 · 工具/AI装备</option>
-                <option value="事">事 · 事业/作品</option>
-                <option value="势">势 · 周期/借势</option>
+                <option value="道">道 · 思想与认知</option>
+                <option value="心">心 · 自我与成长</option>
+                <option value="法">法 · 方法与系统</option>
+                <option value="术">术 · 技能与实践</option>
+                <option value="器">器 · 工具与资源</option>
+                <option value="录">录 · 生活与记录</option>
+                <option value="探">探 · 探索与发现</option>
               </select>
             </div>
           </div>
