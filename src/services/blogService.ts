@@ -122,9 +122,29 @@ export const DIMENSIONS: Record<string, DimensionMeta> = {
   }
 };
 
-// 保持对旧键名 shi_matter 与 shi_trend 的别名引用，确保向下兼容
-DIMENSIONS.shi_matter = DIMENSIONS.lu;
-DIMENSIONS.shi_trend = DIMENSIONS.tan;
+export const DIMENSION_KEYS = ["dao", "xin", "fa", "shu", "qi", "lu", "tan"] as const;
+
+export const DIMENSION_LIST: DimensionMeta[] = [
+  DIMENSIONS.dao,
+  DIMENSIONS.xin,
+  DIMENSIONS.fa,
+  DIMENSIONS.shu,
+  DIMENSIONS.qi,
+  DIMENSIONS.lu,
+  DIMENSIONS.tan,
+];
+
+// 保持对旧键名 shi_matter 与 shi_trend 的兼容访问，但设为不可枚举，避免 Object.keys / Object.values 遍历出重复项
+Object.defineProperty(DIMENSIONS, 'shi_matter', {
+  get: () => DIMENSIONS.lu,
+  enumerable: false,
+  configurable: true,
+});
+Object.defineProperty(DIMENSIONS, 'shi_trend', {
+  get: () => DIMENSIONS.tan,
+  enumerable: false,
+  configurable: true,
+});
 
 /**
  * 将中文字符或别名归一化为数据库存取的维度 key
@@ -428,7 +448,7 @@ export class BlogService {
     isGuest?: boolean;
   }> {
     if (!db || !authorId) {
-      const dimensions = Object.keys(DIMENSIONS).map((k) => ({
+      const dimensions = DIMENSION_KEYS.map((k) => ({
         ...DIMENSIONS[k],
         count: 0
       }));
@@ -452,7 +472,7 @@ export class BlogService {
         total += (r.count || 0);
       }
 
-      const dimensions = Object.keys(DIMENSIONS).map((k) => {
+      const dimensions = DIMENSION_KEYS.map((k) => {
         const meta = DIMENSIONS[k];
         return {
           ...meta,
@@ -467,7 +487,7 @@ export class BlogService {
       };
     } catch (e) {
       console.error("Failed to query category stats:", e);
-      const dimensions = Object.keys(DIMENSIONS).map((k) => ({
+      const dimensions = DIMENSION_KEYS.map((k) => ({
         ...DIMENSIONS[k],
         count: 0
       }));
