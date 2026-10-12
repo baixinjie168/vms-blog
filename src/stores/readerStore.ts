@@ -97,29 +97,29 @@ const DEFAULT_FLAGSHIP_SPREADS: BookSpread[] = [
         </p>
         <div class="grid grid-cols-2 gap-2 text-xs my-2">
           <div class="p-2 rounded-xl bg-stone-100/90 border border-stone-200">
-            <span class="font-bold text-orient-dao">【道】</span> 我为什么活？世界观、价值观与人生终局
+            <span class="font-bold text-orient-dao">【道】</span> 思想与认知：哲学、世界观、价值观、社会观察、人生思考
           </div>
           <div class="p-2 rounded-xl bg-stone-100/90 border border-stone-200">
-            <span class="font-bold text-orient-xin">【心】</span> 我是什么样的人？认知、情绪、意志与自律
+            <span class="font-bold text-orient-xin">【心】</span> 自我与成长：心理、情绪、习惯、个人反思、成长经历
           </div>
           <div class="p-2 rounded-xl bg-stone-100/90 border border-stone-200">
-            <span class="font-bold text-orient-fa">【法】</span> 我如何做事？方法论、底层原则与决策模型
+            <span class="font-bold text-orient-fa">【法】</span> 方法与系统：方法论、思维模型、工作流、决策、管理系统
           </div>
           <div class="p-2 rounded-xl bg-stone-100/90 border border-stone-200">
-            <span class="font-bold text-limeDark">【术】</span> 我具体怎么做？专业技能、工程工法与排版
+            <span class="font-bold text-limeDark">【术】</span> 技能与实践：教程、技术、操作指南、实战案例、经验总结
           </div>
           <div class="p-2 rounded-xl bg-stone-100/90 border border-stone-200">
-            <span class="font-bold text-orient-qi">【器】</span> 我用什么做？AI大模型、软件设备与生产力协同
+            <span class="font-bold text-orient-qi">【器】</span> 工具与资源：软件、AI、产品测评、资源导航、代码与模板
           </div>
           <div class="p-2 rounded-xl bg-stone-100/90 border border-stone-200">
-            <span class="font-bold text-orient-matter">【事】</span> 我实际创造什么？工作事业、作品交付与价值
+            <span class="font-bold text-orient-matter">【录】</span> 生活与记录：日记、旅行、家庭、育儿、生活片段、年度总结
           </div>
         </div>
         <div class="p-2 rounded-xl bg-stone-100/90 border border-stone-200 text-xs">
-          <span class="font-bold text-orient-trend">【势】</span> 我如何借势？时代浪潮、行业脉搏、资本与组织网络
+          <span class="font-bold text-orient-trend">【探】</span> 探索与发现：新知、科学、历史、行业动态、实验、观察与研究
         </div>
         <p class="text-sm text-stone-700 leading-relaxed indent-8">
-          从以道明向、以心修己，到以法立律、以术精工，再到以器致远、以事立业与以势乘风。在这套闭环体系中，每一篇文章都精准锚定在心智矩阵的特定坐标上。
+          从以道明向、以心修己，到以法立律、以术精工，再到以器致用、以录留痕与以探求新。在这套闭环体系中，每一篇文章都精准锚定在心智矩阵的特定坐标上。
         </p>
       </div>
     `,

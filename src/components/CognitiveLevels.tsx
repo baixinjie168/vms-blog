@@ -67,6 +67,22 @@ export default function CognitiveLevels({ dimensions, totalArticles, isGuest = f
       activeBorder: 'border-orient-qi',
       activeText: 'text-orient-qi',
     },
+    录: {
+      badgeBg: 'bg-orient-matter/15',
+      badgeText: 'text-orient-matter',
+      hoverBorder: 'hover:border-orient-matter/40',
+      activeBg: 'bg-orient-matter/10',
+      activeBorder: 'border-orient-matter',
+      activeText: 'text-orient-matter',
+    },
+    探: {
+      badgeBg: 'bg-orient-trend/15',
+      badgeText: 'text-orient-trend',
+      hoverBorder: 'hover:border-orient-trend/40',
+      activeBg: 'bg-orient-trend/10',
+      activeBorder: 'border-orient-trend',
+      activeText: 'text-orient-trend',
+    },
     事: {
       badgeBg: 'bg-orient-matter/15',
       badgeText: 'text-orient-matter',
@@ -227,7 +243,7 @@ export default function CognitiveLevels({ dimensions, totalArticles, isGuest = f
         </div>
       ) : (
         <div className="pt-1 border-t border-stone-100 text-[9px] font-serif text-stone-400 text-center flex-shrink-0">
-          “道心法术器事势 · 认知闭环”
+          “道心法术器录探 · 认知闭环”
         </div>
       )}
     </div>

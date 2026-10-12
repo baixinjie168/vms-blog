@@ -103,7 +103,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    const dimension = normalizeDimension(category) || 'shi_trend';
+    const dimension = normalizeDimension(category) || 'dao';
     const cleanTags = typeof tags === 'string' ? tags.trim() : '';
     const charCount = countPlainChars(content);
     const readTime = Math.max(2, Math.round(charCount / 400));
