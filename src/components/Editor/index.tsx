@@ -277,7 +277,7 @@ export default function EditorIsland() {
               className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-limeBrand text-white hover:bg-limeDark text-xs font-bold shadow-md shadow-limeBrand/20 transition active:scale-95 cursor-pointer disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>发布装帧成册</span>
+              <span>发布</span>
             </button>
           </div>
         </div>
@@ -335,7 +335,7 @@ export default function EditorIsland() {
         />
       </div>
 
-      {/* 点击「发布装帧成册」时弹出的拦截确认与专栏归属配置弹窗 */}
+      {/* 点击「发布」时弹出的拦截确认与专栏归属配置弹窗 */}
       <PublishModal
         isOpen={isPublishModalOpen}
         onClose={() => setIsPublishModalOpen(false)}
