@@ -165,14 +165,16 @@ export default function ArticleGrid({
         >
         <div className="col-span-full h-full flex flex-col items-center justify-center text-center p-8 bg-white rounded-2xl border border-stone-200/90 text-stone-400 select-none">
           <BookOpen className="w-10 h-10 text-stone-300 mb-3" />
-          <p className="font-serif text-sm font-bold text-stone-800">
-            {isFiltered ? '此维度下暂无匹配卷帙' : '研读长卷虚席以待 · 您的专属空间尚无文章'}
-          </p>
-          <p className="font-serif text-xs text-stone-400 mt-1 max-w-sm">
-            {isFiltered
-              ? '可尝试清除搜索词或切换到其他文章维度'
-              : '以道明向，以心修己，以法立律。立即撰写发表属于您的第一篇认知卷帙，装帧成册。'}
-          </p>
+          {isFiltered && (
+            <>
+              <p className="font-serif text-sm font-bold text-stone-800">
+                此维度下暂无匹配卷帙
+              </p>
+              <p className="font-serif text-xs text-stone-400 mt-1 max-w-sm">
+                可尝试清除搜索词或切换到其他文章维度
+              </p>
+            </>
+          )}
           <div className="flex items-center gap-2 mt-4">
             {isFiltered ? (
               <button

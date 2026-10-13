@@ -5,6 +5,7 @@ interface PaginationBarProps {
   total: number;
   page: number;
   pageSize?: number;
+  middleLabel?: string;
   onPageChange: (page: number) => void;
 }
 
@@ -12,6 +13,7 @@ export default function PaginationBar({
   total,
   page,
   pageSize = 9,
+  middleLabel,
   onPageChange,
 }: PaginationBarProps) {
   const totalPages = Math.ceil(total / pageSize) || 1;
@@ -23,9 +25,21 @@ export default function PaginationBar({
       className="bg-white rounded-xl px-4 py-1 border border-stone-200/90 shadow-sm flex items-center justify-between flex-shrink-0 h-[38px] min-h-[38px] select-none text-xs"
     >
       {/* 左侧：收录总篇数 */}
-      <span className="text-stone-500 font-mono text-[11px]">
+      <span className="text-stone-500 font-mono text-[11px] flex-shrink-0">
         共 <span className="font-bold text-stone-800">{total}</span> 篇
       </span>
+
+      {/* 中部：当前维度/专辑上下文 */}
+      <div className="flex-1 flex justify-center min-w-0 px-2">
+        {middleLabel && (
+          <span
+            className="font-serif font-bold text-[11px] sm:text-xs text-stone-900 truncate"
+            title={middleLabel}
+          >
+            {middleLabel}
+          </span>
+        )}
+      </div>
 
       {/* 右侧：上一页 / 下一页 */}
       <div className="flex items-center space-x-1.5">
