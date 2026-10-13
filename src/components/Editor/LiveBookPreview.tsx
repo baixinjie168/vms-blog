@@ -123,11 +123,6 @@ export default function LiveBookPreview({
             </div>
           </div>
         </div>
-
-        {/* 底部提示 */}
-        <div className="mt-4 pt-2 text-center text-[10px] text-stone-400 font-serif flex-shrink-0">
-          —— 发布后将直接自动装帧进入全屏翻书阅读器 ——
-        </div>
       </div>
     </div>
   );
