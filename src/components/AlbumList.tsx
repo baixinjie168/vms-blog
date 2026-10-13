@@ -118,12 +118,6 @@ export default function AlbumList({ albums = [], isGuest = false }: AlbumListPro
             <div className="w-10 h-10 rounded-2xl bg-stone-100 text-stone-400 flex items-center justify-center mb-2.5">
               <Layers className="w-5 h-5 text-stone-400" />
             </div>
-            <h4 className="font-serif font-bold text-xs text-stone-700 mb-1">
-              深度专题虚席以待
-            </h4>
-            <p className="font-serif text-[11px] text-stone-400 leading-relaxed max-w-[200px] mb-3">
-              您尚未创建任何专栏专辑。可创立专栏，将已有卷帙按序归纳成册。
-            </p>
             <button
               type="button"
               onClick={() => openAlbumModal()}

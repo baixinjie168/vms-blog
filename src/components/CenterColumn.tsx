@@ -3,7 +3,7 @@ import { useStore } from '@nanostores/react';
 import { $filter, setPage } from '../stores/filterStore';
 import ArticleGrid from './ArticleGrid';
 import PaginationBar from './PaginationBar';
-import type { ArticleItem } from '../services/blogService';
+import { DIMENSIONS, normalizeDimension, type ArticleItem } from '../services/blogService';
 
 interface CenterColumnProps {
   initialArticles?: ArticleItem[];
@@ -97,13 +97,24 @@ export default function CenterColumn({
     filter.page,
   ]);
 
+  // 分页条中部上下文：全景大观 / 具体维度全名 / 专辑名 (检索与时令态不显示)
+  const middleLabel =
+    filter.mode === 'album'
+      ? `《${filter.albumTitle || filter.albumSlug || ''}》`
+      : filter.mode === 'category' && filter.category && filter.category !== 'all'
+        ? DIMENSIONS[normalizeDimension(filter.category) || '']?.name
+        : filter.mode === 'all'
+          ? '全景大观'
+          : undefined;
+
   return (
     <section className="flex flex-col min-w-0 h-full min-h-0 justify-between gap-2 flex-1">
-      {/* 1. 顶部 38px 细长横向分页条 (共 N 篇 + 上一页/下一页) */}
+      {/* 1. 顶部 38px 细长横向分页条 (共 N 篇 + 维度/专辑上下文 + 上一页/下一页) */}
       <PaginationBar
         total={total}
         page={filter.page}
         pageSize={9}
+        middleLabel={middleLabel}
         onPageChange={setPage}
       />
 
