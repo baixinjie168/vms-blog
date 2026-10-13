@@ -38,7 +38,7 @@ export default function LiveBookPreview({
   const dimKey = Object.keys(DIMENSIONS).find(
     (k) => DIMENSIONS[k].char === category || DIMENSIONS[k].name.startsWith(category)
   );
-  const dim = dimKey ? DIMENSIONS[dimKey] : DIMENSIONS.shi_trend;
+  const dim = dimKey ? DIMENSIONS[dimKey] : DIMENSIONS.tan;
 
   return (
     <div className="flex flex-col bg-paper-100 rounded-2xl border border-stone-300 shadow-sm overflow-hidden h-full relative select-none">

@@ -224,7 +224,7 @@ function layoutBookPages(astNodes, pageCapacity) {
         </p>
         <div class="mt-8 text-center">
           <div class="inline-block p-4 border-2 border-stone-300 rounded-2xl bg-white shadow-sm">
-            <div class="font-serif font-bold text-stone-800 text-sm">「明道 · 澄心 · 立法 · 精术 · 善器 · 成事 · 乘势」</div>
+            <div class="font-serif font-bold text-stone-800 text-sm">「明道 · 澄心 · 立法 · 精术 · 善器 · 成录 · 探新」</div>
             <div class="text-[11px] text-stone-400 mt-1 font-serif">—— 全文完 · 感谢慢读 ——</div>
           </div>
         </div>

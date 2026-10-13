@@ -4,7 +4,7 @@ export type FilterMode = 'all' | 'category' | 'album' | 'date' | 'search';
 
 export interface FilterState {
   mode: FilterMode;
-  category: string | null;      // '道' | '心' | '法' | '术' | '器' | '事' | '势' | null
+  category: string | null;      // '道' | '心' | '法' | '术' | '器' | '录' | '探' | null
   albumSlug: string | null;     // 'qlib-quant', 'architectural-thinking', etc.
   albumTitle: string | null;    // 专辑中文名称
   date: string | null;          // 'YYYY-MM-DD'
