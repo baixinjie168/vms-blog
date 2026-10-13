@@ -37,7 +37,6 @@ export default function EditorIsland() {
     summary,
     category,
     tags,
-    date,
     content,
     isSaving,
     previewSpreads,
@@ -330,9 +329,6 @@ export default function EditorIsland() {
 
         {/* 右栏：双对开实时书页装帧效果预览 */}
         <LiveBookPreview
-          title={title}
-          category={category}
-          date={date}
           previewSpreads={previewSpreads}
           totalPages={totalPages}
           totalSpreads={totalSpreads}
