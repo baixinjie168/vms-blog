@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '@nanostores/react';
 import { $filter, setPage } from '../stores/filterStore';
-import FilterStatusBanner from './FilterStatusBanner';
 import ArticleGrid from './ArticleGrid';
 import PaginationBar from './PaginationBar';
 import type { ArticleItem } from '../services/blogService';
@@ -100,8 +99,13 @@ export default function CenterColumn({
 
   return (
     <section className="flex flex-col min-w-0 h-full min-h-0 justify-between gap-2 flex-1">
-      {/* 1. 顶部 46px 细长横向状态条 (高度严格固定) */}
-      <FilterStatusBanner totalCount={total} />
+      {/* 1. 顶部 38px 细长横向分页条 (共 N 篇 + 上一页/下一页) */}
+      <PaginationBar
+        total={total}
+        page={filter.page}
+        pageSize={9}
+        onPageChange={setPage}
+      />
 
       {/* 2. 核心 9 张经典装帧卡片矩阵 (3x3 自适应撑满屏幕) */}
       <ArticleGrid
@@ -110,14 +114,6 @@ export default function CenterColumn({
         currentUserId={currentUserId}
         isAdmin={isAdmin}
         onArticleDeleted={handleArticleDeleted}
-      />
-
-      {/* 3. 底部 38px 细长横向分页条 */}
-      <PaginationBar
-        total={total}
-        page={filter.page}
-        pageSize={9}
-        onPageChange={setPage}
       />
     </section>
   );
