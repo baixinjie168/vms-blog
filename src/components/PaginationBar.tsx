@@ -17,32 +17,17 @@ export default function PaginationBar({
   const totalPages = Math.ceil(total / pageSize) || 1;
   const currentPage = Math.min(Math.max(1, page), totalPages);
 
-  const startIdx = total > 0 ? (currentPage - 1) * pageSize + 1 : 0;
-  const endIdx = Math.min(currentPage * pageSize, total);
-
-  const pages: number[] = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push(i);
-  }
-
   return (
     <div
       id="content-pagination-bar"
       className="bg-white rounded-xl px-4 py-1 border border-stone-200/90 shadow-sm flex items-center justify-between flex-shrink-0 h-[38px] min-h-[38px] select-none text-xs"
     >
-      {/* 左侧：卷帙条目索引范围 */}
-      <div className="flex items-center space-x-2 text-stone-500 font-mono text-[11px]">
-        <span className="hidden sm:inline">卷帙索引：</span>
-        <span className="font-bold text-stone-800">
-          {startIdx}-{endIdx}
-        </span>
-        <span>/</span>
-        <span>共 {total} 篇</span>
-        <span className="text-stone-300">|</span>
-        <span className="text-stone-400 hidden md:inline">每页 {pageSize} 篇</span>
-      </div>
+      {/* 左侧：收录总篇数 */}
+      <span className="text-stone-500 font-mono text-[11px]">
+        共 <span className="font-bold text-stone-800">{total}</span> 篇
+      </span>
 
-      {/* 右侧：翻页按钮与页码 */}
+      {/* 右侧：上一页 / 下一页 */}
       <div className="flex items-center space-x-1.5">
         <button
           type="button"
@@ -58,26 +43,6 @@ export default function PaginationBar({
           <ChevronLeft className="w-3 h-3" />
           <span className="hidden sm:inline">上一页</span>
         </button>
-
-        <div className="flex items-center space-x-1">
-          {pages.map((p) => {
-            const isActive = p === currentPage;
-            return (
-              <button
-                key={p}
-                type="button"
-                onClick={() => onPageChange(p)}
-                className={`w-6 h-6 rounded-lg text-xs font-mono font-bold transition flex items-center justify-center cursor-pointer ${
-                  isActive
-                    ? 'bg-limeBrand text-white shadow-2xs font-bold'
-                    : 'text-stone-600 hover:bg-stone-100 border border-transparent hover:border-stone-200'
-                }`}
-              >
-                {p}
-              </button>
-            );
-          })}
-        </div>
 
         <button
           type="button"
