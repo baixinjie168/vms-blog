@@ -30,11 +30,11 @@ export interface AuthorProfile {
 }
 
 export interface DimensionMeta {
-  key: string;               // 数据库键名: 'dao' | 'xin' | 'fa' | 'shu' | 'qi' | 'shi_matter' | 'shi_trend'
-  char: string;              // 简短汉字: '道' | '心' | '法' | '术' | '器' | '事' | '势'
-  name: string;              // 维度全名: '道 · 我为什么活？'
-  question: string;          // 核心问题: '我为什么活？'
-  scope: string;             // 范畴领域: '世界观 · 价值观 · 意义'
+  key: string;               // 数据库键名: 'dao' | 'xin' | 'fa' | 'shu' | 'qi' | 'lu' | 'tan'
+  char: string;              // 简短汉字: '道' | '心' | '法' | '术' | '器' | '录' | '探'
+  name: string;              // 维度全名: '道 · 思想与认知'
+  question: string;          // 维度短名: '思想与认知'
+  scope: string;             // 范畴领域: '哲学、世界观、价值观、社会观察、人生思考。'
   sealChar: string;          // 篆刻印章字
   color: string;             // 品牌主题色
   bg: string;                // 背景浅淡样式类
@@ -555,7 +555,7 @@ export class BlogService {
       const catMapping: Record<string, { cat: string; label: string }> = {
         alb_qlib: { cat: "术", label: "术 · 量化" },
         alb_arch: { cat: "法", label: "法 · 架构" },
-        alb_life: { cat: "事", label: "事 · 生命" },
+        alb_life: { cat: "录", label: "录 · 生命" },
         alb_agent: { cat: "器", label: "器 · 智能" },
         alb_model: { cat: "心", label: "心 · 认知" },
         alb_fe: { cat: "术", label: "术 · 前端" },

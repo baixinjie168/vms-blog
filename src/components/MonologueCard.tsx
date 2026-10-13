@@ -15,7 +15,7 @@ export default function MonologueCard({ profile = {}, isGuest }: MonologueCardPr
   const [isEditing, setIsEditing] = useState(false);
   const [nickname, setNickname] = useState(profile.nickname || (guestMode ? '墨客 · 隐者' : '白心解'));
   const [bio, setBio] = useState(
-    profile.bio || (guestMode ? '浮生研墨，漫步林泉。登入后可沉淀个人专属研读箴言...' : '以道明向，以心修己，以法立律，以术精工，以器致远，以事立业，以势乘风。')
+    profile.bio || (guestMode ? '浮生研墨，漫步林泉。登入后可沉淀个人专属研读箴言...' : '以道明向，以心修己，以法立律，以术精工，以器致用，以录留痕，以探求新。')
   );
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');

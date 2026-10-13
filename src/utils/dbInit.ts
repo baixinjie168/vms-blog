@@ -125,6 +125,20 @@ export async function ensureBlogSchema(db: any): Promise<void> {
       console.warn("Notice: backfill char_count:", err?.message);
     }
 
+    // 历史文章的维度键归一。2026-10-12 七维改版（事→录、势→探）之前，
+    // normalizeDimension 会把 事/势 落成 'shi_matter'/'shi_trend'；改版后读取路径
+    // 虽有兼容，但 GROUP BY dimension 仍会把新旧键分成两组，故在库里统一成新键。
+    // 幂等：首轮之后 WHERE 命中 0 行，且走 idx_articles_dim 索引，代价可忽略。
+    try {
+      await db.prepare(`
+        UPDATE articles
+        SET dimension = CASE WHEN dimension IN ('shi_matter', 'matter', '事') THEN 'lu' ELSE 'tan' END
+        WHERE dimension IN ('shi_matter', 'matter', '事', 'shi_trend', 'trend', '势')
+      `).run();
+    } catch (err: any) {
+      console.warn("Notice: normalize dimension:", err?.message);
+    }
+
     try {
       await db.prepare("CREATE INDEX IF NOT EXISTS idx_articles_album_order ON articles(album_id, album_order ASC)").run();
       await db.prepare("CREATE INDEX IF NOT EXISTS idx_articles_tags ON articles(tags)").run();
