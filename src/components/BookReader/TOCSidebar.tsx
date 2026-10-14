@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowLeft, ListTree, Edit3 } from 'lucide-react';
 import { useStore } from '@nanostores/react';
 import { $currentUser } from '../../stores/authStore';
-import { openEditor } from '../../stores/editorStore';
+import { requestEditor } from '../../stores/editorStore';
 import type { ArticleItem } from '../../services/blogService';
 import type { BookSpread, TOCItem, PaperTheme } from '../../stores/readerStore';
 
@@ -76,7 +76,7 @@ export default function TOCSidebar({
                 onClick={() => {
                   if (article) {
                     onClose();
-                    openEditor(article);
+                    requestEditor(article);
                   }
                 }}
                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-sans font-medium border cursor-pointer transition ${

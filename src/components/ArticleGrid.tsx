@@ -3,7 +3,7 @@ import { useStore } from '@nanostores/react';
 import { BookOpen, ArrowRight, PenSquare, Edit3, Trash2, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { $filter, filterByCategory } from '../stores/filterStore';
 import { openBookReader } from '../stores/readerStore';
-import { openEditor } from '../stores/editorStore';
+import { requestEditor } from '../stores/editorStore';
 import { $currentUser } from '../stores/authStore';
 import type { ArticleItem } from '../services/blogService';
 
@@ -187,7 +187,7 @@ export default function ArticleGrid({
             ) : (
               <button
                 type="button"
-                onClick={() => openEditor()}
+                onClick={() => requestEditor()}
                 className="px-4 py-1.5 rounded-xl bg-limeBrand hover:bg-limeDark text-white text-xs font-serif font-bold transition cursor-pointer shadow-md shadow-limeBrand/20 flex items-center gap-1.5 active:scale-95"
               >
                 <PenSquare className="w-3.5 h-3.5" />
@@ -259,7 +259,7 @@ export default function ArticleGrid({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              openEditor(item);
+                              requestEditor(item);
                             }}
                             className="p-1 rounded-md hover:bg-stone-100 text-stone-400 hover:text-limeDark transition cursor-pointer"
                             title="编辑此篇卷帙"

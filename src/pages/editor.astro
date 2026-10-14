@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Editor from '../components/Editor';
+import AuthModal from '../components/AuthModal';
+import AlbumModal from '../components/AlbumModal';
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="撰写 · VMS"
+  description="纸墨装帧 · 双屏实时排版的文章创作与编辑页"
+>
+  <!-- 富文本创作与实时书页排版预览客户端岛屿 (standalone: 挂载即校验登录并按 ?slug= 初始化) -->
+  <Editor client:load standalone />
+
+  <!-- 专栏专辑新建与章节编排管理客户端岛屿 (发布弹窗内「新建专栏」入口) -->
+  <AlbumModal client:load />
+
+  <!-- 读者登录与注册认证岛屿 (未登录访问 /editor 时唤起登录框) -->
+  <AuthModal client:load />
+</BaseLayout>

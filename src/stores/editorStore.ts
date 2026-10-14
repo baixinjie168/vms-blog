@@ -1,4 +1,5 @@
 import { atom, map } from 'nanostores';
+import { $currentUser, setCurrentUser, openAuthModal } from './authStore';
 import type { ArticleItem } from '../services/blogService';
 import { paginateHtmlContent, type ReaderFontSize, type TableDensity } from '../utils/paginationEngine';
 import { countPlainChars } from '../utils/textStats';
@@ -149,6 +150,11 @@ export function closeEditor() {
   $editor.setKey('isOpen', false);
 
   if (typeof window !== 'undefined') {
+    // 独立 /editor 路由页：返回首页需真实跳转
+    if (window.location.pathname.startsWith('/editor')) {
+      window.location.href = '/';
+      return;
+    }
     const editorEl = document.getElementById('view-editor');
     if (editorEl) editorEl.classList.add('hidden');
     const readerEl = document.getElementById('view-reader');
@@ -157,6 +163,51 @@ export function closeEditor() {
     if (homeEl) homeEl.classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+}
+
+// 登录校验：store 未水合时回源会话接口；未登录则唤起登录弹窗
+async function ensureLoggedIn(): Promise<boolean> {
+  if ($currentUser.get()) return true;
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json().catch(() => null);
+    if (res.ok && data?.user) {
+      setCurrentUser(data.user);
+      return true;
+    }
+  } catch (e) {
+    console.warn('Session check failed:', e);
+  }
+  openAuthModal();
+  return false;
+}
+
+// 写作入口统一闸口：未登录弹出登录框；已登录跳转独立编辑页 /editor
+export async function requestEditor(article?: ArticleItem) {
+  const ok = await ensureLoggedIn();
+  if (!ok || typeof window === 'undefined') return;
+  const qs = article?.slug ? `?slug=${encodeURIComponent(article.slug)}` : '';
+  window.location.href = `/editor${qs}`;
+}
+
+// /editor 独立页引导：校验登录后按 ?slug= 载入待编文章或新开空白稿
+export async function bootEditorPage() {
+  const ok = await ensureLoggedIn();
+  if (!ok || typeof window === 'undefined') return;
+  const slug = new URLSearchParams(window.location.search).get('slug');
+  if (slug) {
+    try {
+      const res = await fetch(`/api/articles?slug=${encodeURIComponent(slug)}`);
+      const json = await res.json();
+      if (json?.success && json.article) {
+        await openEditor(json.article);
+        return;
+      }
+    } catch (e) {
+      console.warn('Failed to load article for editor page:', e);
+    }
+  }
+  await openEditor();
 }
 
 // 实时更新正文内容

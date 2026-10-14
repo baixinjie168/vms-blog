@@ -7,7 +7,6 @@ import CognitiveLevels from '../components/CognitiveLevels';
 import CenterColumn from '../components/CenterColumn';
 import AlbumList from '../components/AlbumList';
 import BookReader from '../components/BookReader';
-import Editor from '../components/Editor';
 import AlbumModal from '../components/AlbumModal';
 import { BlogService, DIMENSIONS, DIMENSION_LIST, DEFAULT_ALBUMS, DEFAULT_ARTICLES } from '../services/blogService';
 
@@ -159,9 +158,6 @@ if (db) {
 
   <!-- 翻书沉浸阅读器客户端岛屿 (沉浸慢读) -->
   <BookReader client:load />
-
-  <!-- 阶段六：富文本创作与双屏实时排版预览客户端岛屿 -->
-  <Editor client:load />
 
   <!-- 专栏专辑新建与章节编排管理客户端岛屿 -->
   <AlbumModal client:load />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '@nanostores/react';
 import {
   $editor,
+  bootEditorPage,
   closeEditor,
   updateEditorContent,
   setEditorTitle,
@@ -29,7 +30,12 @@ import {
   FileText,
 } from 'lucide-react';
 
-export default function EditorIsland() {
+interface EditorIslandProps {
+  /** 独立 /editor 路由页模式：挂载即校验登录并初始化待编文章 */
+  standalone?: boolean;
+}
+
+export default function EditorIsland({ standalone = false }: EditorIslandProps) {
   const editorState = useStore($editor);
   const {
     isOpen,
@@ -68,6 +74,11 @@ export default function EditorIsland() {
     if (!isOpen) return;
     fetchAlbums();
   }, [isOpen]);
+
+  // 独立编辑页：进入时校验登录，并按 ?slug= 初始化待编文章
+  useEffect(() => {
+    if (standalone) bootEditorPage();
+  }, [standalone]);
 
   const showToast = (text: string, type: 'success' | 'error') => {
     setToastMessage({ text, type });
@@ -123,7 +134,8 @@ export default function EditorIsland() {
         setIsPublishModalOpen(false);
         setTimeout(() => {
           if (typeof window !== 'undefined') {
-            window.location.reload();
+            // 独立编辑页发布成功后回首页刷新列表
+            window.location.href = '/';
           }
         }, 1200);
       }
@@ -142,7 +154,8 @@ export default function EditorIsland() {
   };
 
   if (!isOpen) {
-    return null;
+    // 独立编辑页在编辑器就绪前（如等待登录）铺一层同色底，避免白屏
+    return standalone ? <div className="fixed inset-0 z-40 bg-[#F5F5F7]" /> : null;
   }
 
   return (

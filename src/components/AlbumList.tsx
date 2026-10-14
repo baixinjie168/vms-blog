@@ -3,7 +3,6 @@ import { useStore } from '@nanostores/react';
 import { Layers, Lock, PenSquare, Plus, Edit3 } from 'lucide-react';
 import { $filter, filterByAlbum } from '../stores/filterStore';
 import { openAuthModal } from '../stores/authStore';
-import { openEditor } from '../stores/editorStore';
 import { openAlbumModal } from '../stores/albumStore';
 import type { AlbumItem } from '../services/blogService';
 
