@@ -66,7 +66,7 @@ import AuthModal from './AuthModal';
 
 <script>
   import { filterBySearch } from '../stores/filterStore';
-  import { openEditor } from '../stores/editorStore';
+  import { requestEditor } from '../stores/editorStore';
 
   const searchInput = document.getElementById('global-search-input') as HTMLInputElement | null;
   if (searchInput) {
@@ -82,7 +82,7 @@ import AuthModal from './AuthModal';
   const writeBtn = document.getElementById('btn-header-write');
   if (writeBtn) {
     writeBtn.addEventListener('click', () => {
-      openEditor();
+      requestEditor();
     });
   }
 </script>
