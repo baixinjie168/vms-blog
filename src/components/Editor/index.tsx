@@ -280,7 +280,7 @@ export default function EditorIsland({ standalone = false }: EditorIslandProps) 
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-50 text-xs font-medium transition cursor-pointer disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>暂存草稿</span>
+              <span>暂存</span>
             </button>
 
             <button

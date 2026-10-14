@@ -26,6 +26,22 @@ export const GET: APIRoute = async ({ request, locals }) => {
       });
     }
 
+    // 草稿恢复：/editor 无 ?slug= 时拉取当前作者最近一次暂存的未发布文章
+    if (url.searchParams.get('draft') === '1') {
+      const sessionUser = (locals as any)?.user;
+      if (!sessionUser || !db) {
+        return new Response(JSON.stringify({ success: false, error: '请先登入作者账号' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const authorId = sessionUser.id || sessionUser.sub;
+      const draft = await BlogService.getLatestDraft(db, authorId);
+      return new Response(JSON.stringify({ success: true, article: draft || null }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const category = url.searchParams.get('category') || undefined;
     const albumSlug = url.searchParams.get('album') || undefined;
     const date = url.searchParams.get('date') || undefined;
