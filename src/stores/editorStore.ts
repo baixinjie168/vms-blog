@@ -190,7 +190,7 @@ export async function requestEditor(article?: ArticleItem) {
   window.location.href = `/editor${qs}`;
 }
 
-// /editor 独立页引导：校验登录后按 ?slug= 载入待编文章或新开空白稿
+// /editor 独立页引导：校验登录后按 ?slug= 载入待编文章；无 slug 则恢复最近暂存草稿，否则新开空白稿
 export async function bootEditorPage() {
   const ok = await ensureLoggedIn();
   if (!ok || typeof window === 'undefined') return;
@@ -206,6 +206,17 @@ export async function bootEditorPage() {
     } catch (e) {
       console.warn('Failed to load article for editor page:', e);
     }
+  }
+  // 无 ?slug=：尝试恢复最近一次暂存的草稿（未发布），没有则空白新稿
+  try {
+    const res = await fetch('/api/articles?draft=1');
+    const json = await res.json();
+    if (json?.success && json.article) {
+      await openEditor(json.article);
+      return;
+    }
+  } catch (e) {
+    console.warn('Failed to restore latest draft:', e);
   }
   await openEditor();
 }

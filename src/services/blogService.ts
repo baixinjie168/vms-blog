@@ -766,26 +766,45 @@ export class BlogService {
     }
   }
 
+  /** 文章详情行 SELECT（公开 slug 详情与作者草稿恢复共用列） */
+  private static readonly DETAIL_SQL = `
+    SELECT
+      a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary, a.content,
+      a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.tags, a.read_time, a.views,
+      a.published_at, a.created_at, coalesce(a.char_count, length(a.content)) as char_count,
+      alb.slug as album_slug, alb.title as album_title,
+      strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
+    FROM articles a
+    LEFT JOIN users u ON a.author_id = u.id
+    LEFT JOIN albums alb ON a.album_id = alb.id
+  `;
+
   /**
    * 根据 slug 获取单篇博文详情（用于对开翻书阅读器）
    */
   static async getArticleBySlug(db: D1Database, slug: string): Promise<ArticleItem | null> {
-    const r = await db.prepare(`
-      SELECT 
-        a.id, a.author_id, u.nickname as author_nickname, a.slug, a.title, a.summary, a.content,
-        a.cover_image, a.dimension, a.album_id, a.album_order, a.chapter_label, a.tags, a.read_time, a.views,
-        a.published_at, a.created_at, coalesce(a.char_count, length(a.content)) as char_count,
-        alb.slug as album_slug, alb.title as album_title,
-        strftime('%Y-%m-%d', datetime(a.created_at, 'unixepoch', 'localtime')) as date_str
-      FROM articles a
-      LEFT JOIN users u ON a.author_id = u.id
-      LEFT JOIN albums alb ON a.album_id = alb.id
-      WHERE a.slug = ? AND a.is_published = 1
-      LIMIT 1
-    `).bind(slug).first<any>();
+    const r = await db.prepare(
+      `${BlogService.DETAIL_SQL} WHERE a.slug = ? AND a.is_published = 1 LIMIT 1`
+    ).bind(slug).first<any>();
 
     if (!r) return null;
+    return BlogService.mapArticleRow(r);
+  }
 
+  /**
+   * 获取作者最近一次暂存的草稿（is_published=0），供 /editor 重进恢复
+   */
+  static async getLatestDraft(db: D1Database, authorId: string): Promise<ArticleItem | null> {
+    const r = await db.prepare(
+      `${BlogService.DETAIL_SQL} WHERE a.author_id = ? AND a.is_published = 0 ORDER BY a.updated_at DESC LIMIT 1`
+    ).bind(authorId).first<any>();
+
+    if (!r) return null;
+    return BlogService.mapArticleRow(r);
+  }
+
+  /** 文章详情行 → ArticleItem 映射 */
+  private static mapArticleRow(r: any): ArticleItem {
     const norm = normalizeDimension(r.dimension) || "dao";
     const meta = DIMENSIONS[norm] || DIMENSIONS.dao;
     const chars = r.char_count ?? (r.content ? r.content.length : 3000);
